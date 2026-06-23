@@ -1,238 +1,44 @@
-<!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Manejo de Dineros Transbank</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <section id="loginView" class="login-view" aria-label="Ingreso al sistema">
-    <form id="loginForm" class="login-card">
-      <div class="login-brand">
-        <div class="brand-mark">TB</div>
-        <div>
-          <h1>Transbank</h1>
-          <p>Ingreso por peaje</p>
-        </div>
-      </div>
+# Manejo de Dineros Transbank
 
-      <label>
-        Peaje
-        <select id="loginPeaje" name="peaje" required>
-          <option value="PEAJE ZARAGOZA">Peaje Zaragoza</option>
-          <option value="PEAJE FRAGUA">Peaje Fragua</option>
-        </select>
-      </label>
+Aplicacion local basada en el archivo `Formato_Manejo_Dineros_Transbank_Peaje_Zaragoza.ods`.
 
-      <label>
-        Clave
-        <input id="loginPassword" name="password" type="password" required autocomplete="current-password">
-      </label>
+## Como usar
 
-      <button class="primary-button" type="submit">Ingresar</button>
-      <small id="loginStatus"></small>
-    </form>
-  </section>
+1. Abrir `index.html` en el navegador.
+2. Completar los datos del formato.
+3. Escribir los valores de efectivo, tula y billetes.
+4. Usar `Guardar` para enviar el registro al Excel online.
+5. Entrar a `Registros` para consultar el Excel, abrir, eliminar, exportar CSV o exportar JSON.
+6. Usar `Imprimir` para generar el formato fisico o guardarlo como PDF desde el navegador.
 
-  <div class="app-shell is-hidden">
-    <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">TB</div>
-        <div>
-          <h1>Transbank</h1>
-          <p>Manejo de dineros</p>
-        </div>
-      </div>
+Los registros no se guardan en el navegador. El guardado valido es el de la hoja online.
 
-      <nav class="nav" aria-label="Vistas">
-        <button class="nav-button active" data-view="form" type="button">
-          <span>Formulario</span>
-        </button>
-        <button class="nav-button" data-view="records" type="button">
-          <span>Registros</span>
-          <strong id="recordCount">0</strong>
-        </button>
-      </nav>
+## Acceso por peaje
 
-      <div class="status-panel">
-        <span id="sessionPeaje">Registro actual</span>
-        <strong id="currentStatus">Sin guardar</strong>
-      </div>
+La app pide login antes de mostrar la planilla. Cada peaje solo consulta, guarda y elimina sus propios registros.
 
-      <button id="logoutButton" class="logout-button" type="button">Cerrar sesion</button>
+Al desplegar el Apps Script, el Excel crea automaticamente otra hoja llamada `USUARIOS PLANILLAS` con estos accesos iniciales:
 
-    </aside>
+- Peaje Zaragoza: `zaragoza123`
+- Peaje Fragua: `fragua123`
 
-    <main class="workspace">
-      <section class="toolbar">
-        <div>
-          <p class="eyebrow">Formato digital</p>
-          <h2>Entrega de efectivo a Transbank</h2>
-        </div>
-        <div class="toolbar-actions">
-          <button id="newRecord" class="icon-button" type="button" title="Nuevo">+</button>
-          <button id="saveRecord" class="primary-button" type="button">Guardar</button>
-          <button id="printRecord" class="secondary-button" type="button">Imprimir</button>
-        </div>
-      </section>
+Puedes cambiar las claves editando la columna `password` en esa hoja.
 
-      <section id="formView" class="view active" aria-label="Formulario de entrega">
-        <form id="moneyForm" class="form-layout">
-          <section class="paper">
-            <div class="paper-header">
-              <div class="logo-box logo-zima">
-                <img src="assets/logo-zima.png" alt="Logo ZIMA Seguridad Ltda" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <span>ZIMA<br><small>SEGURIDAD LTDA</small></span>
-              </div>
-              <div class="document-title">
-                <p>MANEJO DE DINEROS ENTREGADOS A TRANSBANK</p>
-                <span>Planilla general de control</span>
-              </div>
-              <div class="logo-box logo-ani">
-                <img src="assets/logo-ani.png" alt="Logo ANI" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                <span>ANI</span>
-                <div class="document-code">
-                  <label for="codigoSello">Codigo/Sello</label>
-                  <input id="codigoSello" name="codigoSello" placeholder="Ej. S-0001">
-                </div>
-              </div>
-            </div>
+## Guardar en hoja online
 
-            <div class="section-title">Datos generales</div>
-            <div class="grid two">
-              <label>
-                Peaje
-                <select id="peaje" name="peaje" required>
-                  <option value="PEAJE ZARAGOZA">Peaje Zaragoza</option>
-                  <option value="PEAJE FRAGUA">Peaje Fragua</option>
-                </select>
-              </label>
-              <label>
-                Centro o razon social
-                <input name="centro" required placeholder="Nombre del centro">
-              </label>
-              <label>
-                Tipo moneda
-                <select name="moneda">
-                  <option value="COP">COP - Peso colombiano</option>
-                  <option value="USD">USD - Dolar</option>
-                </select>
-              </label>
-              <label>
-                Lugar de entrega
-                <input name="lugarEntrega" placeholder="Lugar donde se entrega">
-              </label>
-              <label>
-                Responsable recibe Transbank
-                <input name="responsableRecibe" placeholder="Nombre completo">
-              </label>
-              <label>
-                Ciudad
-                <input name="ciudad" placeholder="Ciudad">
-              </label>
-              <label>
-                Lugar de recibo
-                <input name="lugarRecibo" placeholder="Lugar de recibo">
-              </label>
-              <label>
-                Fecha
-                <input name="fecha" type="date" required>
-              </label>
-              <label>
-                Consecutivo
-                <input name="consecutivo" placeholder="Opcional">
-              </label>
-            </div>
+1. Crear una hoja de calculo en Google Sheets.
+2. Abrir `Extensiones > Apps Script`.
+3. Pegar el contenido de `apps-script-planillas.gs`.
+4. Guardar y desplegar como `Aplicacion web`.
+5. En acceso, seleccionar quien pueda usarla segun tu necesidad.
+6. Copiar la URL que termina en `/exec`.
+7. Pegar esa URL en `DEFAULT_SCRIPT_URL` dentro de `app.js`.
 
-            <div class="section-title">Valores entregados</div>
-            <div class="money-table" role="group" aria-label="Valores entregados">
-              <div class="table-head">
-                <span>Concepto</span>
-                <span>Total entregado</span>
-                <span>Observaciones</span>
-              </div>
-              <div class="table-row">
-                <strong>Efectivo</strong>
-                <input name="efectivo" class="money-input" inputmode="numeric" placeholder="$ 0">
-                <input name="observacionesEfectivo" placeholder="Observaciones">
-              </div>
-              <div class="table-row total-row">
-                <strong>Total entregado a Transbank</strong>
-                <output id="totalEntregado">$ 0</output>
-                <span></span>
-              </div>
-            </div>
+El script crea o usa una pestaña llamada `BASE DE DATOS PLANILLAS` y otra llamada `USUARIOS PLANILLAS`.
 
-            <div class="section-title">Declaracion de valores</div>
-            <div class="grid two declarations">
-              <label>
-                Valor declarado en tula y/o bolsa
-                <input name="valorTula" class="money-input" inputmode="numeric" placeholder="$ 0">
-              </label>
-              <label>
-                Valor declarado billetes
-                <input name="valorBilletes" class="money-input" inputmode="numeric" placeholder="$ 0">
-              </label>
-            </div>
+Si el script se pega dentro del Apps Script de la hoja actual, guarda en esa misma hoja.
+Si se usa como proyecto independiente, pega el ID de la hoja en `SPREADSHEET_ID` dentro de `apps-script-planillas.gs`.
 
-            <label class="wide-label">
-              Valor en letras
-              <textarea id="valorLetras" name="valorLetras" rows="2" readonly></textarea>
-            </label>
+La app ya trae configurada esta URL por defecto:
 
-            <label class="wide-label">
-              Observaciones generales
-              <textarea name="observacionesGenerales" rows="3" placeholder="Notas adicionales"></textarea>
-            </label>
-
-            <div class="section-title">Firmas</div>
-            <div class="signatures">
-              <div>
-                <strong>Entregado por</strong>
-                <label>Nombre <input name="entregadoNombre"></label>
-                <label>Firma <input name="entregadoFirma"></label>
-              </div>
-              <div>
-                <strong>Revisado por</strong>
-                <label>Nombre <input name="revisadoNombre"></label>
-                <label>Firma <input name="revisadoFirma"></label>
-              </div>
-            </div>
-          </section>
-        </form>
-      </section>
-
-      <section id="recordsView" class="view" aria-label="Registros guardados">
-        <div class="records-header">
-          <div>
-            <p class="eyebrow">Historial online</p>
-            <h2>Registros guardados</h2>
-          </div>
-          <div class="toolbar-actions">
-            <button id="exportCsv" class="secondary-button" type="button">CSV</button>
-            <button id="exportJson" class="secondary-button" type="button">JSON</button>
-          </div>
-        </div>
-        <div id="recordsList" class="records-list"></div>
-      </section>
-    </main>
-  </div>
-
-  <template id="recordTemplate">
-    <article class="record-card">
-      <div>
-        <strong class="record-title"></strong>
-        <span class="record-meta"></span>
-      </div>
-      <output class="record-total"></output>
-      <div class="record-actions">
-        <button class="secondary-button load-record" type="button">Abrir</button>
-        <button class="danger-button delete-record" type="button">Eliminar</button>
-      </div>
-    </article>
-  </template>
-
-  <script src="app.js"></script>
-</body>
-</html>
+`https://script.google.com/macros/s/AKfycbycgSSYUykUf_CfuuHepNnZcTe_wFxHT8tavUHhnZUjKL1l6RDSkT_IQuY_s2_ehhzMoA/exec`
