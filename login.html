@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Control Operacional | Gestión de Fondos Transbank</title>
+
+    <meta name="description"
+        content="Sistema de gestión, control y conciliación de fondos entregados a Transbank.">
+
+    <link rel="stylesheet" href="styles.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <section id="loginView" class="login-view" aria-label="Ingreso al sistema">
+
+        <div class="login-shell">
+
+            <!-- PANEL IZQUIERDO -->
+            <aside class="login-hero">
+
+                <div class="login-logos">
+
+                    <img
+                        src="assets/logo-zima.png"
+                        alt="Logo ZIMA"
+                        class="hero-logo">
+
+                </div>
+
+                <div class="login-hero-content">
+
+                    <div class="login-hero-copy">
+
+                        <span class="hero-tag">
+                            CONTROL OPERACIONAL
+                        </span>
+
+                        <h1>
+                            Gestión de fondos entregados a Transbank
+                        </h1>
+
+                        <p class="hero-description">
+                            Plataforma digital para el registro, consulta,
+                            conciliación e impresión de movimientos por peaje.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="hero-divider"></div>
+
+                <div class="login-peajes">
+
+                    <span>
+                        Peaje Zaragoza
+                    </span>
+
+                    <span>
+                        Peaje Fragua
+                    </span>
+
+                </div>
+
+            </aside>
+
+            <!-- PANEL DERECHO -->
+            <form id="loginForm" class="login-card">
+
+                <header class="login-brand">
+
+                
+
+                    <div class="brand-copy">
+                        <h2>Planillas</h2>
+                        <p>Ingreso seguro</p>
+                    </div>
+
+                </header>
+
+                <div class="login-heading">
+
+                    <p class="eyebrow">
+                        ACCESO AUTORIZADO
+                    </p>
+
+                    <h3>
+                        Iniciar sesión
+                    </h3>
+
+                    <p class="login-subtitle">
+                        Acceso exclusivo para personal autorizado.
+                    </p>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="loginPeaje">
+                        Peaje
+                    </label>
+
+                    <select
+                        id="loginPeaje"
+                        name="peaje"
+                        required>
+
+                        <option value="PEAJE ZARAGOZA">
+                            Peaje Zaragoza
+                        </option>
+
+                        <option value="PEAJE FRAGUA">
+                            Peaje Fragua
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="form-group">
+
+                    <label for="loginPassword">
+                        Clave
+                    </label>
+
+                    <input
+                        id="loginPassword"
+                        name="password"
+                        type="password"
+                        required
+                        autocomplete="current-password"
+                        placeholder="Ingrese su clave">
+
+                </div>
+
+                <button
+                    class="primary-button login-submit"
+                    type="submit">
+
+                    Acceder
+
+                </button>
+
+                <div class="security-note">
+
+                    <span>🔒</span>
+
+                    <p>
+                        Conexión segura y operaciones auditadas.
+                    </p>
+
+                </div>
+
+                <small
+                    id="loginStatus"
+                    class="login-status"
+                    role="status"
+                    aria-live="polite">
+                </small>
+
+                <footer class="login-footer">
+
+                    <small>
+                        © 2026 Planillas · Sistema de Control Operacional · Versión 2.0
+                    </small>
+
+                </footer>
+
+            </form>
+
+        </div>
+
+    </section>
+
+    <script src="login.js"></script>
+
+</body>
+
+</html>

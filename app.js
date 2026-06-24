@@ -1,4 +1,5 @@
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvwd182AyNTAfrViy88ZV5DS_wnHl1HYaPR2kM3DsE0posqX0v3eckW3-zDQg1V2h_sA/exec';
+const SESSION_KEY = 'transbankSession';
 
 const form = document.querySelector('#moneyForm');
 const totalEntregado = document.querySelector('#totalEntregado');
@@ -8,9 +9,6 @@ const recordCount = document.querySelector('#recordCount');
 const recordsList = document.querySelector('#recordsList');
 const recordTemplate = document.querySelector('#recordTemplate');
 const onlineStatus = document.querySelector('#onlineStatus');
-const loginView = document.querySelector('#loginView');
-const loginForm = document.querySelector('#loginForm');
-const loginStatus = document.querySelector('#loginStatus');
 const appShell = document.querySelector('.app-shell');
 const sessionPeaje = document.querySelector('#sessionPeaje');
 const logoutButton = document.querySelector('#logoutButton');
@@ -146,14 +144,16 @@ function switchView(viewName) {
   document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.view === viewName));
 }
 
-function setSessionUser(user, password) {
-  currentUser = {
-    peaje: user.peaje,
-    nombre: user.nombre || user.peaje,
-    password
-  };
+function getStoredSession() {
+  try {
+    return JSON.parse(sessionStorage.getItem(SESSION_KEY));
+  } catch (error) {
+    return null;
+  }
+}
 
-  loginView.classList.add('is-hidden');
+function startSession(user) {
+  currentUser = user;
   appShell.classList.remove('is-hidden');
   sessionPeaje.textContent = currentUser.nombre;
   form.elements.peaje.disabled = true;
@@ -166,12 +166,8 @@ function clearSession() {
   recordsCache = [];
   activeRecordId = null;
   form.elements.peaje.disabled = false;
-  appShell.classList.add('is-hidden');
-  loginView.classList.remove('is-hidden');
-  loginForm.reset();
-  clearForm();
-  renderRecords();
-  setOnlineStatus('Debe iniciar sesion.');
+  sessionStorage.removeItem(SESSION_KEY);
+  window.location.href = 'login.html';
 }
 
 function renderRecords() {
@@ -287,31 +283,6 @@ function loadOnlineRecords() {
     });
 }
 
-async function login(event) {
-  event.preventDefault();
-  const peaje = loginForm.elements.peaje.value;
-  const password = loginForm.elements.password.value;
-
-  loginStatus.textContent = 'Validando ingreso...';
-
-  try {
-    const payload = await requestJsonp(getScriptUrl(), {
-      action: 'login',
-      peaje,
-      password
-    });
-
-    if (!payload || !payload.ok) {
-      throw new Error(payload && payload.error ? payload.error : 'No se pudo iniciar sesion');
-    }
-
-    loginStatus.textContent = '';
-    setSessionUser(payload.user, password);
-  } catch (error) {
-    loginStatus.textContent = error.message;
-  }
-}
-
 function requestJsonp(url, params) {
   return new Promise((resolve, reject) => {
   const callbackName = `onlinePlanillas_${Date.now()}`;
@@ -425,9 +396,13 @@ document.querySelector('#printRecord').addEventListener('click', () => window.pr
 document.querySelector('#exportJson').addEventListener('click', exportJson);
 document.querySelector('#exportCsv').addEventListener('click', exportCsv);
 document.querySelector('#syncOnline')?.addEventListener('click', loadOnlineRecords);
-loginForm.addEventListener('submit', login);
 logoutButton.addEventListener('click', clearSession);
 
-clearForm();
-renderRecords();
-setOnlineStatus('Debe iniciar sesion.');
+const storedSession = getStoredSession();
+
+if (!storedSession || !storedSession.peaje || !storedSession.password) {
+  window.location.href = 'login.html';
+} else {
+  startSession(storedSession);
+  renderRecords();
+}

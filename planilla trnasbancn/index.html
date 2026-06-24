@@ -8,31 +8,54 @@
 </head>
 <body>
   <section id="loginView" class="login-view" aria-label="Ingreso al sistema">
-    <form id="loginForm" class="login-card">
-      <div class="login-brand">
-        <div class="brand-mark">TB</div>
-        <div>
-          <h1>Transbank</h1>
-          <p>Ingreso por peaje</p>
+    <div class="login-shell">
+      <div class="login-hero" aria-hidden="true">
+        <div class="login-logos">
+          <img src="assets/logo-zima.png" alt="">
+          <img src="assets/logo-ani.png" alt="">
+        </div>
+        <div class="login-hero-copy">
+          <span>Control operacional</span>
+          <h1>Manejo de dineros entregados a Transbank</h1>
+          <p>Planilla digital para registro, consulta e impresion por peaje.</p>
+        </div>
+        <div class="login-peajes">
+          <span>Peaje Zaragoza</span>
+          <span>Peaje Fragua</span>
         </div>
       </div>
 
-      <label>
-        Peaje
-        <select id="loginPeaje" name="peaje" required>
-          <option value="PEAJE ZARAGOZA">Peaje Zaragoza</option>
-          <option value="PEAJE FRAGUA">Peaje Fragua</option>
-        </select>
-      </label>
+      <form id="loginForm" class="login-card">
+        <div class="login-brand">
+          <div class="brand-mark">TB</div>
+          <div>
+            <h1>Transbank</h1>
+            <p>Ingreso seguro</p>
+          </div>
+        </div>
 
-      <label>
-        Clave
-        <input id="loginPassword" name="password" type="password" required autocomplete="current-password">
-      </label>
+        <div class="login-heading">
+          <p class="eyebrow">Acceso autorizado</p>
+          <h2>Iniciar sesion</h2>
+        </div>
 
-      <button class="primary-button" type="submit">Ingresar</button>
-      <small id="loginStatus"></small>
-    </form>
+        <label>
+          Peaje
+          <select id="loginPeaje" name="peaje" required>
+            <option value="PEAJE ZARAGOZA">Peaje Zaragoza</option>
+            <option value="PEAJE FRAGUA">Peaje Fragua</option>
+          </select>
+        </label>
+
+        <label>
+          Clave
+          <input id="loginPassword" name="password" type="password" required autocomplete="current-password" placeholder="Ingrese la clave">
+        </label>
+
+        <button class="primary-button login-submit" type="submit">Ingresar</button>
+        <small id="loginStatus"></small>
+      </form>
+    </div>
   </section>
 
   <div class="app-shell is-hidden">
