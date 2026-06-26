@@ -12,11 +12,14 @@ const onlineStatus = document.querySelector('#onlineStatus');
 const appShell = document.querySelector('.app-shell');
 const sessionPeaje = document.querySelector('#sessionPeaje');
 const logoutButton = document.querySelector('#logoutButton');
+const saveButton = document.querySelector('#saveRecord');
+const printButton = document.querySelector('#printRecord');
 
 let activeRecordId = null;
 let recordsCache = [];
 let configuredScriptUrl = DEFAULT_SCRIPT_URL;
 let currentUser = null;
+let shouldClearAfterPrint = false;
 
 const currency = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -94,10 +97,10 @@ function recalculate() {
 async function saveRecord() {
   if (!currentUser) {
     setOnlineStatus('Debe iniciar sesion.');
-    return;
+    return null;
   }
 
-  if (!form.reportValidity()) return;
+  if (!form.reportValidity()) return null;
   const data = formData();
   const now = new Date().toISOString();
   const existing = activeRecordId ? getRecords().find((item) => item.id === activeRecordId) : null;
@@ -121,11 +124,56 @@ async function saveRecord() {
     activeRecordId = saved.id;
     setRecords(records);
     currentStatus.textContent = 'Guardado';
+    return saved;
   } catch (error) {
     currentStatus.textContent = 'No guardado';
     setOnlineStatus(`No se pudo guardar en Excel: ${error.message}`);
+    return null;
   }
 }
+
+async function printRecordSafely() {
+  if (!currentUser) {
+    setOnlineStatus('Debe iniciar sesion.');
+    return;
+  }
+
+  if (!form.reportValidity()) return;
+
+  const originalText = printButton.textContent;
+  printButton.disabled = true;
+  if (saveButton) saveButton.disabled = true;
+  printButton.textContent = 'Guardando...';
+  currentStatus.textContent = 'Guardando antes de imprimir...';
+
+  const saved = await saveRecord();
+
+  if (!saved) {
+    printButton.textContent = originalText;
+    printButton.disabled = false;
+    if (saveButton) saveButton.disabled = false;
+    setOnlineStatus('No se imprimio porque el registro no quedo guardado.');
+    return;
+  }
+
+  shouldClearAfterPrint = true;
+  printButton.textContent = 'Imprimiendo...';
+  setOnlineStatus('Registro guardado. Abriendo impresion...');
+  window.print();
+
+  window.setTimeout(() => {
+    printButton.textContent = originalText;
+    printButton.disabled = false;
+    if (saveButton) saveButton.disabled = false;
+  }, 500);
+}
+
+window.addEventListener('afterprint', () => {
+  if (!shouldClearAfterPrint) return;
+  shouldClearAfterPrint = false;
+  clearForm();
+  setOnlineStatus('Planilla guardada e impresa. Formulario limpio para un nuevo registro.');
+});
 
 async function deleteRecord(id) {
   try {
@@ -391,8 +439,8 @@ form.addEventListener('input', () => {
 });
 
 document.querySelector('#newRecord').addEventListener('click', clearForm);
-document.querySelector('#saveRecord').addEventListener('click', saveRecord);
-document.querySelector('#printRecord').addEventListener('click', () => window.print());
+saveButton.addEventListener('click', saveRecord);
+printButton.addEventListener('click', printRecordSafely);
 document.querySelector('#exportJson').addEventListener('click', exportJson);
 document.querySelector('#exportCsv').addEventListener('click', exportCsv);
 document.querySelector('#syncOnline')?.addEventListener('click', loadOnlineRecords);
