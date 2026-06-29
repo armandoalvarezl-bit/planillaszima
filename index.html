@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Manejo de Dineros Transbank</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="loading-theme.css">
 </head>
 <body>
   <div class="app-shell is-hidden">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-mark">
-        
+          <img src="assets/logo-zima.png" alt="Logo ZIMA">
         </div>
         <div>
           <h1>ZIMA</h1>
@@ -27,6 +28,9 @@
           <span>Registros</span>
           <strong id="recordCount">0</strong>
         </button>
+        <button id="auditViewButton" class="nav-button" data-view="audit" type="button" style="display: none;">
+          <span>Auditoría</span>
+        </button>
       </nav>
 
       <div class="status-panel">
@@ -34,7 +38,7 @@
         <strong id="currentStatus">Sin guardar</strong>
       </div>
 
-      <button id="logoutButton" class="logout-button" type="button">Cerrar sesion</button>
+      <button id="logoutButton" class="logout-button" type="button">Cerrar sesión</button>
 
     </aside>
 
@@ -50,6 +54,8 @@
           <button id="printRecord" class="secondary-button" type="button">Imprimir</button>
         </div>
       </section>
+
+      <div id="onlineStatus" class="online-status"></div>
 
       <section id="formView" class="view active" aria-label="Formulario de entrega">
         <form id="moneyForm" class="form-layout">
@@ -67,7 +73,7 @@
                 <img src="assets/logo-ani.png" alt="Logo ANI" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span>ANI</span>
                 <div class="document-code">
-                  <label for="codigoSello">Codigo/Sello</label>
+                  <label for="codigoSello">Código/Sello</label>
                   <input id="codigoSello" name="codigoSello" placeholder="Ej. S-0001">
                 </div>
               </div>
@@ -83,14 +89,14 @@
                 </select>
               </label>
               <label>
-                Centro o razon social
+                Centro o razón social
                 <input name="centro" required placeholder="Nombre del centro">
               </label>
               <label>
                 Tipo moneda
                 <select name="moneda">
                   <option value="COP">COP - Peso colombiano</option>
-                  <option value="USD">USD - Dolar</option>
+                  <option value="USD">USD - Dólar</option>
                 </select>
               </label>
               <label>
@@ -138,7 +144,7 @@
               </div>
             </div>
 
-            <div class="section-title">Declaracion de valores</div>
+            <div class="section-title">Declaración de valores</div>
             <div class="grid two declarations">
               <label>
                 Valor declarado en tula y/o bolsa
@@ -190,6 +196,69 @@
         </div>
         <div id="recordsList" class="records-list"></div>
       </section>
+
+      <section id="auditView" class="view" aria-label="Panel de auditoría">
+        <div class="records-header">
+          <div>
+            <p class="eyebrow">Control y análisis</p>
+            <h2>Panel de auditoría</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button id="exportCsvAudit" class="secondary-button" type="button">CSV</button>
+            <button id="exportJsonAudit" class="secondary-button" type="button">JSON</button>
+          </div>
+        </div>
+
+        <div class="audit-filters">
+          <div class="filter-group">
+            <label>
+              Buscar
+              <input id="auditSearch" type="text" placeholder="Código, centro, responsable...">
+            </label>
+          </div>
+          <div class="filter-group">
+            <label>
+              Peaje
+              <select id="auditFilterPeaje">
+                <option value="">Todos</option>
+                <option value="PEAJE ZARAGOZA">Peaje Zaragoza</option>
+                <option value="PEAJE FRAGUA">Peaje Fragua</option>
+              </select>
+            </label>
+          </div>
+          <div class="filter-group">
+            <label>
+              Desde fecha
+              <input id="auditFilterDateFrom" type="date">
+            </label>
+          </div>
+          <div class="filter-group">
+            <label>
+              Hasta fecha
+              <input id="auditFilterDateTo" type="date">
+            </label>
+          </div>
+          <button id="auditFilterApply" class="secondary-button" type="button">Filtrar</button>
+          <button id="auditFilterClear" class="icon-button" type="button" title="Limpiar filtros">×</button>
+        </div>
+
+        <div class="audit-summary">
+          <div class="summary-card">
+            <strong>Total registros</strong>
+            <span id="auditTotalRecords">0</span>
+          </div>
+          <div class="summary-card">
+            <strong>Total efectivo</strong>
+            <span id="auditTotalAmount">$ 0</span>
+          </div>
+          <div class="summary-card">
+            <strong>Por peaje</strong>
+            <span id="auditByPeaje">-</span>
+          </div>
+        </div>
+
+        <div id="auditRecordsList" class="records-list"></div>
+      </section>
     </main>
   </div>
 
@@ -206,6 +275,21 @@
       </div>
     </article>
   </template>
+
+  <div id="loadingOverlay" class="loading-overlay is-hidden">
+    <section class="loading-modal" role="status" aria-live="polite" aria-label="Procesando solicitud">
+      <div class="loading-logo-wrap">
+        <img src="assets/logo-zima.png" alt="Logo ZIMA">
+      </div>
+      <div class="loading-copy">
+        <strong>Procesando planilla</strong>
+        <p>Estamos guardando la información en la base online.</p>
+      </div>
+      <div class="loading-progress" aria-hidden="true">
+        <span></span>
+      </div>
+    </section>
+  </div>
 
   <script src="app.js"></script>
 </body>

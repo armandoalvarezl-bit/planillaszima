@@ -10,6 +10,7 @@
         content="Sistema de gestión, control y conciliación de fondos entregados a Transbank.">
 
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="login-theme.css">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,6 +59,17 @@
 
                 <div class="hero-divider"></div>
 
+                <div class="login-metrics" aria-label="Resumen del sistema">
+                    <div>
+                        <strong>2</strong>
+                        <span>Peajes activos</span>
+                    </div>
+                    <div>
+                        <strong>24/7</strong>
+                        <span>Control disponible</span>
+                    </div>
+                </div>
+
                 <div class="login-peajes">
 
                     <span>
@@ -66,6 +78,9 @@
 
                     <span>
                         Peaje Fragua
+                    </span>
+                    <span>
+                        Auditoría de operaciones
                     </span>
 
                 </div>
@@ -95,7 +110,7 @@
                     </h3>
 
                     <p class="login-subtitle">
-                        Acceso exclusivo para personal autorizado.
+                        Seleccione su punto de operación e ingrese la clave asignada.
                     </p>
 
                 </div>
@@ -117,6 +132,9 @@
 
                         <option value="PEAJE FRAGUA">
                             Peaje Fragua
+                        </option>
+                        <option value="AUDITORIA DE OPERACIONES">
+                            Auditoría de la Jefa Beatriz
                         </option>
 
                     </select>
@@ -143,13 +161,13 @@
                     class="primary-button login-submit"
                     type="submit">
 
-                    Acceder
+                    Ingresar al sistema
 
                 </button>
 
                 <div class="security-note">
 
-                    <span>🔒</span>
+                    <span aria-hidden="true">SSL</span>
 
                     <p>
                         Conexión segura y operaciones auditadas.
@@ -177,6 +195,30 @@
         </div>
 
     </section>
+
+    <div id="loginLoadingOverlay" class="login-loading-overlay is-hidden" aria-hidden="true">
+        <section class="login-loading-modal" role="status" aria-live="polite" aria-label="Validando acceso">
+            <div class="login-loading-orbit" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+                <div class="login-loading-logo">
+                    <img src="assets/logo-zima.png" alt="Logo ZIMA">
+                </div>
+            </div>
+
+            <div class="login-loading-copy">
+                <strong>Validando acceso</strong>
+                <p>Estamos conectando con la base online y preparando su sesión segura.</p>
+            </div>
+
+            <div class="login-loading-steps" aria-hidden="true">
+                <i></i>
+                <i></i>
+                <i></i>
+            </div>
+        </section>
+    </div>
 
     <script src="login.js"></script>
 

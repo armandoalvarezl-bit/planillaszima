@@ -7,7 +7,8 @@ const SPREADSHEET_ID = '';
 const USER_HEADERS = ['peaje', 'nombre', 'password', 'activo'];
 const DEFAULT_USERS = [
   ['PEAJE ZARAGOZA', 'Peaje Zaragoza', 'zaragoza123', 'SI'],
-  ['PEAJE FRAGUA', 'Peaje Fragua', 'fragua123', 'SI']
+  ['PEAJE FRAGUA', 'Peaje Fragua', 'fragua123', 'SI'],
+  ['AUDITORIA DE OPERACIONES', 'Auditoría de la Jefa Beatriz', 'auditoria123', 'SI']
 ];
 
 const HEADERS = [
@@ -60,7 +61,7 @@ function doGet(e) {
       payload = { ok: true, deleted: deleteRecord_(sheet, e.parameter.id, user) };
     } else {
       const user = authenticateUser_(usersSheet, e.parameter.peaje, e.parameter.password);
-      payload = { ok: true, records: readRecords_(sheet, user.peaje) };
+      payload = { ok: true, records: readRecords_(sheet, user.peaje, user) };
     }
 
     return jsonResponse_(payload, callback);
@@ -170,9 +171,26 @@ function ensureUserHeaders_(sheet) {
 
 function seedDefaultUsers_(sheet) {
   const lastRow = sheet.getLastRow();
-  if (lastRow >= 2) return;
+  if (lastRow >= 2) {
+    ensureDefaultUsers_(sheet);
+    return;
+  }
 
   sheet.getRange(2, 1, DEFAULT_USERS.length, USER_HEADERS.length).setValues(DEFAULT_USERS);
+}
+
+function ensureDefaultUsers_(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  const existingUsers = sheet.getRange(2, 1, lastRow - 1, 1).getValues().map(row => normalizeText_(row[0]));
+
+  DEFAULT_USERS.forEach((defaultUser) => {
+    const normalizedPeaje = normalizeText_(defaultUser[0]);
+    if (!existingUsers.includes(normalizedPeaje)) {
+      sheet.appendRow(defaultUser);
+    }
+  });
 }
 
 function authenticateUser_(sheet, peaje, password) {
@@ -210,10 +228,17 @@ function authenticateUser_(sheet, peaje, password) {
   throw new Error('Usuario de peaje no encontrado.');
 }
 
+function isAuditUser_(user) {
+  const peaje = normalizeText_(user && user.peaje);
+  const nombre = normalizeText_(user && user.nombre);
+  return peaje === 'AUDITORIA DE OPERACIONES' || nombre.includes('AUDITORIA');
+}
+
 function publicUser_(user) {
   return {
     peaje: user.peaje,
-    nombre: user.nombre || user.peaje
+    nombre: user.nombre || user.peaje,
+    isAuditoria: isAuditUser_(user)
   };
 }
 
@@ -221,10 +246,11 @@ function normalizeText_(value) {
   return String(value || '').trim().toUpperCase();
 }
 
-function readRecords_(sheet, peaje) {
+function readRecords_(sheet, peaje, user) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
   const normalizedPeaje = normalizeText_(peaje);
+  const isAudit = isAuditUser_(user);
 
   const values = sheet.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
 
@@ -237,7 +263,7 @@ function readRecords_(sheet, peaje) {
       });
       return record;
     })
-    .filter((record) => normalizeText_(record.peaje) === normalizedPeaje)
+    .filter((record) => isAudit || normalizeText_(record.peaje) === normalizedPeaje)
     .reverse();
 }
 
@@ -252,14 +278,15 @@ function saveRecord_(sheet, incoming, user) {
   record.id = record.id || Utilities.getUuid();
   record.createdAt = record.createdAt || now;
   record.updatedAt = now;
-  record.peaje = user.peaje;
+  const incomingPeaje = normalizeText_(incoming.peaje || '');
+  record.peaje = isAuditUser_(user) && incomingPeaje ? incomingPeaje : user.peaje;
 
   const rowValues = HEADERS.map((header) => record[header]);
   const existingRow = findRowById_(sheet, record.id);
 
   if (existingRow) {
     const existingRecord = getRecordAtRow_(sheet, existingRow);
-    if (normalizeText_(existingRecord.peaje) !== normalizeText_(user.peaje)) {
+    if (!isAuditUser_(user) && normalizeText_(existingRecord.peaje) !== normalizeText_(user.peaje)) {
       throw new Error('No tiene permiso para modificar registros de otro peaje.');
     }
 
@@ -276,7 +303,7 @@ function deleteRecord_(sheet, id, user) {
   if (!existingRow) return false;
   const existingRecord = getRecordAtRow_(sheet, existingRow);
 
-  if (normalizeText_(existingRecord.peaje) !== normalizeText_(user.peaje)) {
+  if (!isAuditUser_(user) && normalizeText_(existingRecord.peaje) !== normalizeText_(user.peaje)) {
     throw new Error('No tiene permiso para eliminar registros de otro peaje.');
   }
 

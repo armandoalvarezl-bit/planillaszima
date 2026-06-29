@@ -1,8 +1,55 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyvwd182AyNTAfrViy88ZV5DS_wnHl1HYaPR2kM3DsE0posqX0v3eckW3-zDQg1V2h_sA/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxY9EylfC-Aw0XLRQ2BYTE7IpQEbknsd0BF-cBbNmVnNBUtvZ3jDl92Gg40LW9aPY_2PQ/exec';
 const SESSION_KEY = 'transbankSession';
 
 const loginForm = document.querySelector('#loginForm');
 const loginStatus = document.querySelector('#loginStatus');
+const loginLoadingOverlay = document.querySelector('#loginLoadingOverlay');
+const loginSubmitButton = loginForm?.querySelector('.login-submit');
+
+function showLoginLoading() {
+  if (loginLoadingOverlay) {
+    loginLoadingOverlay.classList.remove('is-hidden');
+    loginLoadingOverlay.setAttribute('aria-hidden', 'false');
+  }
+  if (loginSubmitButton) {
+    loginSubmitButton.disabled = true;
+    loginSubmitButton.textContent = 'Validando...';
+  }
+}
+
+function hideLoginLoading() {
+  if (loginLoadingOverlay) {
+    loginLoadingOverlay.classList.add('is-hidden');
+    loginLoadingOverlay.setAttribute('aria-hidden', 'true');
+  }
+  if (loginSubmitButton) {
+    loginSubmitButton.disabled = false;
+    loginSubmitButton.textContent = 'Ingresar al sistema';
+  }
+}
+
+function setLoginStatus(message, tone = 'info') {
+  if (!loginStatus) return;
+  const titles = {
+    info: 'Validando acceso',
+    success: 'Acceso confirmado',
+    error: 'No fue posible ingresar'
+  };
+
+  loginStatus.className = `login-status status-${tone}`;
+  loginStatus.replaceChildren();
+
+  const copy = document.createElement('span');
+  copy.className = 'status-copy';
+  const heading = document.createElement('strong');
+  heading.className = 'status-title';
+  heading.textContent = titles[tone] || 'Mensaje del sistema';
+  const detail = document.createElement('span');
+  detail.className = 'status-message';
+  detail.textContent = message;
+  copy.append(heading, detail);
+  loginStatus.append(copy);
+}
 
 function getScriptUrl() {
   return DEFAULT_SCRIPT_URL;
@@ -10,8 +57,7 @@ function getScriptUrl() {
 
 function saveSession(user, password) {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify({
-    peaje: user.peaje,
-    nombre: user.nombre || user.peaje,
+    ...user,
     password
   }));
 }
@@ -21,7 +67,8 @@ async function login(event) {
   const peaje = loginForm.elements.peaje.value;
   const password = loginForm.elements.password.value;
 
-  loginStatus.textContent = 'Validando ingreso...';
+  showLoginLoading();
+  setLoginStatus('Estamos verificando sus credenciales de forma segura.', 'info');
 
   try {
     const payload = await requestJsonp(getScriptUrl(), {
@@ -31,13 +78,15 @@ async function login(event) {
     });
 
     if (!payload || !payload.ok) {
-      throw new Error(payload && payload.error ? payload.error : 'No se pudo iniciar sesion');
+      throw new Error(payload && payload.error ? payload.error : 'No se pudo iniciar sesión');
     }
 
+    setLoginStatus('Credenciales aceptadas. Abriendo el sistema de planillas.', 'success');
     saveSession(payload.user, password);
     window.location.href = 'index.html';
   } catch (error) {
-    loginStatus.textContent = error.message;
+    hideLoginLoading();
+    setLoginStatus(error.message, 'error');
   }
 }
 

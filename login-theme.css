@@ -1,0 +1,384 @@
+@media screen {
+  .login-view {
+    position: relative;
+    min-height: 100vh;
+    padding: 30px;
+    background:
+      linear-gradient(135deg, rgba(8, 63, 70, 0.96), rgba(20, 32, 51, 0.94)),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+      linear-gradient(0deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+    background-size: auto, 44px 44px, 44px 44px;
+    overflow: hidden;
+  }
+
+  .login-view::before {
+    position: absolute;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 18% 18%, rgba(229, 164, 100, 0.22), transparent 22rem),
+      radial-gradient(circle at 82% 78%, rgba(70, 150, 158, 0.24), transparent 24rem);
+  }
+
+  .login-shell {
+    position: relative;
+    z-index: 1;
+    grid-template-columns: minmax(0, 1.12fr) minmax(360px, 440px);
+    width: min(100%, 1040px);
+    min-height: 620px;
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 34px 90px rgba(3, 12, 24, 0.42);
+  }
+
+  .login-hero {
+    padding: 38px;
+    background:
+      linear-gradient(145deg, rgba(255, 255, 255, 0.16), transparent 38%),
+      linear-gradient(180deg, rgba(17, 77, 88, 0.94), rgba(20, 32, 51, 0.98));
+  }
+
+  .login-hero::before {
+    background:
+      linear-gradient(120deg, transparent 0 46%, rgba(255, 255, 255, 0.08) 46% 47%, transparent 47% 100%),
+      linear-gradient(155deg, transparent 0 63%, rgba(229, 164, 100, 0.2) 63% 64%, transparent 64% 100%);
+  }
+
+  .login-hero::after {
+    display: none;
+  }
+
+  .login-logos img {
+    max-width: 150px;
+    height: 64px;
+    padding: 9px 14px;
+    border-color: rgba(255, 255, 255, 0.34);
+    box-shadow: 0 14px 28px rgba(3, 12, 24, 0.2);
+  }
+
+  .login-hero-copy span {
+    padding: 7px 10px;
+    border: 1px solid rgba(255, 196, 143, 0.32);
+    border-radius: 999px;
+    background: rgba(255, 196, 143, 0.1);
+    color: #ffd0a5;
+  }
+
+  .login-hero-copy h1 {
+    max-width: 560px;
+    font-size: clamp(36px, 4.4vw, 56px);
+    letter-spacing: 0;
+  }
+
+  .login-hero-copy p {
+    max-width: 470px;
+    color: #e5edf4;
+    font-size: 16px;
+  }
+
+  .login-metrics {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .login-metrics div {
+    display: grid;
+    gap: 5px;
+    min-height: 78px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.09);
+  }
+
+  .login-metrics strong {
+    color: #ffffff;
+    font-size: 26px;
+    line-height: 1;
+  }
+
+  .login-metrics span {
+    color: #cbd8e5;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .login-card {
+    align-content: center;
+    gap: 20px;
+    padding: 48px 44px;
+    border-left: 1px solid #dbe3ee;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  }
+
+  .login-brand {
+    padding-bottom: 18px;
+    border-bottom: 1px solid #e3e9f2;
+  }
+
+  .brand-copy h2 {
+    margin: 0;
+    color: #142033;
+    font-size: 25px;
+    line-height: 1.1;
+  }
+
+  .brand-copy p,
+  .login-subtitle {
+    color: #647084;
+    font-weight: 700;
+  }
+
+  .login-heading h3 {
+    margin: 5px 0 0;
+    color: #142033;
+    font-size: 31px;
+    line-height: 1.1;
+  }
+
+  .login-subtitle {
+    margin-top: 10px;
+    font-size: 14px;
+    line-height: 1.45;
+  }
+
+  .form-group {
+    display: grid;
+    gap: 8px;
+  }
+
+  .login-card label {
+    color: #3d4b5f;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .login-card input,
+  .login-card select {
+    min-height: 50px;
+    padding: 0 14px;
+    border: 1px solid #d7e0ea;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #142033;
+  }
+
+  .login-card input:focus,
+  .login-card select:focus {
+    border-color: #0e6670;
+    box-shadow: 0 0 0 4px rgba(14, 102, 112, 0.13);
+  }
+
+  .login-submit {
+    min-height: 50px;
+    margin-top: 2px;
+    font-size: 15px;
+  }
+
+  .login-footer {
+    padding-top: 4px;
+    text-align: center;
+  }
+
+  .login-footer small {
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  @media (max-width: 860px) {
+    .login-view {
+      padding: 16px;
+      place-items: stretch;
+    }
+
+    .login-shell {
+      grid-template-columns: 1fr;
+      min-height: auto;
+    }
+
+    .login-hero {
+      min-height: auto;
+      padding: 28px;
+    }
+
+    .login-hero-copy h1 {
+      font-size: 34px;
+    }
+
+    .login-metrics {
+      grid-template-columns: 1fr;
+    }
+
+    .login-card {
+      padding: 30px 24px;
+      border-left: 0;
+      border-top: 1px solid #dbe3ee;
+    }
+  }
+
+  .login-loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 13000;
+    display: grid;
+    place-items: center;
+    padding: 22px;
+    background:
+      radial-gradient(circle at 50% 42%, rgba(229, 164, 100, 0.18), transparent 18rem),
+      rgba(7, 18, 30, 0.72);
+    backdrop-filter: blur(5px);
+  }
+
+  .login-loading-overlay.is-hidden {
+    display: none !important;
+  }
+
+  .login-loading-modal {
+    display: grid;
+    justify-items: center;
+    gap: 18px;
+    width: min(100%, 390px);
+    padding: 30px 26px 26px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: 8px;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 249, 252, 0.98));
+    box-shadow: 0 34px 100px rgba(0, 0, 0, 0.42);
+    text-align: center;
+  }
+
+  .login-loading-orbit {
+    position: relative;
+    display: grid;
+    width: 148px;
+    height: 148px;
+    place-items: center;
+  }
+
+  .login-loading-orbit > span {
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(14, 102, 112, 0.18);
+    border-top-color: #0e6670;
+    border-radius: 50%;
+    animation: loginOrbit 1.4s linear infinite;
+  }
+
+  .login-loading-orbit > span:nth-child(2) {
+    inset: 13px;
+    border-color: rgba(229, 164, 100, 0.18);
+    border-right-color: #e5a464;
+    animation-duration: 1.9s;
+    animation-direction: reverse;
+  }
+
+  .login-loading-orbit > span:nth-child(3) {
+    inset: 26px;
+    border-color: rgba(20, 32, 51, 0.12);
+    border-bottom-color: #142033;
+    animation-duration: 2.5s;
+  }
+
+  .login-loading-logo {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    width: 92px;
+    height: 58px;
+    place-items: center;
+    padding: 9px 12px;
+    border: 1px solid #dbe3ee;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 14px 30px rgba(20, 32, 51, 0.14);
+  }
+
+  .login-loading-logo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .login-loading-copy {
+    display: grid;
+    gap: 7px;
+  }
+
+  .login-loading-copy strong {
+    color: #142033;
+    font-size: 20px;
+    line-height: 1.2;
+  }
+
+  .login-loading-copy p {
+    max-width: 300px;
+    margin: 0;
+    color: #647084;
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.45;
+  }
+
+  .login-loading-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    height: 12px;
+  }
+
+  .login-loading-steps i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0e6670;
+    opacity: 0.35;
+    animation: loginPulse 1s ease-in-out infinite;
+  }
+
+  .login-loading-steps i:nth-child(2) {
+    animation-delay: 150ms;
+  }
+
+  .login-loading-steps i:nth-child(3) {
+    animation-delay: 300ms;
+  }
+
+  @keyframes loginOrbit {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes loginPulse {
+    0%,
+    100% {
+      transform: translateY(0);
+      opacity: 0.35;
+    }
+
+    50% {
+      transform: translateY(-4px);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .login-loading-overlay {
+      padding: 16px;
+    }
+
+    .login-loading-modal {
+      width: 100%;
+      padding: 28px 20px 24px;
+    }
+  }
+}
