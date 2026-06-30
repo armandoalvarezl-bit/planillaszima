@@ -1,5 +1,6 @@
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxY9EylfC-Aw0XLRQ2BYTE7IpQEbknsd0BF-cBbNmVnNBUtvZ3jDl92Gg40LW9aPY_2PQ/exec';
 const SESSION_KEY = 'transbankSession';
+const LOCAL_RECORDS_KEY = 'transbankLocalRecords';
 
 // Elementos del DOM - se inicializarán en DOMContentLoaded
 let form;
@@ -91,6 +92,25 @@ function normalizeMoneyInput(input) {
 
 function getRecords() {
   return recordsCache;
+}
+
+function getLocalRecords() {
+  try {
+    const stored = localStorage.getItem(LOCAL_RECORDS_KEY);
+    const parsed = stored ? JSON.parse(stored) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    console.error('No se pudieron leer los registros locales:', error);
+    return [];
+  }
+}
+
+function persistLocalRecords(records) {
+  try {
+    localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
+  } catch (error) {
+    console.error('No se pudieron guardar los registros locales:', error);
+  }
 }
 
 function setRecords(records) {
@@ -264,10 +284,26 @@ async function saveRecord() {
     
     return saved;
   } catch (error) {
+    const localRecords = getLocalRecords();
+    const localIndex = localRecords.findIndex((item) => item.id === record.id);
+    const fallbackRecord = { ...record, updatedAt: record.updatedAt, createdAt: record.createdAt };
+
+    if (localIndex >= 0) localRecords[localIndex] = fallbackRecord;
+    else localRecords.unshift(fallbackRecord);
+
+    persistLocalRecords(localRecords);
+    activeRecordId = fallbackRecord.id;
+    setRecords(localRecords);
     hideLoading();
-    currentStatus.textContent = 'No guardado';
-    setOnlineStatus(`No fue posible guardar la planilla. Detalle: ${error.message}`);
-    return null;
+    currentStatus.textContent = 'Guardado local';
+    updateSaveButtonLabel();
+
+    setTimeout(() => {
+      clearForm();
+      setOnlineStatus('La planilla se guardó localmente porque no fue posible sincronizar con la base online.');
+    }, 1000);
+
+    return fallbackRecord;
   }
 }
 
@@ -295,7 +331,6 @@ async function printRecordSafely() {
     return;
   }
 
-  shouldClearAfterPrint = true;
   printButton.textContent = 'Imprimiendo...';
   setOnlineStatus('Registro guardado. Preparando la ventana de impresión...');
   window.print();
@@ -308,11 +343,34 @@ async function printRecordSafely() {
 }
 
 window.addEventListener('afterprint', () => {
-  if (!shouldClearAfterPrint) return;
   shouldClearAfterPrint = false;
-  clearForm();
-  setOnlineStatus('Planilla guardada e impresa. Todo quedó listo para un nuevo registro.');
+  setOnlineStatus('Planilla impresa correctamente.');
 });
+
+function downloadRecordPdf(record) {
+  const element = document.querySelector('.paper');
+  if (!element) {
+    setOnlineStatus('Error: No se pudo encontrar el contenido de la planilla para descargar.');
+    return;
+  }
+
+  const filename = `Planilla_${record.peaje}_${record.codigoSello}_${record.fecha}.pdf`;
+  const options = {
+    margin: [10, 10, 10, 10],
+    filename: filename,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' }
+  };
+
+  fillForm(record);
+  switchView('form');
+
+  setTimeout(() => {
+    html2pdf().set(options).from(element).save();
+    setOnlineStatus(`PDF descargado: ${filename}`);
+  }, 300);
+}
 
 async function deleteRecord(id) {
   const confirmed = await showConfirmationDialog({
@@ -363,6 +421,10 @@ function startSession(user) {
   }
   
   clearForm();
+  const localRecords = getLocalRecords();
+  if (localRecords.length) {
+    setRecords(localRecords);
+  }
   loadOnlineRecords();
 }
 
@@ -417,6 +479,7 @@ function renderRecords() {
         <output class="record-total">${formatMoney(record.total)}</output>
         <div class="record-actions">
           <button class="secondary-button load-record" type="button">Editar</button>
+          <button class="secondary-button download-pdf" type="button" title="Descargar como PDF">PDF</button>
           <button class="danger-button delete-record" type="button">Anular</button>
         </div>
       `;
@@ -424,6 +487,9 @@ function renderRecords() {
       article.querySelector('.load-record').addEventListener('click', () => {
         fillForm(record);
         switchView('form');
+      });
+      article.querySelector('.download-pdf').addEventListener('click', () => {
+        downloadRecordPdf(record);
       });
       article.querySelector('.delete-record').addEventListener('click', () => deleteRecord(record.id));
       recordsList.append(article);
@@ -550,7 +616,13 @@ function loadOnlineRecords() {
       switchView('records');
     })
     .catch((error) => {
-      setOnlineStatus(`No fue posible conectar con la base online. Detalle: ${error.message}`);
+      const localRecords = getLocalRecords();
+      if (localRecords.length) {
+        setRecords(localRecords);
+        setOnlineStatus(`No fue posible conectar con la base online. Se muestran ${localRecords.length} registros guardados localmente. Detalle: ${error.message}`);
+      } else {
+        setOnlineStatus(`No fue posible conectar con la base online. Detalle: ${error.message}`);
+      }
     });
 }
 

@@ -2623,12 +2623,16 @@ textarea {
   .toolbar,
   #recordsView,
   .nav,
-  .status-panel {
+  .status-panel,
+  .online-status,
+  .view:not(#formView),
+  .confirm-overlay,
+  .loading-overlay {
     display: none !important;
   }
 
   .app-shell {
-    display: block;
+    display: block !important;
     min-height: auto;
   }
 
@@ -2640,6 +2644,12 @@ textarea {
   #formView,
   .form-layout {
     display: block !important;
+  }
+
+  .paper {
+    border: 1px solid #000 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
   }
 
   .paper {
