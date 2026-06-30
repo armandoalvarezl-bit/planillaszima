@@ -90,6 +90,42 @@ function normalizeMoneyInput(input) {
   input.value = value ? formatMoney(value) : '';
 }
 
+function normalizeDateInputValue(value) {
+  if (!value) return '';
+
+  if (value instanceof Date && !Number.isNaN(value.valueOf())) {
+    return value.toISOString().slice(0, 10);
+  }
+
+  const text = String(value).trim();
+  const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) {
+    return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+  }
+
+  const parsed = new Date(text);
+  if (!Number.isNaN(parsed.valueOf())) {
+    return parsed.toISOString().slice(0, 10);
+  }
+
+  return '';
+}
+
+function syncCodigoSelloConsecutivo() {
+  if (!form) return;
+
+  const codigoSello = form.elements.codigoSello;
+  const consecutivo = form.elements.consecutivo;
+  if (!codigoSello || !consecutivo) return;
+
+  const update = () => {
+    consecutivo.value = codigoSello.value || '';
+  };
+
+  codigoSello.addEventListener('input', update);
+  update();
+}
+
 function getRecords() {
   return recordsCache;
 }
@@ -148,6 +184,7 @@ function formData() {
   if (currentUser) {
     data.peaje = isAuditUser() ? (data.peaje || currentUser.peaje) : currentUser.peaje;
   }
+  data.consecutivo = data.codigoSello || data.consecutivo || '';
   return data;
 }
 
@@ -155,12 +192,26 @@ function fillForm(record) {
   Object.entries(record).forEach(([key, value]) => {
     const field = form.elements[key];
     if (!field) return;
+
     if (field.classList.contains('money-input')) {
       field.value = value ? formatMoney(value) : '';
-    } else {
-      field.value = value ?? '';
+      return;
     }
+
+    if (field.type === 'date') {
+      field.value = normalizeDateInputValue(value);
+      return;
+    }
+
+    field.value = value ?? '';
   });
+
+  const codigoSelloValue = record.codigoSello || '';
+  const consecutivoField = form.elements.consecutivo;
+  if (consecutivoField && !consecutivoField.value && codigoSelloValue) {
+    consecutivoField.value = codigoSelloValue;
+  }
+
   activeRecordId = record.id || null;
   recalculate();
   currentStatus.textContent = activeRecordId ? 'Editando registro' : 'Sin guardar';
@@ -1014,6 +1065,8 @@ document.addEventListener('DOMContentLoaded', function() {
   if (dashboardRefresh) {
     dashboardRefresh.addEventListener('click', updateDashboard);
   }
+
+  syncCodigoSelloConsecutivo();
 
   if (auditFilterApply) auditFilterApply.addEventListener('click', applyAuditFilters);
   if (auditFilterClear) auditFilterClear.addEventListener('click', () => {
