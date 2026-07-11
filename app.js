@@ -17,6 +17,8 @@ let logoutButton;
 let saveButton;
 let printButton;
 let clearFormButton;
+let welcomeModalOverlay;
+let welcomeModalCloseButton;
 let dashboardButton;
 let dashboardRefresh;
 let auditViewButton;
@@ -540,6 +542,18 @@ function updateToolbar(viewName) {
   if (formToolbarActions) formToolbarActions.hidden = viewName !== 'home' && viewName !== 'form';
 }
 
+function showWelcomeModal() {
+  if (!welcomeModalOverlay) return;
+  welcomeModalOverlay.classList.remove('is-hidden');
+  welcomeModalOverlay.setAttribute('aria-hidden', 'false');
+}
+
+function hideWelcomeModal() {
+  if (!welcomeModalOverlay) return;
+  welcomeModalOverlay.classList.add('is-hidden');
+  welcomeModalOverlay.setAttribute('aria-hidden', 'true');
+}
+
 function getStoredSession() {
   try {
     return JSON.parse(sessionStorage.getItem(SESSION_KEY));
@@ -566,6 +580,7 @@ function startSession(user) {
   updateHome();
   updateDashboard();
   switchView('home');
+  showWelcomeModal();
   const localRecords = getLocalRecords();
   if (localRecords.length) {
     setRecords(localRecords);
@@ -1130,6 +1145,8 @@ document.addEventListener('DOMContentLoaded', function() {
   toolbarEyebrow = document.querySelector('#toolbarEyebrow');
   toolbarTitle = document.querySelector('#toolbarTitle');
   formToolbarActions = document.querySelector('#formToolbarActions');
+  welcomeModalOverlay = document.querySelector('#welcomeModalOverlay');
+  welcomeModalCloseButton = document.querySelector('#welcomeModalClose');
 
   // Money inputs
   document.querySelectorAll('.money-input').forEach((input) => {
@@ -1171,6 +1188,10 @@ document.addEventListener('DOMContentLoaded', function() {
       clearForm();
       switchView('form');
     });
+  }
+
+  if (welcomeModalCloseButton) {
+    welcomeModalCloseButton.addEventListener('click', hideWelcomeModal);
   }
 
   const homeRecordsBtn = document.querySelector('#homeRecords');
