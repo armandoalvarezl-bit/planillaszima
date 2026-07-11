@@ -45,8 +45,12 @@
                         </span>
 
                         <h1>
-                            Gestión de fondos entregados a Transbank
+                            Gestión de fondos entregados a
+                            <span class="hero-accent">Transbank</span>
                         </h1>
+
+                        <!-- NUEVO: línea corta de acento bajo el título -->
+                        <span class="hero-rule" aria-hidden="true"></span>
 
                         <p class="hero-description">
                             Plataforma digital para el registro, consulta,
@@ -61,25 +65,60 @@
 
                 <div class="login-metrics" aria-label="Resumen del sistema">
                     <div>
+                        <!-- NUEVO: icono + micro-copy de apoyo -->
+                        <span class="metric-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </span>
                         <strong>2</strong>
                         <span>Peajes activos</span>
+                        <small>En operación</small>
                     </div>
                     <div>
+                        <span class="metric-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                                <path d="m9 12 2 2 4-4" />
+                            </svg>
+                        </span>
                         <strong>24/7</strong>
                         <span>Control disponible</span>
+                        <small>Monitoreo continuo</small>
                     </div>
                 </div>
 
                 <div class="login-peajes">
 
                     <span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
                         Peaje Zaragoza
                     </span>
 
                     <span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
                         Peaje Fragua
                     </span>
                     <span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="20" x2="12" y2="10" />
+                            <line x1="18" y1="20" x2="18" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="16" />
+                        </svg>
                         Auditoría de operaciones
                     </span>
 
@@ -92,6 +131,15 @@
 
                 <header class="login-brand">
 
+                    <!-- NUEVO: icono circular junto al nombre -->
+                    <div class="brand-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                    </div>
+
                     <div class="brand-copy">
                         <h2>Planillas</h2>
                         <p>Ingreso seguro</p>
@@ -102,6 +150,11 @@
                 <div class="login-heading">
 
                     <p class="eyebrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
                         ACCESO AUTORIZADO
                     </p>
 
@@ -121,23 +174,37 @@
                         Peaje
                     </label>
 
-                    <select
-                        id="loginPeaje"
-                        name="peaje"
-                        required>
+                    <!-- NUEVO: envoltorio para icono izquierdo del select -->
+                    <div class="input-icon-group">
 
-                        <option value="PEAJE ZARAGOZA">
-                            Peaje Zaragoza
-                        </option>
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                        </span>
 
-                        <option value="PEAJE FRAGUA">
-                            Peaje Fragua
-                        </option>
-                        <option value="AUDITORIA DE OPERACIONES">
-                            Auditoría de la Jefa Beatriz
-                        </option>
+                        <select
+                            id="loginPeaje"
+                            name="peaje"
+                            class="has-icon"
+                            required>
 
-                    </select>
+                            <option value="PEAJE ZARAGOZA">
+                                Peaje Zaragoza
+                            </option>
+
+                            <option value="PEAJE FRAGUA">
+                                Peaje Fragua
+                            </option>
+                            <option value="AUDITORIA DE OPERACIONES">
+                                Auditoría de la Jefa Beatriz
+                            </option>
+
+                        </select>
+
+                    </div>
 
                 </div>
 
@@ -147,13 +214,39 @@
                         Clave
                     </label>
 
-                    <input
-                        id="loginPassword"
-                        name="password"
-                        type="password"
-                        required
-                        autocomplete="current-password"
-                        placeholder="Ingrese su clave">
+                    <!-- NUEVO: envoltorio con icono de candado + botón mostrar/ocultar -->
+                    <div class="input-icon-group">
+
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </span>
+
+                        <input
+                            id="loginPassword"
+                            name="password"
+                            type="password"
+                            required
+                            autocomplete="current-password"
+                            placeholder="Ingrese su clave"
+                            class="has-icon has-toggle">
+
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            id="togglePassword"
+                            aria-label="Mostrar clave">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -161,17 +254,43 @@
                     class="primary-button login-submit"
                     type="submit">
 
-                    Ingresar al sistema
+                    <span>Ingresar al sistema</span>
+
+                    <svg class="btn-arrow" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
 
                 </button>
 
                 <div class="security-note">
 
-                    <span aria-hidden="true">SSL</span>
+                    <span class="note-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                    </span>
 
-                    <p>
-                        Conexión segura y operaciones auditadas.
-                    </p>
+                    <p><strong>SSL</strong> Conexión segura y operaciones auditadas.</p>
+
+                </div>
+
+                <!-- NUEVO: aviso adicional que aparece en la referencia -->
+                <div class="access-note">
+
+                    <span class="note-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </span>
+
+                    <p>Uso exclusivo para personal autorizado.</p>
 
                 </div>
 
@@ -221,6 +340,21 @@
     </div>
 
     <script src="login.js"></script>
+
+    <!-- NUEVO: script pequeño y autocontenido solo para el botón de mostrar/ocultar clave -->
+    <script>
+        (function () {
+            var toggle = document.getElementById('togglePassword');
+            var input = document.getElementById('loginPassword');
+            if (!toggle || !input) return;
+            toggle.addEventListener('click', function () {
+                var isPassword = input.getAttribute('type') === 'password';
+                input.setAttribute('type', isPassword ? 'text' : 'password');
+                toggle.classList.toggle('is-visible', isPassword);
+                toggle.setAttribute('aria-label', isPassword ? 'Ocultar clave' : 'Mostrar clave');
+            });
+        })();
+    </script>
 
 </body>
 

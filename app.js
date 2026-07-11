@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxY9EylfC-Aw0XLRQ2BYTE7IpQEbknsd0BF-cBbNmVnNBUtvZ3jDl92Gg40LW9aPY_2PQ/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTKLKpxU7oLYoqT9sIt7vjIxVkq6saEQeykwJcXboa8nHJUbw_iAe2z67hfzdcqZ4lnQ/exec';
 const SESSION_KEY = 'transbankSession';
 const LOCAL_RECORDS_KEY = 'transbankLocalRecords';
 
@@ -32,6 +32,15 @@ let auditByPeaje;
 let exportCsvAudit;
 let exportJsonAudit;
 let loadingOverlay;
+let homeWelcome;
+let homePeaje;
+let homeTotalRecords;
+let homeTotalAmount;
+let homeLastRecord;
+let homeWeekRecords;
+let toolbarEyebrow;
+let toolbarTitle;
+let formToolbarActions;
 
 let auditFiltered = [];
 
@@ -111,6 +120,51 @@ function normalizeDateInputValue(value) {
   return '';
 }
 
+function recordDateKey(value) {
+  if (!value) return '';
+
+  if (value instanceof Date && !Number.isNaN(value.valueOf())) {
+    return value.toISOString().slice(0, 10);
+  }
+
+  const text = String(value).trim();
+  const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+
+  const slashMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch) {
+    const day = slashMatch[1].padStart(2, '0');
+    const month = slashMatch[2].padStart(2, '0');
+    return `${slashMatch[3]}-${month}-${day}`;
+  }
+
+  const parsed = new Date(text);
+  if (!Number.isNaN(parsed.valueOf())) return parsed.toISOString().slice(0, 10);
+
+  return '';
+}
+
+function dateFromKey(dateKey) {
+  const match = String(dateKey || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return new Date();
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+function dateKeyFromDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getLatestRecordDateKey(records) {
+  return records
+    .map((record) => recordDateKey(record.fecha))
+    .filter(Boolean)
+    .sort()
+    .at(-1) || today();
+}
+
 function syncCodigoSelloConsecutivo() {
   if (!form) return;
 
@@ -152,17 +206,16 @@ function persistLocalRecords(records) {
 function setRecords(records) {
   recordsCache = Array.isArray(records) ? records : [];
   console.log('setRecords:', recordsCache.length, 'elementos');
+  updateHome();
   try {
     renderRecords();
   } catch (e) {
     console.error('Error en renderRecords:', e);
   }
-  if (isAuditUser()) {
-    try {
-      updateDashboard();
-    } catch (e) {
-      console.error('Error en updateDashboard:', e);
-    }
+  try {
+    updateDashboard();
+  } catch (e) {
+    console.error('Error en updateDashboard:', e);
   }
 }
 
@@ -447,6 +500,43 @@ async function deleteRecord(id) {
 function switchView(viewName) {
   document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.id === `${viewName}View`));
   document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.view === viewName));
+  updateToolbar(viewName);
+}
+
+function updateHome() {
+  if (!homeWelcome || !homePeaje || !homeTotalRecords || !homeTotalAmount || !homeLastRecord || !homeWeekRecords) {
+    return;
+  }
+
+  const records = getRecords();
+  const userName = currentUser?.nombre || 'usuario';
+  const peajeName = currentUser?.peaje || 'tu peaje';
+  const today_ = new Date();
+  const sevenDaysAgo = new Date(today_.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const latest = records[0];
+  const weekRecords = records.filter((record) => (record.fecha || '') >= sevenDaysAgo).length;
+  const totalAmount = records.reduce((sum, record) => sum + onlyDigits(record.total), 0);
+
+  homeWelcome.textContent = `Bienvenido, ${userName}`;
+  homePeaje.textContent = `Sesion activa para ${peajeName}. Desde aqui puedes crear planillas, consultar registros y mantener el control diario.`;
+  homeTotalRecords.textContent = records.length;
+  homeTotalAmount.textContent = formatMoney(totalAmount);
+  homeLastRecord.textContent = latest ? formatDate(latest.fecha) : 'Sin datos';
+  homeWeekRecords.textContent = weekRecords;
+}
+
+function updateToolbar(viewName) {
+  const labels = {
+    home: ['Formato digital', 'Entrega de efectivo a Transbank'],
+    form: ['Formato digital', 'Entrega de efectivo a Transbank'],
+    records: ['Historial online', 'Registros guardados'],
+    audit: ['Control y analisis', 'Panel de auditoria']
+  };
+  const [eyebrow, title] = labels[viewName] || labels.home;
+
+  if (toolbarEyebrow) toolbarEyebrow.textContent = eyebrow;
+  if (toolbarTitle) toolbarTitle.textContent = title;
+  if (formToolbarActions) formToolbarActions.hidden = viewName !== 'home' && viewName !== 'form';
 }
 
 function getStoredSession() {
@@ -472,6 +562,9 @@ function startSession(user) {
   }
   
   clearForm();
+  updateHome();
+  updateDashboard();
+  switchView('home');
   const localRecords = getLocalRecords();
   if (localRecords.length) {
     setRecords(localRecords);
@@ -664,7 +757,6 @@ function loadOnlineRecords() {
       setRecords(onlineRecords);
       setOnlineStatus(`Consulta completada. Se encontraron ${onlineRecords.length} registros online.`);
       // Mostrar la vista de registros después de cargar
-      switchView('records');
     })
     .catch((error) => {
       const localRecords = getLocalRecords();
@@ -868,16 +960,17 @@ function updateDashboard() {
   if (!document.querySelector('#dashTotalRecords')) return; // Dashboard not in DOM
   
   const records = getRecords();
-  const today_ = new Date();
-  const sevenDaysAgo = new Date(today_.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const thisMonth = today_.toISOString().slice(0, 7);
+  const latestDateKey = getLatestRecordDateKey(records);
+  const anchorDate = dateFromKey(latestDateKey);
+  const sevenDaysAgo = dateKeyFromDate(new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate() - 6));
+  const thisMonth = latestDateKey.slice(0, 7);
 
   const totalRecords = records.length;
   const totalAmount = records.reduce((sum, r) => sum + onlyDigits(r.total), 0);
-  const weekRecords = records.filter(r => (r.fecha || '') >= sevenDaysAgo).length;
-  const weekAmount = records.filter(r => (r.fecha || '') >= sevenDaysAgo).reduce((sum, r) => sum + onlyDigits(r.total), 0);
-  const monthRecords = records.filter(r => (r.fecha || '').startsWith(thisMonth)).length;
-  const monthAmount = records.filter(r => (r.fecha || '').startsWith(thisMonth)).reduce((sum, r) => sum + onlyDigits(r.total), 0);
+  const weekRecords = records.filter(r => recordDateKey(r.fecha) >= sevenDaysAgo).length;
+  const weekAmount = records.filter(r => recordDateKey(r.fecha) >= sevenDaysAgo).reduce((sum, r) => sum + onlyDigits(r.total), 0);
+  const monthRecords = records.filter(r => recordDateKey(r.fecha).startsWith(thisMonth)).length;
+  const monthAmount = records.filter(r => recordDateKey(r.fecha).startsWith(thisMonth)).reduce((sum, r) => sum + onlyDigits(r.total), 0);
   const avgAmount = totalRecords > 0 ? Math.floor(totalAmount / totalRecords) : 0;
 
   const setText = (selector, text) => {
@@ -926,15 +1019,16 @@ function renderPeajeSummary(records) {
 
 function renderDailyChart(records) {
   const dailyData = {};
-  const today_ = new Date();
+  const latestDateKey = getLatestRecordDateKey(records);
+  const anchorDate = dateFromKey(latestDateKey);
 
   for (let i = 6; i >= 0; i--) {
-    const date = new Date(today_.getTime() - i * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+    const date = dateKeyFromDate(new Date(anchorDate.getFullYear(), anchorDate.getMonth(), anchorDate.getDate() - i));
     dailyData[date] = 0;
   }
 
   records.forEach(r => {
-    const fecha = r.fecha || '';
+    const fecha = recordDateKey(r.fecha);
     if (dailyData.hasOwnProperty(fecha)) {
       dailyData[fecha] += onlyDigits(r.total);
     }
@@ -1025,6 +1119,15 @@ document.addEventListener('DOMContentLoaded', function() {
   exportCsvAudit = document.querySelector('#exportCsvAudit');
   exportJsonAudit = document.querySelector('#exportJsonAudit');
   loadingOverlay = document.querySelector('#loadingOverlay');
+  homeWelcome = document.querySelector('#homeWelcome');
+  homePeaje = document.querySelector('#homePeaje');
+  homeTotalRecords = document.querySelector('#homeTotalRecords');
+  homeTotalAmount = document.querySelector('#homeTotalAmount');
+  homeLastRecord = document.querySelector('#homeLastRecord');
+  homeWeekRecords = document.querySelector('#homeWeekRecords');
+  toolbarEyebrow = document.querySelector('#toolbarEyebrow');
+  toolbarTitle = document.querySelector('#toolbarTitle');
+  formToolbarActions = document.querySelector('#formToolbarActions');
 
   // Money inputs
   document.querySelectorAll('.money-input').forEach((input) => {
@@ -1046,7 +1149,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Buttons
   const newRecordBtn = document.querySelector('#newRecord');
-  if (newRecordBtn) newRecordBtn.addEventListener('click', clearForm);
+  if (newRecordBtn) {
+    newRecordBtn.addEventListener('click', () => {
+      clearForm();
+      switchView('form');
+    });
+  }
+
+  const homeNewRecordBtn = document.querySelector('#homeNewRecord');
+  if (homeNewRecordBtn) {
+    homeNewRecordBtn.addEventListener('click', () => {
+      clearForm();
+      switchView('form');
+    });
+  }
+
+  const homeRecordsBtn = document.querySelector('#homeRecords');
+  if (homeRecordsBtn) homeRecordsBtn.addEventListener('click', () => switchView('records'));
   
   if (saveButton) saveButton.addEventListener('click', saveRecord);
   if (printButton) printButton.addEventListener('click', printRecordSafely);
@@ -1063,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (logoutButton) logoutButton.addEventListener('click', clearSession);
 
   if (dashboardRefresh) {
-    dashboardRefresh.addEventListener('click', updateDashboard);
+    dashboardRefresh.addEventListener('click', loadOnlineRecords);
   }
 
   syncCodigoSelloConsecutivo();

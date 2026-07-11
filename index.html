@@ -7,6 +7,32 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="loading-theme.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- NUEVO: estilos mínimos solo para el mensaje de bienvenida y los
+       botones del modal de confirmación. Todo lo demás reutiliza tus
+       clases existentes (.loading-overlay, .loading-modal, .secondary-button,
+       .danger-button) para verse igual al resto del sistema. -->
+  <style>
+    .welcome-message {
+      margin: 4px 0 0;
+      color: #5c6b7c;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .logout-confirm-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .logout-confirm-actions button {
+      flex: 1 1 0;
+    }
+  </style>
 </head>
 <body>
   <div class="app-shell is-hidden">
@@ -22,7 +48,10 @@
       </div>
 
       <nav class="nav" aria-label="Vistas">
-        <button class="nav-button active" data-view="form" type="button">
+        <button class="nav-button active" data-view="home" type="button">
+          <span>Inicio</span>
+        </button>
+        <button class="nav-button" data-view="form" type="button">
           <span>Formulario</span>
         </button>
         <button class="nav-button" data-view="records" type="button">
@@ -44,21 +73,59 @@
     </aside>
 
     <main class="workspace">
-      <section class="toolbar">
-        <div>
-          <p class="eyebrow">Formato digital</p>
-          <h2>Entrega de efectivo a Transbank</h2>
-        </div>
-        <div class="toolbar-actions">
-          <button id="newRecord" class="icon-button" type="button" title="Nuevo">+</button>
-          <button id="saveRecord" class="primary-button" type="button">Guardar</button>
-          <button id="printRecord" class="secondary-button" type="button">Imprimir</button>
-        </div>
-      </section>
-
       <div id="onlineStatus" class="online-status"></div>
 
-      <section id="formView" class="view active" aria-label="Formulario de entrega">
+      <section id="homeView" class="view active" aria-label="Inicio del sistema">
+        <section class="home-dashboard">
+          <div class="dashboard-header">
+            <div>
+              <p class="eyebrow">Inicio</p>
+              <h2>Resumen del sistema</h2>
+              <!-- NUEVO: mensaje de bienvenida, se llena por script al final del body -->
+              <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
+            </div>
+            <div class="toolbar-actions">
+              <button id="dashboardRefresh" class="secondary-button" type="button">Actualizar</button>
+              <button id="homeNewRecord" class="primary-button" type="button">Nueva planilla</button>
+            </div>
+          </div>
+
+          <div class="dashboard-grid" aria-label="Resumen de registros">
+            <article class="dashboard-card">
+              <span>Total registros</span>
+              <strong id="dashTotalRecords">0</strong>
+              <small id="dashTotalRecordsChange">+0 esta semana</small>
+            </article>
+            <article class="dashboard-card">
+              <span>Total entregado</span>
+              <strong id="dashTotalMoney">$ 0</strong>
+              <small id="dashTotalMoneyChange">+$ 0 esta semana</small>
+            </article>
+            <article class="dashboard-card">
+              <span>Promedio por registro</span>
+              <strong id="dashAverageAmount">$ 0</strong>
+              <small><span id="dashMonthRecords">0</span> este mes</small>
+            </article>
+            <article class="dashboard-card">
+              <span>Dinero este mes</span>
+              <strong id="dashMonthAmount">$ 0</strong>
+              <small>Resumen mensual</small>
+            </article>
+          </div>
+
+          <section class="dashboard-section">
+            <h3>Actividad diaria</h3>
+            <div id="dashDailyChart" class="daily-chart"></div>
+          </section>
+
+          <section class="dashboard-section">
+            <h3>Resumen por peaje</h3>
+            <div id="peajeSummary" class="peaje-summary"></div>
+          </section>
+        </section>
+      </section>
+
+      <section id="formView" class="view" aria-label="Formulario de entrega">
         <form id="moneyForm" class="form-layout">
           <section class="paper">
             <div class="paper-header">
@@ -292,6 +359,116 @@
     </section>
   </div>
 
+  <!-- NUEVO: modal de confirmación para "Cerrar sesión". Reutiliza el
+       mismo look de .loading-overlay / .loading-modal para que combine
+       con el resto del sistema. -->
+  <div id="logoutConfirmOverlay" class="loading-overlay is-hidden" aria-hidden="true">
+    <section class="loading-modal" role="alertdialog" aria-modal="true" aria-live="polite"
+      aria-label="Confirmar cierre de sesión">
+      <div class="loading-logo-wrap">
+        <img src="assets/logo-zima.png" alt="Logo ZIMA">
+      </div>
+      <div class="loading-copy">
+        <strong>¿Cerrar sesión?</strong>
+        <p>Se cerrará su sesión actual. Verifique que haya guardado los cambios pendientes.</p>
+      </div>
+      <div class="logout-confirm-actions">
+        <button id="logoutCancelButton" class="secondary-button" type="button">Cancelar</button>
+        <button id="logoutConfirmButton" class="danger-button" type="button">Sí, cerrar sesión</button>
+      </div>
+    </section>
+  </div>
+
   <script src="app.js"></script>
+
+  <!-- NUEVO: script pequeño y autocontenido, no toca app.js.
+       1) Llena el mensaje de bienvenida cuando el panel se hace visible.
+       2) Intercepta el clic en "Cerrar sesión" para pedir confirmación
+          antes de dejar pasar el clic real hacia el listener de app.js. -->
+  <script>
+    (function () {
+      var shell = document.querySelector('.app-shell');
+      var welcomeEl = document.getElementById('welcomeMessage');
+      if (!shell || !welcomeEl) return;
+
+      function greetingByHour() {
+        var h = new Date().getHours();
+        if (h >= 5 && h < 12) return 'Buenos días';
+        if (h >= 12 && h < 19) return 'Buenas tardes';
+        return 'Buenas noches';
+      }
+
+      function renderWelcome() {
+        var peajeEl = document.getElementById('sessionPeaje');
+        var peajeText = peajeEl && peajeEl.textContent.trim() && peajeEl.textContent.trim() !== 'Registro actual'
+          ? ' — ' + peajeEl.textContent.trim()
+          : '';
+        welcomeEl.textContent = greetingByHour() + ', bienvenido/a a Planillas' + peajeText + '.';
+      }
+
+      renderWelcome();
+
+      // El nombre del peaje lo llena app.js después del login, así que
+      // se vuelve a calcular el mensaje cada vez que el panel deja de
+      // estar oculto (clase .is-hidden).
+      var observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.attributeName === 'class' && !shell.classList.contains('is-hidden')) {
+            renderWelcome();
+          }
+        });
+      });
+      observer.observe(shell, { attributes: true });
+    })();
+
+    (function () {
+      var logoutButton = document.getElementById('logoutButton');
+      var overlay = document.getElementById('logoutConfirmOverlay');
+      var cancelButton = document.getElementById('logoutCancelButton');
+      var confirmButton = document.getElementById('logoutConfirmButton');
+      if (!logoutButton || !overlay || !cancelButton || !confirmButton) return;
+
+      var logoutConfirmed = false;
+
+      function showConfirm() {
+        overlay.classList.remove('is-hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function hideConfirm() {
+        overlay.classList.add('is-hidden');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+
+      // Este handler se asigna vía la propiedad onclick (más temprano en
+      // el ciclo de carga que el addEventListener que agrega app.js), así
+      // que se ejecuta primero y puede bloquear el cierre de sesión real
+      // hasta que el usuario confirme.
+      logoutButton.onclick = function (event) {
+        if (logoutConfirmed) {
+          // El usuario ya confirmó: dejamos pasar el clic para que
+          // el listener original de app.js haga el cierre de sesión.
+          logoutConfirmed = false;
+          return true;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        showConfirm();
+        return false;
+      };
+
+      cancelButton.addEventListener('click', hideConfirm);
+
+      confirmButton.addEventListener('click', function () {
+        hideConfirm();
+        logoutConfirmed = true;
+        logoutButton.click();
+      });
+
+      overlay.addEventListener('click', function (event) {
+        if (event.target === overlay) hideConfirm();
+      });
+    })();
+  </script>
 </body>
 </html>

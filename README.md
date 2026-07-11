@@ -41,4 +41,4 @@ Si se usa como proyecto independiente, pega el ID de la hoja en `SPREADSHEET_ID`
 
 La app ya trae configurada esta URL por defecto:
 
-`https://script.google.com/macros/s/AKfycbycgSSYUykUf_CfuuHepNnZcTe_wFxHT8tavUHhnZUjKL1l6RDSkT_IQuY_s2_ehhzMoA/exec`
+`https://script.google.com/macros/s/AKfycbzTKLKpxU7oLYoqT9sIt7vjIxVkq6saEQeykwJcXboa8nHJUbw_iAe2z67hfzdcqZ4lnQ/exec`
