@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTKLKpxU7oLYoqT9sIt7vjIxVkq6saEQeykwJcXboa8nHJUbw_iAe2z67hfzdcqZ4lnQ/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrIvBlWSnATXpjSFHCviQ3PD5iB3pfbADQyo_KlybpCI8Pr-9CmQBkJDg-40vtHrMQBQ/exec';
 const SESSION_KEY = 'transbankSession';
 const LOCAL_RECORDS_KEY = 'transbankLocalRecords';
 
@@ -370,7 +370,7 @@ async function saveRecord() {
   currentStatus.textContent = activeRecordId ? 'Actualizando...' : 'Guardando...';
 
   try {
-    const saved = await saveRecordOnline(record);
+    const saved = await saveRecordOnline(record, true);
     const records = getRecords();
     const index = records.findIndex((item) => item.id === saved.id);
 
@@ -381,12 +381,27 @@ async function saveRecord() {
     setRecords(records);
     currentStatus.textContent = 'Guardado';
     updateSaveButtonLabel();
+
+    try {
+      await sendRecordCopyEmailOnline(saved);
+    } catch (emailError) {
+      console.warn('No se pudo enviar la copia por correo:', emailError);
+      setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo automáticamente: ${emailError.message}`);
+      try {
+        await saveRecordOnline(saved, false);
+        setOnlineStatus('Planilla guardada y copia por correo enviada desde el servidor.');
+      } catch (fallbackError) {
+        console.warn('Fallo el respaldo de correo del servidor:', fallbackError);
+        setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo: ${fallbackError.message}`);
+      }
+    }
     
-    // Limpiar formulario después de guardar exitosamente
     setTimeout(() => {
       hideLoading();
       clearForm();
-      setOnlineStatus('Planilla guardada con éxito. El formulario quedó listo para registrar una nueva entrega.');
+      if (currentStatus.textContent === 'Guardado') {
+        setOnlineStatus('Planilla guardada con éxito. El formulario quedó listo para registrar una nueva entrega.');
+      }
     }, 1000);
     
     return saved;
@@ -700,7 +715,7 @@ function setOnlineStatus(message) {
   onlineStatus.append(copy);
 }
 
-async function saveRecordOnline(record) {
+async function saveRecordOnline(record, skipEmail = true) {
   const url = getScriptUrl();
   if (!url) {
     throw new Error('Falta URL online');
@@ -714,6 +729,7 @@ async function saveRecordOnline(record) {
       action: 'save',
       peaje: currentUser.peaje,
       password: currentUser.password,
+      skipEmail: skipEmail ? 'true' : 'false',
       record: JSON.stringify(record)
     });
 
@@ -726,6 +742,77 @@ async function saveRecordOnline(record) {
   } catch (error) {
     throw error;
   }
+}
+
+async function sendRecordCopyEmailOnline(record) {
+  if (!currentUser) throw new Error('Debe iniciar sesión');
+  const url = getScriptUrl();
+  if (!url) throw new Error('Falta URL online');
+
+  setOnlineStatus('Generando PDF exacto para envío de copia por correo...');
+
+  const element = document.querySelector('.paper');
+  if (!element) {
+    throw new Error('No se pudo encontrar el contenido de la planilla para generar el PDF.');
+  }
+
+  const options = {
+    margin: [10, 10, 10, 10],
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' }
+  };
+
+  // Asegura que el formulario se vea reflejado correctamente antes de generar PDF.
+  fillForm(record);
+  switchView('form');
+
+  await new Promise((resolve) => setTimeout(resolve, 250));
+
+  const worker = html2pdf().set(options).from(element);
+  const pdfBlob = await worker.outputPdf('blob');
+  const pdfBase64 = await blobToBase64(pdfBlob);
+
+  setOnlineStatus('Enviando copia de correo con el PDF generado por el sistema...');
+
+  const response = await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      action: 'emailcopy',
+      peaje: currentUser.peaje,
+      password: currentUser.password,
+      record,
+      pdfBase64
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`No se pudo enviar la copia por correo (HTTP ${response.status}).`);
+  }
+
+  const payload = await response.json();
+  if (!payload || !payload.ok) {
+    throw new Error(payload && payload.error ? payload.error : 'Respuesta inválida del servicio de correo.');
+  }
+
+  setOnlineStatus('Copia por correo enviada correctamente.');
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      const commaIndex = dataUrl.indexOf(',');
+      resolve(commaIndex > -1 ? dataUrl.slice(commaIndex + 1) : dataUrl);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 async function deleteRecordOnline(id) {
