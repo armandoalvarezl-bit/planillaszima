@@ -16,6 +16,7 @@ let sessionPeaje;
 let logoutButton;
 let saveButton;
 let printButton;
+let clearFormButton;
 let dashboardButton;
 let dashboardRefresh;
 let auditViewButton;
@@ -1113,6 +1114,7 @@ document.addEventListener('DOMContentLoaded', function() {
   auditFilterApply = document.querySelector('#auditFilterApply');
   auditFilterClear = document.querySelector('#auditFilterClear');
   auditRecordsList = document.querySelector('#auditRecordsList');
+  clearFormButton = document.querySelector('#clearFormButton');
   auditTotalRecords = document.querySelector('#auditTotalRecords');
   auditTotalAmount = document.querySelector('#auditTotalAmount');
   auditByPeaje = document.querySelector('#auditByPeaje');
@@ -1159,6 +1161,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const homeNewRecordBtn = document.querySelector('#homeNewRecord');
   if (homeNewRecordBtn) {
     homeNewRecordBtn.addEventListener('click', () => {
+      clearForm();
+      switchView('form');
+    });
+  }
+
+  if (clearFormButton) {
+    clearFormButton.addEventListener('click', () => {
       clearForm();
       switchView('form');
     });

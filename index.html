@@ -32,6 +32,21 @@
     .logout-confirm-actions button {
       flex: 1 1 0;
     }
+    .dashboard-summary{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.dashboard-banner{
+    display:block;
+    width:100%;
+    max-width:1400px;
+    height:auto;
+    border-radius:18px;
+}
   </style>
 </head>
 <body>
@@ -71,25 +86,64 @@
       <button id="logoutButton" class="logout-button" type="button">Cerrar sesión</button>
 
     </aside>
+    <modal id="pdfModal" class="pdf-modal" aria-hidden="true">
+      <div class="pdf-modal-content">
+        <div class="pdf-modal-header">
+          <h2>Vista previa PDF</h2>
+          <button id="closePdfModal" class="close-button" type="button" aria-label="Cerrar vista previa">×</button>
+        </div>
+        <div class="pdf-modal-body">
+          <iframe id="pdfIframe" src="" frameborder="0"></iframe>
+        </div>
+      </div>
+    </modal>
+    <div id="pdfDownloadOverlay" class="loading-overlay is-hidden">
+      <section class="loading-modal" role="status" aria-live="polite" aria-label="Generando PDF">
+        <div class="loading-logo-wrap">
+          <img src="assets/logo-zima.png" alt="Logo ZIMA">
+        </div>
+        <div class="loading-copy">
+          <strong>Generando PDF</strong>
+          <p>Estamos creando el archivo PDF de la planilla.</p>
+        </div>
+        <div class="loading-progress" aria-hidden="true">
+          <span></span>
+        </div>
+      </section>
 
+    </div>
     <main class="workspace">
+      <section class="toolbar">
+        <div>
+          <p id="toolbarEyebrow" class="eyebrow">Formato digital</p>
+          <h2 id="toolbarTitle">Entrega de efectivo a Transbank</h2>
+        </div>
+        <div class="toolbar-actions" id="formToolbarActions">
+          <button id="newRecord" class="icon-button" type="button" title="Nuevo">+</button>
+          <button id="saveRecord" class="primary-button" type="button">Guardar</button>
+          <button id="clearFormButton" class="secondary-button" type="button">Limpiar</button>
+          <button id="printRecord" class="secondary-button" type="button">Imprimir</button>
+        </div>
+      </section>
       <div id="onlineStatus" class="online-status"></div>
-
       <section id="homeView" class="view active" aria-label="Inicio del sistema">
         <section class="home-dashboard">
           <div class="dashboard-header">
             <div>
-              <p class="eyebrow">Inicio</p>
-              <h2>Resumen del sistema</h2>
+              <p class="eyebrow">Sistema de gestión de Planilas</p>
+              <h2></h2>
               <!-- NUEVO: mensaje de bienvenida, se llena por script al final del body -->
               <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
             </div>
+            <img src="assets/logo-zima.png" alt="Logo ZIMA Seguridad Ltda" class="dashboard-logo">
             <div class="toolbar-actions">
               <button id="dashboardRefresh" class="secondary-button" type="button">Actualizar</button>
               <button id="homeNewRecord" class="primary-button" type="button">Nueva planilla</button>
             </div>
           </div>
-
+           <div class="dashboard-summary">
+              <img src="assets/home-planillas-zima.png" alt="Banner ZIMA" class="dashboard-banner">
+            </div>
           <div class="dashboard-grid" aria-label="Resumen de registros">
             <article class="dashboard-card">
               <span>Total registros</span>

@@ -732,3 +732,23 @@
     }
   }
 }
+.dashboard-banner{
+    width:100%;
+    height:auto;
+    object-fit:cover;
+}
+.dashboard-summary{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.dashboard-banner{
+    display:block;
+    width:100%;
+    max-width:1400px;
+    height:auto;
+    border-radius:18px;
+}
