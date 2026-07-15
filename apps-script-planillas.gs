@@ -64,7 +64,7 @@ function doGet(e) {
       payload = { ok: true, record: saveRecord_(sheet, record, user, skipEmail) };
     } else if (action === 'delete') {
       const user = authenticateUser_(usersSheet, e.parameter.peaje, e.parameter.password);
-      payload = { ok: true, deleted: deleteRecord_(sheet, e.parameter.id, user) };
+      payload = { ok: true, deleted: deleteRecord_(sheet, e.parameter.id, user, e.parameter.reason) };
     } else {
       const user = authenticateUser_(usersSheet, e.parameter.peaje, e.parameter.password);
       payload = { ok: true, records: readRecords_(sheet, user.peaje, user) };
@@ -363,6 +363,40 @@ function sendRecordCopyEmail_(record, pdfBase64) {
   });
 }
 
+function sendCancellationEmail_(record, reason, user) {
+  const recipient = getPeajeEmail_(record.peaje);
+  if (!recipient) {
+    Logger.log('No se encontró correo para notificar anulación del peaje: %s', record.peaje);
+    return;
+  }
+
+  const subject = `Anulación Planilla Transbank - ${record.peaje || 'Sin Peaje'} ${record.codigoSello || ''}`.trim();
+  const body = [
+    'Se anuló una transacción registrada en el sistema de planillas ZIMA.',
+    '',
+    `Peaje: ${record.peaje || 'No definido'}`,
+    `Fecha: ${record.fecha || 'No definida'}`,
+    `Código/Sello: ${record.codigoSello || 'No definido'}`,
+    `Centro: ${record.centro || 'No definido'}`,
+    `Responsable recibe: ${record.responsableRecibe || 'No definido'}`,
+    `Total entregado: ${formatMoney_(record.total || record.efectivo || 0, record.moneda)}`,
+    '',
+    `Anulado por: ${(user && user.nombre) || (user && user.peaje) || 'Usuario del sistema'}`,
+    `Fecha de anulación: ${new Date().toLocaleString('es-CO')}`,
+    '',
+    'Razón de anulación:',
+    String(reason || 'No informada'),
+    '',
+    'Este correo se envía automáticamente como constancia de la anulación.'
+  ].join('\n');
+
+  MailApp.sendEmail({
+    to: recipient,
+    subject,
+    body
+  });
+}
+
 function formatMoney_(value, currency) {
   if (value == null || value === '') return '';
   const numberValue = Number(String(value).replace(/[^0-9\-\.]/g, ''));
@@ -477,15 +511,21 @@ function buildRecordPdf_(record) {
   return pdfBlob;
 }
 
-function deleteRecord_(sheet, id, user) {
+function deleteRecord_(sheet, id, user, reason) {
   const existingRow = findRowById_(sheet, id);
   if (!existingRow) return false;
   const existingRecord = getRecordAtRow_(sheet, existingRow);
+  const cancellationReason = String(reason || '').trim();
+
+  if (cancellationReason.length < 6) {
+    throw new Error('Debe indicar una razón de anulación.');
+  }
 
   if (!isAuditUser_(user) && normalizeText_(existingRecord.peaje) !== normalizeText_(user.peaje)) {
     throw new Error('No tiene permiso para eliminar registros de otro peaje.');
   }
 
+  sendCancellationEmail_(existingRecord, cancellationReason, user);
   sheet.deleteRow(existingRow);
   return true;
 }

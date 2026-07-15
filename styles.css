@@ -13,7 +13,205 @@
   --shadow: 0 18px 45px rgba(23, 32, 51, 0.1);
 }
 
+.pdf-modal.is-hidden {
+  display: none !important;
+}
+
+.paper.pdf-export {
+  width: 203mm;
+  max-width: none;
+  min-height: 0;
+  padding: 0;
+  border: 1px solid #000;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+  color: #000;
+  background: #fff;
+  font-size: 8pt;
+}
+
+.paper.pdf-export .paper-header {
+  grid-template-columns: 25mm minmax(0, 1fr) 25mm;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  border-bottom: 1px solid #000;
+}
+
+.paper.pdf-export .paper-header > div {
+  min-height: 18mm;
+  padding: 1mm;
+  border-right: 1px solid #000;
+}
+
+.paper.pdf-export .paper-header > div:last-child {
+  border-right: 0;
+}
+
+.paper.pdf-export .document-title {
+  display: grid;
+  align-content: center;
+}
+
+.paper.pdf-export .logo-box {
+  min-height: 18mm;
+  padding: 1mm;
+  border-radius: 0;
+}
+
+.paper.pdf-export .logo-box img {
+  max-width: 22mm;
+  max-height: 11mm;
+}
+
+.paper.pdf-export .logo-box span {
+  font-size: 12pt;
+}
+
+.paper.pdf-export .paper-header p {
+  margin: 0 0 1mm;
+  font-size: 9.4pt;
+  line-height: 1.1;
+}
+
+.paper.pdf-export .document-title span,
+.paper.pdf-export label,
+.paper.pdf-export .wide-label,
+.paper.pdf-export .section-title {
+  font-size: 6.7pt;
+}
+
+.paper.pdf-export .section-title {
+  padding: 0.8mm 2mm;
+}
+
+.paper.pdf-export .grid.two {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+}
+
+.paper.pdf-export .declarations,
+.paper.pdf-export .signatures {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+.paper.pdf-export label,
+.paper.pdf-export .wide-label {
+  gap: 0.6mm;
+  margin: 0;
+  padding: 1mm 2mm;
+}
+
+.paper.pdf-export label:has(input[name="consecutivo"]) {
+  display: none;
+}
+
+.paper.pdf-export input,
+.paper.pdf-export select,
+.paper.pdf-export textarea {
+  min-height: 4mm;
+  padding: 0 0.8mm;
+  font-size: 8pt;
+}
+
+.paper.pdf-export .table-head,
+.paper.pdf-export .table-row {
+  grid-template-columns: 34% 28% 38%;
+}
+
+.paper.pdf-export .table-head {
+  display: grid;
+  font-size: 7.3pt;
+}
+
+.paper.pdf-export .table-head span,
+.paper.pdf-export .table-row > * {
+  min-height: 5.8mm;
+  padding: 1mm 2mm;
+}
+
+.paper.pdf-export .wide-label textarea {
+  min-height: 7mm;
+  line-height: 3.5mm;
+}
+
+.paper.pdf-export .signatures > div {
+  min-height: 16mm;
+  padding: 1.2mm 2mm;
+}
+
+.paper.pdf-export .signatures strong {
+  margin-bottom: 2.5mm;
+}
+
 @media screen {
+  .pdf-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 13000;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    padding: 20px;
+    background: rgba(9, 20, 33, 0.72);
+  }
+
+  .pdf-modal-content {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    width: min(100%, 1100px);
+    min-height: 0;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid rgba(217, 225, 235, 0.95);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 30px 90px rgba(3, 12, 24, 0.36);
+  }
+
+  .pdf-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border-bottom: 1px solid #dbe3ee;
+  }
+
+  .pdf-modal-header h2 {
+    margin: 0;
+    color: #172033;
+    font-size: 18px;
+  }
+
+  .close-button {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border: 1px solid #cfd7e3;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #172033;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .pdf-modal-body {
+    min-height: 0;
+    background: #eef3f7;
+  }
+
+  .pdf-modal-body iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 78vh;
+    border: 0;
+    background: #ffffff;
+  }
+
   .loading-overlay {
     position: fixed;
     inset: 0;
@@ -2745,7 +2943,7 @@ textarea {
 @media print {
   @page {
     size: letter portrait;
-    margin: 10mm;
+    margin: 6mm;
   }
 
   :root {
@@ -2761,7 +2959,7 @@ textarea {
 
   body {
     background: #fff;
-    font-size: 9.5pt;
+    font-size: 8pt;
     overflow: visible;
   }
 
@@ -2771,6 +2969,8 @@ textarea {
   .nav,
   .status-panel,
   .online-status,
+  #pdfModal,
+  .pdf-modal,
   .view:not(#formView),
   .confirm-overlay,
   .loading-overlay {
@@ -2810,7 +3010,7 @@ textarea {
   }
 
   .paper-header {
-    grid-template-columns: 31mm minmax(0, 1fr) 31mm;
+    grid-template-columns: 25mm minmax(0, 1fr) 25mm;
     gap: 0;
     margin: 0;
     padding: 0;
@@ -2818,8 +3018,8 @@ textarea {
   }
 
   .paper-header > div {
-    min-height: 25mm;
-    padding: 2mm;
+    min-height: 18mm;
+    padding: 1mm;
   }
 
   .paper-header > div {
@@ -2875,46 +3075,47 @@ textarea {
   }
 }
 
+@media print {
   .document-title {
     display: grid;
     align-content: center;
   }
 
   .logo-box {
-    min-height: 25mm;
-    padding: 1.5mm;
+    min-height: 18mm;
+    padding: 1mm;
     border: 0;
     border-radius: 0;
   }
 
   .logo-box img {
-    max-width: 26mm;
-    max-height: 15mm;
+    max-width: 22mm;
+    max-height: 11mm;
   }
 
   .logo-ani img {
-    max-height: 14mm;
+    max-height: 11mm;
   }
 
   .logo-box span {
-    font-size: 15pt;
+    font-size: 12pt;
   }
 
   .paper-header p {
-    margin: 0 0 2mm;
-    font-size: 11.5pt;
-    line-height: 1.2;
+    margin: 0 0 1mm;
+    font-size: 9.4pt;
+    line-height: 1.1;
   }
 
   .document-title span {
     color: #000;
-    font-size: 7.8pt;
+    font-size: 6.7pt;
   }
 
   .document-code {
-    min-height: 8mm;
+    min-height: 6mm;
     width: 100%;
-    padding-top: 2mm;
+    padding-top: 1mm;
     align-content: center;
     gap: 1mm;
     border-top: 1px solid #000;
@@ -2931,12 +3132,12 @@ textarea {
   }
 
   .section-title {
-    padding: 1.2mm 2.5mm;
+    padding: 0.8mm 2mm;
     border-top: 0;
     border-bottom: 1px solid #000;
     background: #e8e8e8;
     color: #000;
-    font-size: 7.6pt;
+    font-size: 6.7pt;
     font-weight: 800;
     text-transform: uppercase;
   }
@@ -2945,11 +3146,11 @@ textarea {
   .wide-label {
     gap: 1mm;
     margin: 0;
-    padding: 1.7mm 2.5mm;
+    padding: 1mm 2mm;
     border-right: 1px solid #000;
     border-bottom: 1px solid #000;
     color: #000;
-    font-size: 7.6pt;
+    font-size: 6.7pt;
     font-weight: 700;
     text-transform: uppercase;
   }
@@ -2963,20 +3164,20 @@ textarea {
     padding: 0;
     border: 0;
     color: #000;
-    font-size: 7.5pt;
+    font-size: 6.7pt;
   }
 
   input,
   select,
   textarea {
-    min-height: 5.8mm;
-    padding: 0 1mm;
+    min-height: 4mm;
+    padding: 0 0.8mm;
     border: 0;
     border-bottom: 1px solid #000;
     border-radius: 0;
     color: #000;
     background: #fff;
-    font-size: 9.2pt;
+    font-size: 8pt;
     font-weight: 400;
     text-transform: none;
   }
@@ -3005,14 +3206,14 @@ textarea {
   .table-head {
     display: grid;
     background: #e6e6e6;
-    font-size: 9pt;
+    font-size: 7.3pt;
     text-transform: uppercase;
   }
 
   .table-head span,
   .table-row > * {
-    min-height: 8.5mm;
-    padding: 1.7mm 2.5mm;
+    min-height: 5.8mm;
+    padding: 1mm 2mm;
     border-right: 1px solid #000;
   }
 
@@ -3021,7 +3222,7 @@ textarea {
   }
 
   .table-row input {
-    min-height: 5mm;
+    min-height: 3.8mm;
     padding: 0;
     border-bottom: 1px solid #000;
   }
@@ -3031,7 +3232,7 @@ textarea {
   }
 
   .total-row output {
-    font-size: 10pt;
+    font-size: 8.4pt;
   }
 
   .declarations {
@@ -3041,12 +3242,12 @@ textarea {
 
   .wide-label {
     border-right: 0;
-    padding: 1.7mm 2.5mm;
+    padding: 1mm 2mm;
   }
 
   .wide-label textarea {
-    min-height: 10mm;
-    line-height: 5mm;
+    min-height: 7mm;
+    line-height: 3.5mm;
     background-image: repeating-linear-gradient(
       to bottom,
       transparent 0,
@@ -3061,6 +3262,10 @@ textarea {
     background: #f7f7f7;
   }
 
+  label:has(input[name="consecutivo"]) {
+    display: none;
+  }
+
   .signatures {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0;
@@ -3069,8 +3274,8 @@ textarea {
 
   .signatures > div {
     gap: 0;
-    min-height: 25mm;
-    padding: 2mm;
+    min-height: 16mm;
+    padding: 1.2mm 2mm;
     border-top: 0;
     border-right: 1px solid #000;
   }
@@ -3080,7 +3285,7 @@ textarea {
   }
 
   .signatures strong {
-    margin-bottom: 5mm;
+    margin-bottom: 2.5mm;
     text-align: center;
     text-transform: uppercase;
   }
@@ -3088,11 +3293,11 @@ textarea {
   .signatures label {
     padding: 0;
     border: 0;
-    font-size: 7.6pt;
+    font-size: 6.7pt;
   }
 
   .signatures input {
-    min-height: 6mm;
+    min-height: 4mm;
     border-bottom: 1px solid #000;
   }
 

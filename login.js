@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzTKLKpxU7oLYoqT9sIt7vjIxVkq6saEQeykwJcXboa8nHJUbw_iAe2z67hfzdcqZ4lnQ/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzw3ZUEioJjxv8FHfTD0VDrsMtdBwIG-OLLukQ9mBffZzKWw73nf910QoMp7KgoUkffsQ/exec';
 const SESSION_KEY = 'transbankSession';
 
 const loginForm = document.querySelector('#loginForm');

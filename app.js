@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwrIvBlWSnATXpjSFHCviQ3PD5iB3pfbADQyo_KlybpCI8Pr-9CmQBkJDg-40vtHrMQBQ/exec';
+﻿const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzw3ZUEioJjxv8FHfTD0VDrsMtdBwIG-OLLukQ9mBffZzKWw73nf910QoMp7KgoUkffsQ/exec';
 const SESSION_KEY = 'transbankSession';
 const LOCAL_RECORDS_KEY = 'transbankLocalRecords';
 
@@ -16,6 +16,9 @@ let sessionPeaje;
 let logoutButton;
 let saveButton;
 let printButton;
+let pdfModal;
+let pdfIframe;
+let closePdfModal;
 let clearFormButton;
 let welcomeModalOverlay;
 let welcomeModalCloseButton;
@@ -244,6 +247,44 @@ function formData() {
   return data;
 }
 
+function recordIdentityKey(record) {
+  return [
+    recordDateKey(record.fecha),
+    String(record.peaje || '').trim().toUpperCase(),
+    String(record.codigoSello || record.consecutivo || '').trim().toUpperCase()
+  ].join('|');
+}
+
+function findExistingRecordFor(data) {
+  if (!String(data.codigoSello || data.consecutivo || '').trim()) return null;
+
+  const key = recordIdentityKey(data);
+  return getRecords().find((record) => recordIdentityKey(record) === key) || null;
+}
+
+async function withPdfExportMode(element, task) {
+  element.classList.add('pdf-export');
+  await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  try {
+    return await task();
+  } finally {
+    element.classList.remove('pdf-export');
+  }
+}
+
+function pdfOptions(filename) {
+  const options = {
+    margin: [6, 6, 6, 6],
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, scrollX: 0, scrollY: 0 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+
+  if (filename) options.filename = filename;
+  return options;
+}
+
 function fillForm(record) {
   Object.entries(record).forEach(([key, value]) => {
     const field = form.elements[key];
@@ -333,6 +374,100 @@ function showConfirmationDialog({ title, message, confirmText = 'Confirmar', can
   });
 }
 
+function showReasonDialog({ title, message, confirmText = 'Confirmar', cancelText = 'Cancelar' }) {
+  return new Promise((resolve) => {
+    const overlay = document.createElement('div');
+    overlay.className = 'confirm-overlay';
+    overlay.innerHTML = `
+      <section class="confirm-dialog reason-dialog" role="dialog" aria-modal="true" aria-labelledby="reasonTitle">
+        <div class="confirm-icon is-danger">!</div>
+        <div class="confirm-copy">
+          <h3 id="reasonTitle"></h3>
+          <p></p>
+        </div>
+        <label class="reason-field">
+          Razón de anulación
+          <textarea rows="4" maxlength="500" placeholder="Explique brevemente por qué se anula esta transacción"></textarea>
+          <small class="reason-error" aria-live="polite"></small>
+        </label>
+        <div class="confirm-actions">
+          <button class="secondary-button confirm-cancel" type="button"></button>
+          <button class="danger-button confirm-accept" type="button"></button>
+        </div>
+      </section>
+    `;
+
+    const textarea = overlay.querySelector('textarea');
+    const error = overlay.querySelector('.reason-error');
+    overlay.querySelector('h3').textContent = title;
+    overlay.querySelector('p').textContent = message;
+    overlay.querySelector('.confirm-cancel').textContent = cancelText;
+    overlay.querySelector('.confirm-accept').textContent = confirmText;
+
+    const close = (result) => {
+      overlay.remove();
+      resolve(result);
+    };
+
+    overlay.querySelector('.confirm-cancel').addEventListener('click', () => close(null));
+    overlay.querySelector('.confirm-accept').addEventListener('click', () => {
+      const reason = textarea.value.trim();
+      if (reason.length < 6) {
+        error.textContent = 'Ingrese una razón clara antes de anular.';
+        textarea.focus();
+        return;
+      }
+      close(reason);
+    });
+    overlay.addEventListener('click', (event) => {
+      if (event.target === overlay) close(null);
+    });
+    overlay.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') close(null);
+    });
+
+    document.body.append(overlay);
+    textarea.focus();
+  });
+}
+
+function closePdfPreview() {
+  if (!pdfModal || !pdfIframe) return;
+
+  if (pdfIframe.dataset.objectUrl) {
+    URL.revokeObjectURL(pdfIframe.dataset.objectUrl);
+    delete pdfIframe.dataset.objectUrl;
+  }
+
+  pdfIframe.removeAttribute('src');
+  pdfModal.classList.add('is-hidden');
+  pdfModal.setAttribute('aria-hidden', 'true');
+}
+
+async function showPdfPreview(record) {
+  const element = document.querySelector('.paper');
+  if (!element || !pdfModal || !pdfIframe) return;
+
+  fillForm(record);
+  switchView('form');
+  await new Promise((resolve) => setTimeout(resolve, 250));
+
+  const pdfBlob = await withPdfExportMode(element, async () => {
+    const worker = html2pdf().set(pdfOptions()).from(element);
+    return worker.outputPdf('blob');
+  });
+  const objectUrl = URL.createObjectURL(pdfBlob);
+
+  if (pdfIframe.dataset.objectUrl) {
+    URL.revokeObjectURL(pdfIframe.dataset.objectUrl);
+  }
+
+  pdfIframe.dataset.objectUrl = objectUrl;
+  pdfIframe.src = objectUrl;
+  pdfModal.classList.remove('is-hidden');
+  pdfModal.setAttribute('aria-hidden', 'false');
+}
+
 function clearForm() {
   form.reset();
   form.elements.fecha.value = today();
@@ -349,7 +484,9 @@ function recalculate() {
   valorLetras.value = data.total ? `${numeroALetras(data.total)} PESOS M/CTE` : '';
 }
 
-async function saveRecord() {
+async function saveRecord(options = {}) {
+  const { clearAfterSave = true } = options;
+
   if (!currentUser) {
     setOnlineStatus('Debe iniciar sesión.');
     return null;
@@ -358,10 +495,10 @@ async function saveRecord() {
   if (!form.reportValidity()) return null;
   const data = formData();
   const now = new Date().toISOString();
-  const existing = activeRecordId ? getRecords().find((item) => item.id === activeRecordId) : null;
+  const existing = activeRecordId ? getRecords().find((item) => item.id === activeRecordId) : findExistingRecordFor(data);
   const record = {
     ...data,
-    id: activeRecordId || crypto.randomUUID(),
+    id: activeRecordId || existing?.id || crypto.randomUUID(),
     updatedAt: now,
     createdAt: existing?.createdAt || now
   };
@@ -382,27 +519,45 @@ async function saveRecord() {
     currentStatus.textContent = 'Guardado';
     updateSaveButtonLabel();
 
-    try {
-      await sendRecordCopyEmailOnline(saved);
-    } catch (emailError) {
-      console.warn('No se pudo enviar la copia por correo:', emailError);
-      setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo automáticamente: ${emailError.message}`);
+    hideLoading();
+
+    const sendCopy = await showConfirmationDialog({
+      title: 'Enviar copia por correo',
+      message: 'La planilla ya fue guardada. ¿Desea enviar una copia en PDF por correo?',
+      confirmText: 'Enviar copia',
+      cancelText: 'No enviar',
+      danger: false
+    });
+
+    if (sendCopy) {
+      showLoading();
       try {
-        await saveRecordOnline(saved, false);
-        setOnlineStatus('Planilla guardada y copia por correo enviada desde el servidor.');
-      } catch (fallbackError) {
-        console.warn('Fallo el respaldo de correo del servidor:', fallbackError);
-        setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo: ${fallbackError.message}`);
+        await sendRecordCopyEmailOnline(saved);
+      } catch (emailError) {
+        console.warn('No se pudo enviar la copia por correo:', emailError);
+        setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo automáticamente: ${emailError.message}`);
+        try {
+          await saveRecordOnline(saved, false);
+          setOnlineStatus('Planilla guardada y copia por correo enviada desde el servidor.');
+        } catch (fallbackError) {
+          console.warn('Fallo el respaldo de correo del servidor:', fallbackError);
+          setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo: ${fallbackError.message}`);
+        }
+      } finally {
+        hideLoading();
       }
+    } else {
+      setOnlineStatus('Planilla guardada. No se envió copia por correo.');
     }
-    
-    setTimeout(() => {
-      hideLoading();
-      clearForm();
-      if (currentStatus.textContent === 'Guardado') {
-        setOnlineStatus('Planilla guardada con éxito. El formulario quedó listo para registrar una nueva entrega.');
-      }
-    }, 1000);
+    if (clearAfterSave) {
+      setTimeout(() => {
+        clearForm();
+        if (currentStatus.textContent === 'Guardado') {
+          setOnlineStatus('Planilla guardada con éxito. El formulario quedó listo para registrar una nueva entrega.');
+        }
+      }, 1000);
+    }
+
     
     return saved;
   } catch (error) {
@@ -443,7 +598,7 @@ async function printRecordSafely() {
   printButton.textContent = 'Guardando...';
   currentStatus.textContent = 'Guardando antes de imprimir...';
 
-  const saved = await saveRecord();
+  const saved = await saveRecord({ clearAfterSave: false });
 
   if (!saved) {
     printButton.textContent = originalText;
@@ -454,8 +609,16 @@ async function printRecordSafely() {
   }
 
   printButton.textContent = 'Imprimiendo...';
-  setOnlineStatus('Registro guardado. Preparando la ventana de impresión...');
-  window.print();
+  setOnlineStatus('Registro guardado. Generando vista previa del PDF...');
+
+  try {
+    await showPdfPreview(saved);
+    setOnlineStatus('Revise la vista previa del PDF. Luego imprima desde el visor o use Ctrl+P.');
+  } catch (error) {
+    console.warn('No se pudo generar la vista previa del PDF:', error);
+    setOnlineStatus(`No se pudo mostrar la vista previa del PDF: ${error.message}. Abriendo impresión normal.`);
+    window.print();
+  }
 
   window.setTimeout(() => {
     printButton.textContent = originalText;
@@ -477,39 +640,31 @@ function downloadRecordPdf(record) {
   }
 
   const filename = `Planilla_${record.peaje}_${record.codigoSello}_${record.fecha}.pdf`;
-  const options = {
-    margin: [10, 10, 10, 10],
-    filename: filename,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' }
-  };
 
   fillForm(record);
   switchView('form');
 
-  setTimeout(() => {
-    html2pdf().set(options).from(element).save();
+  setTimeout(async () => {
+    await withPdfExportMode(element, () => html2pdf().set(pdfOptions(filename)).from(element).save());
     setOnlineStatus(`PDF descargado: ${filename}`);
   }, 300);
 }
 
 async function deleteRecord(id) {
-  const confirmed = await showConfirmationDialog({
+  const reason = await showReasonDialog({
     title: 'Anular registro',
-    message: 'Esta acción marcará el registro como anulado y actualizará la información en la base online.',
+    message: 'Esta acción anulará el registro, actualizará la base online y notificará por correo la razón.',
     confirmText: 'Anular registro',
-    cancelText: 'Conservar',
-    danger: true
+    cancelText: 'Conservar'
   });
-  if (!confirmed) return;
+  if (!reason) return;
 
   try {
-    await deleteRecordOnline(id);
+    await deleteRecordOnline(id, reason);
     const records = getRecords().filter((item) => item.id !== id);
     if (activeRecordId === id) clearForm();
     setRecords(records);
-    setOnlineStatus('Registro anulado correctamente. La lista ya fue actualizada.');
+    setOnlineStatus('Registro anulado correctamente. Se notificó la anulación por correo.');
   } catch (error) {
     setOnlineStatus(`No fue posible anular el registro. Detalle: ${error.message}`);
   }
@@ -756,21 +911,16 @@ async function sendRecordCopyEmailOnline(record) {
     throw new Error('No se pudo encontrar el contenido de la planilla para generar el PDF.');
   }
 
-  const options = {
-    margin: [10, 10, 10, 10],
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2 },
-    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' }
-  };
-
   // Asegura que el formulario se vea reflejado correctamente antes de generar PDF.
   fillForm(record);
   switchView('form');
 
   await new Promise((resolve) => setTimeout(resolve, 250));
 
-  const worker = html2pdf().set(options).from(element);
-  const pdfBlob = await worker.outputPdf('blob');
+  const pdfBlob = await withPdfExportMode(element, async () => {
+    const worker = html2pdf().set(pdfOptions()).from(element);
+    return worker.outputPdf('blob');
+  });
   const pdfBase64 = await blobToBase64(pdfBlob);
 
   setOnlineStatus('Enviando copia de correo con el PDF generado por el sistema...');
@@ -815,18 +965,19 @@ function blobToBase64(blob) {
   });
 }
 
-async function deleteRecordOnline(id) {
+async function deleteRecordOnline(id, reason) {
   const url = getScriptUrl();
   if (!url) throw new Error('Falta URL online');
   if (!currentUser) throw new Error('Debe iniciar sesión');
 
-  setOnlineStatus('Anulando el registro en la base online...');
+  setOnlineStatus('Anulando el registro en la base online y enviando notificación...');
 
   const payload = await requestJsonp(url, {
     action: 'delete',
     peaje: currentUser.peaje,
     password: currentUser.password,
-    id
+    id,
+    reason
   });
 
   if (!payload || !payload.ok) {
@@ -1206,6 +1357,9 @@ document.addEventListener('DOMContentLoaded', function() {
   logoutButton = document.querySelector('#logoutButton');
   saveButton = document.querySelector('#saveRecord');
   printButton = document.querySelector('#printRecord');
+  pdfModal = document.querySelector('#pdfModal');
+  pdfIframe = document.querySelector('#pdfIframe');
+  closePdfModal = document.querySelector('#closePdfModal');
   dashboardButton = document.querySelector('#dashboardButton');
   dashboardRefresh = document.querySelector('#dashboardRefresh');
   auditViewButton = document.querySelector('#auditViewButton');
@@ -1279,6 +1433,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
   if (welcomeModalCloseButton) {
     welcomeModalCloseButton.addEventListener('click', hideWelcomeModal);
+  }
+
+  if (closePdfModal) closePdfModal.addEventListener('click', closePdfPreview);
+  if (pdfModal) {
+    pdfModal.addEventListener('click', (event) => {
+      if (event.target === pdfModal) closePdfPreview();
+    });
   }
 
   const homeRecordsBtn = document.querySelector('#homeRecords');
