@@ -351,16 +351,25 @@ function updateSaveButtonLabel() {
   saveButton.textContent = activeRecordId ? 'Actualizar' : 'Guardar';
 }
 
-function showLoading() {
-  if (loadingOverlay) {
-    loadingOverlay.classList.remove('is-hidden');
-  }
+function showLoading(options = {}) {
+  // options: { title, message, overlayId }
+  const overlay = options.overlayId ? document.querySelector(`#${options.overlayId}`) : loadingOverlay;
+  if (!overlay) return;
+
+  const titleEl = overlay.querySelector('.loading-copy strong');
+  const messageEl = overlay.querySelector('.loading-copy p');
+  if (options.title && titleEl) titleEl.textContent = options.title;
+  if (options.message && messageEl) messageEl.textContent = options.message;
+
+  overlay.classList.remove('is-hidden');
+  overlay.setAttribute('aria-hidden', 'false');
 }
 
-function hideLoading() {
-  if (loadingOverlay) {
-    loadingOverlay.classList.add('is-hidden');
-  }
+function hideLoading(overlayId) {
+  const overlay = overlayId ? document.querySelector(`#${overlayId}`) : loadingOverlay;
+  if (!overlay) return;
+  overlay.classList.add('is-hidden');
+  overlay.setAttribute('aria-hidden', 'true');
 }
 
 function showConfirmationDialog({ title, message, confirmText = 'Confirmar', cancelText = 'Cancelar', danger = false }) {
