@@ -878,6 +878,46 @@
   }
 }
 
+.reason-dialog .reason-field {
+  display: grid;
+  gap: 8px;
+  grid-column: 1 / -1;
+  color: #24303b;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.reason-dialog .reason-field textarea {
+  min-height: 120px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #c8d4df;
+  background: #f8fbff;
+  color: #172331;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  resize: vertical;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+.reason-dialog .reason-field textarea:focus {
+  border-color: #19714d;
+  box-shadow: 0 0 0 3px rgba(25, 113, 77, 0.12);
+}
+
+.reason-dialog .reason-field textarea::placeholder {
+  color: #8b9aa7;
+  opacity: 1;
+}
+
+.reason-dialog .reason-error {
+  color: #b42318;
+  font-size: 0.84rem;
+  min-height: 20px;
+  line-height: 1.4;
+}
+
 @media screen {
   .loading-overlay {
     position: fixed;

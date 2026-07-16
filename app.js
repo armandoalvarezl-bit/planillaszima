@@ -63,16 +63,23 @@ const currency = new Intl.NumberFormat('es-CO', {
 });
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const localDate = new Date(now.getTime() - offset * 60000);
+  return localDate.toISOString().slice(0, 10);
 }
 
 function formatDate(dateString) {
   if (!dateString) return '-';
+  const normalized = normalizeDateInputValue(dateString);
+  if (!normalized) return '-';
+
   try {
-    const date = new Date(dateString);
+    const [year, month, day] = normalized.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit' });
   } catch {
-    return String(dateString).slice(0, 10) || '-';
+    return normalized;
   }
 }
 
@@ -108,46 +115,50 @@ function normalizeMoneyInput(input) {
 function normalizeDateInputValue(value) {
   if (!value) return '';
 
+  // Si es un Date válido
   if (value instanceof Date && !Number.isNaN(value.valueOf())) {
-    return value.toISOString().slice(0, 10);
+    return dateKeyFromDate(value);
   }
 
   const text = String(value).trim();
+  
+  // Formato ISO: YYYY-MM-DD...
   const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (isoMatch) {
     return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
   }
 
-  const parsed = new Date(text);
-  if (!Number.isNaN(parsed.valueOf())) {
-    return parsed.toISOString().slice(0, 10);
+  // Formato DD/MM/YYYY (común en América Latina)
+  const slashMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch) {
+    const day = slashMatch[1].padStart(2, '0');
+    const month = slashMatch[2].padStart(2, '0');
+    const year = slashMatch[3];
+    return `${year}-${month}-${day}`;
+  }
+  
+  // Formato DD-MM-YYYY
+  const dashMatch = text.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+  if (dashMatch) {
+    const day = dashMatch[1].padStart(2, '0');
+    const month = dashMatch[2].padStart(2, '0');
+    const year = dashMatch[3];
+    return `${year}-${month}-${day}`;
   }
 
+  // Intenta parsear como Date (fallback)
+  const parsed = new Date(text);
+  if (!Number.isNaN(parsed.valueOf())) {
+    return dateKeyFromDate(parsed);
+  }
+  
+  console.warn('No se pudo normalizar fecha:', value);
   return '';
 }
 
 function recordDateKey(value) {
   if (!value) return '';
-
-  if (value instanceof Date && !Number.isNaN(value.valueOf())) {
-    return value.toISOString().slice(0, 10);
-  }
-
-  const text = String(value).trim();
-  const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
-
-  const slashMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-  if (slashMatch) {
-    const day = slashMatch[1].padStart(2, '0');
-    const month = slashMatch[2].padStart(2, '0');
-    return `${slashMatch[3]}-${month}-${day}`;
-  }
-
-  const parsed = new Date(text);
-  if (!Number.isNaN(parsed.valueOf())) return parsed.toISOString().slice(0, 10);
-
-  return '';
+  return normalizeDateInputValue(value);
 }
 
 function dateFromKey(dateKey) {
@@ -248,18 +259,38 @@ function formData() {
 }
 
 function recordIdentityKey(record) {
-  return [
-    recordDateKey(record.fecha),
-    String(record.peaje || '').trim().toUpperCase(),
-    String(record.codigoSello || record.consecutivo || '').trim().toUpperCase()
-  ].join('|');
+  const dateKey = recordDateKey(record.fecha);
+  const peaje = String(record.peaje || '').trim().toUpperCase();
+  const codigo = String(record.codigoSello || record.consecutivo || '').trim().toUpperCase();
+  
+  // Debug: log para identificar duplicados
+  if (record.id) {
+    console.log(`recordIdentityKey: fecha=${dateKey}, peaje=${peaje}, codigo=${codigo}, id=${record.id}`);
+  }
+  
+  return [dateKey, peaje, codigo].join('|');
 }
 
 function findExistingRecordFor(data) {
   if (!String(data.codigoSello || data.consecutivo || '').trim()) return null;
 
   const key = recordIdentityKey(data);
-  return getRecords().find((record) => recordIdentityKey(record) === key) || null;
+  console.log('findExistingRecordFor: buscando clave:', key);
+  
+  const matches = getRecords().filter((record) => {
+    const recordKey = recordIdentityKey(record);
+    const match = recordKey === key;
+    if (match) {
+      console.log('Encontrado registro existente:', record.id, recordKey);
+    }
+    return match;
+  });
+  
+  if (matches.length > 1) {
+    console.warn(`Múltiples registros coinciden con la identidad ${key}:`, matches.map(r => r.id));
+  }
+  
+  return matches[0] || null;
 }
 
 async function withPdfExportMode(element, task) {
@@ -468,6 +499,69 @@ async function showPdfPreview(record) {
   pdfModal.setAttribute('aria-hidden', 'false');
 }
 
+function getUnsyncedLocalRecords() {
+  const localRecords = getLocalRecords();
+  const onlineIds = new Set(getRecords().map(r => r.id));
+  return localRecords.filter(r => !onlineIds.has(r.id));
+}
+
+function hasUnsyncedRecords() {
+  return getUnsyncedLocalRecords().length > 0;
+}
+
+async function showUnsyncedWarning() {
+  const unsynced = getUnsyncedLocalRecords();
+  if (unsynced.length === 0) return false;
+
+  const count = unsynced.length;
+  const detail = unsynced.slice(0, 3).map(r => 
+    `${formatDate(r.fecha)} - ${r.codigoSello || 'sin código'}: $${onlyDigits(r.total)}`
+  ).join('\n');
+  
+  const moreText = count > 3 ? `\n...y ${count - 3} más` : '';
+
+  const result = await showConfirmationDialog({
+    title: 'Registro pendiente de sincronización',
+    message: `Hay ${count} planilla(s) guardada(s) localmente que no se sincronizó(sincronizaron) con la base online:\n\n${detail}${moreText}\n\n¿Desea recuperarla(s) y reintentar?`,
+    confirmText: 'Recuperar y reintentar',
+    cancelText: 'Descartar',
+    danger: true
+  });
+
+  if (!result) {
+    const localRecords = getLocalRecords();
+    const toKeep = localRecords.filter(r => !unsynced.find(u => u.id === r.id));
+    persistLocalRecords(toKeep);
+    setOnlineStatus('Registros pendientes descartados.');
+    return false;
+  }
+
+  // Intentar sincronizar
+  setOnlineStatus('Reintentando sincronizar registros pendientes...');
+  let successCount = 0;
+  let failCount = 0;
+
+  for (const record of unsynced) {
+    try {
+      await saveRecordOnline(record, true);
+      successCount++;
+    } catch (error) {
+      console.warn('No se pudo sincronizar:', record.id, error);
+      failCount++;
+    }
+  }
+
+  if (successCount > 0) {
+    await loadOnlineRecords();
+    setOnlineStatus(`${successCount} planilla(s) sincronizada(s) correctamente.`);
+  }
+  if (failCount > 0) {
+    setOnlineStatus(`Se sincronizaron ${successCount}. No se pudo sincronizar ${failCount} planilla(s). Reintente más tarde.`);
+  }
+
+  return successCount > 0;
+}
+
 function clearForm() {
   form.reset();
   form.elements.fecha.value = today();
@@ -489,6 +583,18 @@ async function saveRecord(options = {}) {
 
   if (!currentUser) {
     setOnlineStatus('Debe iniciar sesión.');
+    return null;
+  }
+
+  // Verificar si hay registros pendientes sin sincronizar
+  if (hasUnsyncedRecords()) {
+    const recovered = await showUnsyncedWarning();
+    if (!recovered) {
+      // El usuario decidió descartar, continúa normalmente
+      return null;
+    }
+    // El usuario intentó recuperar, bloquea nueva entrada
+    setOnlineStatus('Primero resuelva los registros pendientes.');
     return null;
   }
 
@@ -687,7 +793,7 @@ function updateHome() {
   const today_ = new Date();
   const sevenDaysAgo = new Date(today_.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const latest = records[0];
-  const weekRecords = records.filter((record) => (record.fecha || '') >= sevenDaysAgo).length;
+  const weekRecords = records.filter((record) => recordDateKey(record.fecha) >= sevenDaysAgo).length;
   const totalAmount = records.reduce((sum, record) => sum + onlyDigits(record.total), 0);
 
   homeWelcome.textContent = `Bienvenido, ${userName}`;
@@ -732,7 +838,7 @@ function getStoredSession() {
   }
 }
 
-function startSession(user) {
+async function startSession(user) {
   currentUser = user;
   appShell.classList.remove('is-hidden');
   sessionPeaje.textContent = currentUser.nombre;
@@ -751,10 +857,16 @@ function startSession(user) {
   updateDashboard();
   switchView('home');
   showWelcomeModal();
+  
   const localRecords = getLocalRecords();
   if (localRecords.length) {
     setRecords(localRecords);
+    // Mostrar alerta si hay registros pendientes
+    if (hasUnsyncedRecords()) {
+      setTimeout(() => showUnsyncedWarning(), 500);
+    }
   }
+  
   loadOnlineRecords();
 }
 
@@ -1008,9 +1120,20 @@ function loadOnlineRecords() {
       }
 
       const onlineRecords = Array.isArray(payload.records) ? payload.records : [];
+      
+      // Debug: log todas las fechas recibidas
+      const fechasByDay = {};
+      onlineRecords.forEach(r => {
+        const dayKey = recordDateKey(r.fecha);
+        if (!fechasByDay[dayKey]) fechasByDay[dayKey] = [];
+        fechasByDay[dayKey].push(r.id || 'sin-id');
+      });
+      console.log('Registros cargados por día:', fechasByDay);
+      console.log('Total de fechas únicas:', Object.keys(fechasByDay).length);
+      console.log('Total de registros:', onlineRecords.length);
+      
       setRecords(onlineRecords);
       setOnlineStatus(`Consulta completada. Se encontraron ${onlineRecords.length} registros online.`);
-      // Mostrar la vista de registros después de cargar
     })
     .catch((error) => {
       const localRecords = getLocalRecords();
@@ -1130,9 +1253,10 @@ function applyAuditFilters() {
       String(record.responsableRecibe || '').toUpperCase().includes(search);
 
     const matchPeaje = !peaje || String(record.peaje || '').toUpperCase() === peaje.toUpperCase();
+    const recordDate = recordDateKey(record.fecha);
     
-    const matchDateFrom = !dateFrom || String(record.fecha || '') >= dateFrom;
-    const matchDateTo = !dateTo || String(record.fecha || '') <= dateTo;
+    const matchDateFrom = !dateFrom || recordDate >= dateFrom;
+    const matchDateTo = !dateTo || recordDate <= dateTo;
 
     return matchSearch && matchPeaje && matchDateFrom && matchDateTo;
   });
