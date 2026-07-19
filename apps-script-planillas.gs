@@ -62,6 +62,9 @@ function doGet(e) {
       const record = parseRecordFromGet_(e);
       const skipEmail = e.parameter.skipEmail;
       payload = { ok: true, record: saveRecord_(sheet, record, user, skipEmail) };
+    } else if (action === 'notifymissing') {
+      const user = authenticateUser_(usersSheet, e.parameter.peaje, e.parameter.password);
+      payload = { ok: true, missing: notifyMissingPlanillas_(sheet, user, e.parameter) };
     } else if (action === 'delete') {
       const user = authenticateUser_(usersSheet, e.parameter.peaje, e.parameter.password);
       payload = { ok: true, deleted: deleteRecord_(sheet, e.parameter.id, user, e.parameter.reason) };
@@ -87,6 +90,12 @@ function doPost(e) {
       const user = authenticateUser_(usersSheet, body.peaje, body.password);
       sendRecordCopyEmail_(record, body.pdfBase64);
       return jsonResponse_({ ok: true });
+    }
+
+    if (String(body.action || '').toLowerCase() === 'notifymissing') {
+      const user = authenticateUser_(usersSheet, body.peaje, body.password);
+      const missing = notifyMissingPlanillas_(sheet, user, body);
+      return jsonResponse_({ ok: true, missing });
     }
 
     const user = authenticateUser_(usersSheet, body.peaje, body.password);
@@ -395,6 +404,179 @@ function sendCancellationEmail_(record, reason, user) {
     subject,
     body
   });
+}
+
+function notifyMissingPlanillas_(sheet, user, options) {
+  if (!isAuditUser_(user)) {
+    throw new Error('Solo auditoria puede notificar faltantes de planillas.');
+  }
+
+  const dateRange = missingNotificationDateRange_(options);
+  const expectedPeajes = Object.keys(PEAJE_EMAILS);
+  const existingKeys = buildExistingPlanillaKeys_(sheet);
+  const missingByPeaje = {};
+
+  expectedPeajes.forEach((peaje) => {
+    dateRange.forEach((dateKey) => {
+      const key = `${normalizeText_(peaje)}|${dateKey}`;
+      if (!existingKeys[key]) {
+        if (!missingByPeaje[peaje]) missingByPeaje[peaje] = [];
+        missingByPeaje[peaje].push(dateKey);
+      }
+    });
+  });
+
+  const sent = [];
+  const skipped = [];
+  Object.keys(missingByPeaje).forEach((peaje) => {
+    const pendingDates = missingByPeaje[peaje].filter((dateKey) => !wasMissingNoticeSent_(peaje, dateKey));
+    const alreadyNotified = missingByPeaje[peaje].filter((dateKey) => wasMissingNoticeSent_(peaje, dateKey));
+
+    alreadyNotified.forEach((dateKey) => skipped.push({ peaje, fecha: dateKey, reason: 'already-notified' }));
+    if (!pendingDates.length) return;
+
+    sendMissingPlanillaEmail_(peaje, pendingDates, user);
+    pendingDates.forEach((dateKey) => {
+      markMissingNoticeSent_(peaje, dateKey);
+      sent.push({ peaje, fecha: dateKey });
+    });
+  });
+
+  return {
+    checkedFrom: dateRange[0] || '',
+    checkedTo: dateRange[dateRange.length - 1] || '',
+    sent,
+    skipped
+  };
+}
+
+function missingNotificationDateRange_(options) {
+  const todayKey = dateKey_(new Date());
+  const startDate = parseDateKey_(options && (options.startDate || options.from));
+  const endDate = parseDateKey_(options && (options.endDate || options.to));
+  const days = Math.max(1, Math.min(31, Number(options && options.days) || 10));
+
+  let start = startDate;
+  let end = endDate;
+
+  if (!start || !end) {
+    const yesterday = addDays_(parseDateKey_(todayKey), -1);
+    end = end || yesterday;
+    start = start || addDays_(end, -(days - 1));
+  }
+
+  if (dateKey_(end) >= todayKey) {
+    end = addDays_(parseDateKey_(todayKey), -1);
+  }
+
+  const keys = [];
+  for (let cursor = start; cursor && end && dateKey_(cursor) <= dateKey_(end); cursor = addDays_(cursor, 1)) {
+    keys.push(dateKey_(cursor));
+  }
+  return keys;
+}
+
+function buildExistingPlanillaKeys_(sheet) {
+  const keys = {};
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return keys;
+
+  const values = sheet.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
+  values.forEach((row) => {
+    const record = {};
+    HEADERS.forEach((header, index) => {
+      record[header] = row[index];
+    });
+
+    const peaje = normalizeText_(record.peaje);
+    const fecha = recordDateKey_(record.fecha);
+    if (peaje && fecha) {
+      keys[`${peaje}|${fecha}`] = true;
+    }
+  });
+
+  return keys;
+}
+
+function sendMissingPlanillaEmail_(peaje, dates, user) {
+  const recipient = getPeajeEmail_(peaje);
+  if (!recipient) {
+    Logger.log('No se encontro correo para notificar faltante del peaje: %s', peaje);
+    return;
+  }
+
+  const dateList = dates.map((dateKey) => `- ${dateKey}`).join('\n');
+  const subject = `Reposicion requerida de planillas - ${peaje}`;
+  const body = [
+    'Buen dia.',
+    '',
+    'El sistema de seguimiento no encontro planillas registradas para las siguientes fechas:',
+    '',
+    dateList,
+    '',
+    'Por favor revisar y reponer/cargar la planilla faltante en el sistema lo antes posible para evitar novedades en seguimiento.',
+    '',
+    `Notificado por: ${(user && user.nombre) || (user && user.peaje) || 'Auditoria'}`,
+    `Fecha de notificacion: ${new Date().toLocaleString('es-CO')}`,
+    '',
+    'Este correo se envia automaticamente desde el sistema de planillas ZIMA.'
+  ].join('\n');
+
+  MailApp.sendEmail({
+    to: recipient,
+    subject,
+    body
+  });
+}
+
+function wasMissingNoticeSent_(peaje, dateKey) {
+  const key = missingNoticeKey_(peaje, dateKey);
+  return PropertiesService.getScriptProperties().getProperty(key) === 'sent';
+}
+
+function markMissingNoticeSent_(peaje, dateKey) {
+  const key = missingNoticeKey_(peaje, dateKey);
+  PropertiesService.getScriptProperties().setProperty(key, 'sent');
+}
+
+function missingNoticeKey_(peaje, dateKey) {
+  return `MISSING_PLANILLA_NOTICE_${normalizeText_(peaje)}_${dateKey}`;
+}
+
+function recordDateKey_(value) {
+  if (!value) return '';
+  if (Object.prototype.toString.call(value) === '[object Date]' && !Number.isNaN(value.valueOf())) {
+    return dateKey_(value);
+  }
+
+  const text = String(value).trim();
+  const isoMatch = text.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (isoMatch) return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
+
+  const slashMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slashMatch) {
+    return `${slashMatch[3]}-${slashMatch[2].padStart(2, '0')}-${slashMatch[1].padStart(2, '0')}`;
+  }
+
+  const parsed = new Date(text);
+  if (!Number.isNaN(parsed.valueOf())) return dateKey_(parsed);
+  return '';
+}
+
+function parseDateKey_(value) {
+  const key = recordDateKey_(value);
+  if (!key) return null;
+  const parts = key.split('-').map(Number);
+  return new Date(parts[0], parts[1] - 1, parts[2]);
+}
+
+function addDays_(date, days) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
+function dateKey_(date) {
+  const timezone = Session.getScriptTimeZone() || 'America/Bogota';
+  return Utilities.formatDate(date, timezone, 'yyyy-MM-dd');
 }
 
 function formatMoney_(value, currency) {

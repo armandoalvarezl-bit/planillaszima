@@ -1,8 +1,8 @@
-﻿const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzw3ZUEioJjxv8FHfTD0VDrsMtdBwIG-OLLukQ9mBffZzKWw73nf910QoMp7KgoUkffsQ/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCLrZPIN9utsz69d89Wgk0aKXBAqMVIBWoiLMOsrhEVqL4ovw4emLoE82pZMJcrurm/exec';
 const SESSION_KEY = 'transbankSession';
 const LOCAL_RECORDS_KEY = 'transbankLocalRecords';
 
-// Elementos del DOM - se inicializarán en DOMContentLoaded
+// Elementos del DOM - se inicializaran en DOMContentLoaded
 let form;
 let totalEntregado;
 let valorLetras;
@@ -115,7 +115,7 @@ function normalizeMoneyInput(input) {
 function normalizeDateInputValue(value) {
   if (!value) return '';
 
-  // Si es un Date válido
+  // Si es un Date valido
   if (value instanceof Date && !Number.isNaN(value.valueOf())) {
     return dateKeyFromDate(value);
   }
@@ -128,7 +128,7 @@ function normalizeDateInputValue(value) {
     return `${isoMatch[1]}-${isoMatch[2]}-${isoMatch[3]}`;
   }
 
-  // Formato DD/MM/YYYY (común en América Latina)
+  // Formato DD/MM/YYYY (comun en America Latina)
   const slashMatch = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (slashMatch) {
     const day = slashMatch[1].padStart(2, '0');
@@ -220,6 +220,15 @@ function persistLocalRecords(records) {
   }
 }
 
+function removeLocalRecordById(id) {
+  if (!id) return;
+  const localRecords = getLocalRecords();
+  const nextRecords = localRecords.filter((record) => record.id !== id);
+  if (nextRecords.length !== localRecords.length) {
+    persistLocalRecords(nextRecords);
+  }
+}
+
 function setRecords(records) {
   recordsCache = Array.isArray(records) ? records : [];
   console.log('setRecords:', recordsCache.length, 'elementos');
@@ -287,7 +296,7 @@ function findExistingRecordFor(data) {
   });
   
   if (matches.length > 1) {
-    console.warn(`Múltiples registros coinciden con la identidad ${key}:`, matches.map(r => r.id));
+    console.warn(`Multiples registros coinciden con la identidad ${key}:`, matches.map(r => r.id));
   }
   
   return matches[0] || null;
@@ -305,7 +314,7 @@ async function withPdfExportMode(element, task) {
 
 function pdfOptions(filename) {
   const options = {
-    margin: [6, 6, 6, 6],
+    margin: [8, 8, 8, 8],
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: 2, scrollX: 0, scrollY: 0 },
     jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' },
@@ -344,6 +353,10 @@ function fillForm(record) {
   recalculate();
   currentStatus.textContent = activeRecordId ? 'Editando registro' : 'Sin guardar';
   updateSaveButtonLabel();
+
+  if (!String(record.responsableRecibe || '').trim()) {
+    setOnlineStatus('Advertencia: esta planilla no tiene responsable de recibido. Debe completarlo antes de actualizar o imprimir.');
+  }
 }
 
 function updateSaveButtonLabel() {
@@ -426,8 +439,8 @@ function showReasonDialog({ title, message, confirmText = 'Confirmar', cancelTex
           <p></p>
         </div>
         <label class="reason-field">
-          Razón de anulación
-          <textarea rows="4" maxlength="500" placeholder="Explique brevemente por qué se anula esta transacción"></textarea>
+          Razon de anulacion
+          <textarea rows="4" maxlength="500" placeholder="Explique brevemente por que se anula esta transaccion"></textarea>
           <small class="reason-error" aria-live="polite"></small>
         </label>
         <div class="confirm-actions">
@@ -453,7 +466,7 @@ function showReasonDialog({ title, message, confirmText = 'Confirmar', cancelTex
     overlay.querySelector('.confirm-accept').addEventListener('click', () => {
       const reason = textarea.value.trim();
       if (reason.length < 6) {
-        error.textContent = 'Ingrese una razón clara antes de anular.';
+        error.textContent = 'Ingrese una razon clara antes de anular.';
         textarea.focus();
         return;
       }
@@ -484,17 +497,45 @@ function closePdfPreview() {
   pdfModal.setAttribute('aria-hidden', 'true');
 }
 
+async function withRenderablePaper(task) {
+  const formView = document.querySelector('#formView');
+  if (!formView) return task();
+
+  const wasActive = formView.classList.contains('active');
+  const previousStyle = formView.getAttribute('style');
+
+  if (!wasActive) {
+    formView.style.display = 'block';
+    formView.style.position = 'fixed';
+    formView.style.left = '0';
+    formView.style.top = '0';
+    formView.style.width = '100%';
+    formView.style.zIndex = '-1';
+    formView.style.pointerEvents = 'none';
+  }
+
+  try {
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    return await task();
+  } finally {
+    if (!wasActive) {
+      if (previousStyle == null) formView.removeAttribute('style');
+      else formView.setAttribute('style', previousStyle);
+    }
+  }
+}
+
 async function showPdfPreview(record) {
   const element = document.querySelector('.paper');
   if (!element || !pdfModal || !pdfIframe) return;
 
   fillForm(record);
-  switchView('form');
-  await new Promise((resolve) => setTimeout(resolve, 250));
 
-  const pdfBlob = await withPdfExportMode(element, async () => {
-    const worker = html2pdf().set(pdfOptions()).from(element);
-    return worker.outputPdf('blob');
+  const pdfBlob = await withRenderablePaper(() => {
+    return withPdfExportMode(element, async () => {
+      const worker = html2pdf().set(pdfOptions()).from(element);
+      return worker.outputPdf('blob');
+    });
   });
   const objectUrl = URL.createObjectURL(pdfBlob);
 
@@ -509,9 +550,7 @@ async function showPdfPreview(record) {
 }
 
 function getUnsyncedLocalRecords() {
-  const localRecords = getLocalRecords();
-  const onlineIds = new Set(getRecords().map(r => r.id));
-  return localRecords.filter(r => !onlineIds.has(r.id));
+  return getLocalRecords();
 }
 
 function hasUnsyncedRecords() {
@@ -524,14 +563,14 @@ async function showUnsyncedWarning() {
 
   const count = unsynced.length;
   const detail = unsynced.slice(0, 3).map(r => 
-    `${formatDate(r.fecha)} - ${r.codigoSello || 'sin código'}: $${onlyDigits(r.total)}`
+    `${formatDate(r.fecha)} - ${r.codigoSello || 'sin codigo'}: $${onlyDigits(r.total)}`
   ).join('\n');
   
-  const moreText = count > 3 ? `\n...y ${count - 3} más` : '';
+  const moreText = count > 3 ? `\n...y ${count - 3} mas` : '';
 
   const result = await showConfirmationDialog({
-    title: 'Registro pendiente de sincronización',
-    message: `Hay ${count} planilla(s) guardada(s) localmente que no se sincronizó(sincronizaron) con la base online:\n\n${detail}${moreText}\n\n¿Desea recuperarla(s) y reintentar?`,
+    title: 'Registro pendiente de sincronizacion',
+    message: `Hay ${count} planilla(s) guardada(s) localmente que no se sincronizo(sincronizaron) con la base online:\n\n${detail}${moreText}\n\nDesea recuperarla(s) y reintentar?`,
     confirmText: 'Recuperar y reintentar',
     cancelText: 'Descartar',
     danger: true
@@ -552,7 +591,8 @@ async function showUnsyncedWarning() {
 
   for (const record of unsynced) {
     try {
-      await saveRecordOnline(record, true);
+      const saved = await saveRecordOnline(record, true);
+      removeLocalRecordById(saved.id || record.id);
       successCount++;
     } catch (error) {
       console.warn('No se pudo sincronizar:', record.id, error);
@@ -565,10 +605,10 @@ async function showUnsyncedWarning() {
     setOnlineStatus(`${successCount} planilla(s) sincronizada(s) correctamente.`);
   }
   if (failCount > 0) {
-    setOnlineStatus(`Se sincronizaron ${successCount}. No se pudo sincronizar ${failCount} planilla(s). Reintente más tarde.`);
+    setOnlineStatus(`Se sincronizaron ${successCount}. No se pudo sincronizar ${failCount} planilla(s). Reintente mas tarde.`);
   }
 
-  return successCount > 0;
+  return failCount === 0;
 }
 
 function clearForm() {
@@ -591,7 +631,7 @@ async function saveRecord(options = {}) {
   const { clearAfterSave = true } = options;
 
   if (!currentUser) {
-    setOnlineStatus('Debe iniciar sesión.');
+    setOnlineStatus('Debe iniciar sesion.');
     return null;
   }
 
@@ -599,16 +639,17 @@ async function saveRecord(options = {}) {
   if (hasUnsyncedRecords()) {
     const recovered = await showUnsyncedWarning();
     if (!recovered) {
-      // El usuario decidió descartar, continúa normalmente
       return null;
     }
-    // El usuario intentó recuperar, bloquea nueva entrada
-    setOnlineStatus('Primero resuelva los registros pendientes.');
-    return null;
   }
 
   if (!form.reportValidity()) return null;
   const data = formData();
+  if (!String(data.responsableRecibe || '').trim()) {
+    setOnlineStatus('Falta el responsable que recibe Transbank. Complete ese campo antes de guardar la planilla.');
+    form.elements.responsableRecibe?.focus();
+    return null;
+  }
   const now = new Date().toISOString();
   const existing = activeRecordId ? getRecords().find((item) => item.id === activeRecordId) : findExistingRecordFor(data);
   const record = {
@@ -623,6 +664,7 @@ async function saveRecord(options = {}) {
 
   try {
     const saved = await saveRecordOnline(record, true);
+    removeLocalRecordById(saved.id);
     const records = getRecords();
     const index = records.findIndex((item) => item.id === saved.id);
 
@@ -638,7 +680,7 @@ async function saveRecord(options = {}) {
 
     const sendCopy = await showConfirmationDialog({
       title: 'Enviar copia por correo',
-      message: 'La planilla ya fue guardada. ¿Desea enviar una copia en PDF por correo?',
+      message: 'La planilla ya fue guardada. Desea enviar una copia en PDF por correo?',
       confirmText: 'Enviar copia',
       cancelText: 'No enviar',
       danger: false
@@ -650,7 +692,7 @@ async function saveRecord(options = {}) {
         await sendRecordCopyEmailOnline(saved);
       } catch (emailError) {
         console.warn('No se pudo enviar la copia por correo:', emailError);
-        setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo automáticamente: ${emailError.message}`);
+        setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo automaticamente: ${emailError.message}`);
         try {
           await saveRecordOnline(saved, false);
           setOnlineStatus('Planilla guardada y copia por correo enviada desde el servidor.');
@@ -662,13 +704,13 @@ async function saveRecord(options = {}) {
         hideLoading();
       }
     } else {
-      setOnlineStatus('Planilla guardada. No se envió copia por correo.');
+      setOnlineStatus('Planilla guardada. No se envio copia por correo.');
     }
     if (clearAfterSave) {
       setTimeout(() => {
         clearForm();
         if (currentStatus.textContent === 'Guardado') {
-          setOnlineStatus('Planilla guardada con éxito. El formulario quedó listo para registrar una nueva entrega.');
+          setOnlineStatus('Planilla guardada con exito. El formulario quedo listo para registrar una nueva entrega.');
         }
       }, 1000);
     }
@@ -678,7 +720,7 @@ async function saveRecord(options = {}) {
   } catch (error) {
     const localRecords = getLocalRecords();
     const localIndex = localRecords.findIndex((item) => item.id === record.id);
-    const fallbackRecord = { ...record, updatedAt: record.updatedAt, createdAt: record.createdAt };
+    const fallbackRecord = { ...record, updatedAt: record.updatedAt, createdAt: record.createdAt, __localOnly: true };
 
     if (localIndex >= 0) localRecords[localIndex] = fallbackRecord;
     else localRecords.unshift(fallbackRecord);
@@ -687,12 +729,11 @@ async function saveRecord(options = {}) {
     activeRecordId = fallbackRecord.id;
     setRecords(localRecords);
     hideLoading();
-    currentStatus.textContent = 'Guardado local';
+    currentStatus.textContent = 'Pendiente de sincronizar';
     updateSaveButtonLabel();
 
     setTimeout(() => {
-      clearForm();
-      setOnlineStatus('La planilla se guardó localmente porque no fue posible sincronizar con la base online.');
+      setOnlineStatus('La planilla quedo pendiente de sincronizacion local. No imprima ni cierre hasta reintentar y confirmar guardado online.');
     }, 1000);
 
     return fallbackRecord;
@@ -701,7 +742,7 @@ async function saveRecord(options = {}) {
 
 async function printRecordSafely() {
   if (!currentUser) {
-    setOnlineStatus('Debe iniciar sesión.');
+    setOnlineStatus('Debe iniciar sesion.');
     return;
   }
 
@@ -719,7 +760,15 @@ async function printRecordSafely() {
     printButton.textContent = originalText;
     printButton.disabled = false;
     if (saveButton) saveButton.disabled = false;
-    setOnlineStatus('Impresión detenida. Primero debe guardarse correctamente el registro.');
+    setOnlineStatus('Impresion detenida. Primero debe guardarse correctamente el registro.');
+    return;
+  }
+
+  if (saved.__localOnly) {
+    printButton.textContent = originalText;
+    printButton.disabled = false;
+    if (saveButton) saveButton.disabled = false;
+    setOnlineStatus('Impresion detenida. La planilla esta solo en respaldo local y falta sincronizarla con la base online.');
     return;
   }
 
@@ -731,7 +780,7 @@ async function printRecordSafely() {
     setOnlineStatus('Revise la vista previa del PDF. Luego imprima desde el visor o use Ctrl+P.');
   } catch (error) {
     console.warn('No se pudo generar la vista previa del PDF:', error);
-    setOnlineStatus(`No se pudo mostrar la vista previa del PDF: ${error.message}. Abriendo impresión normal.`);
+    setOnlineStatus(`No se pudo mostrar la vista previa del PDF: ${error.message}. Abriendo impresion normal.`);
     window.print();
   }
 
@@ -756,11 +805,9 @@ function downloadRecordPdf(record) {
 
   const filename = `Planilla_${record.peaje}_${record.codigoSello}_${record.fecha}.pdf`;
 
-  fillForm(record);
-  switchView('form');
-
   setTimeout(async () => {
-    await withPdfExportMode(element, () => html2pdf().set(pdfOptions(filename)).from(element).save());
+    fillForm(record);
+    await withRenderablePaper(() => withPdfExportMode(element, () => html2pdf().set(pdfOptions(filename)).from(element).save()));
     setOnlineStatus(`PDF descargado: ${filename}`);
   }, 300);
 }
@@ -768,7 +815,7 @@ function downloadRecordPdf(record) {
 async function deleteRecord(id) {
   const reason = await showReasonDialog({
     title: 'Anular registro',
-    message: 'Esta acción anulará el registro, actualizará la base online y notificará por correo la razón.',
+    message: 'Esta accion anulara el registro, actualizara la base online y notificara por correo la razon.',
     confirmText: 'Anular registro',
     cancelText: 'Conservar'
   });
@@ -779,7 +826,7 @@ async function deleteRecord(id) {
     const records = getRecords().filter((item) => item.id !== id);
     if (activeRecordId === id) clearForm();
     setRecords(records);
-    setOnlineStatus('Registro anulado correctamente. Se notificó la anulación por correo.');
+    setOnlineStatus('Registro anulado correctamente. Se notifico la anulacion por correo.');
   } catch (error) {
     setOnlineStatus(`No fue posible anular el registro. Detalle: ${error.message}`);
   }
@@ -889,7 +936,7 @@ function clearSession() {
 }
 
 function renderRecords() {
-  // Si recordsList no está inicializado, intentar buscarlo ahora
+  // Si recordsList no esta inicializado, intentar buscarlo ahora
   if (!recordsList) {
     recordsList = document.querySelector('#recordsList');
   }
@@ -912,7 +959,7 @@ function renderRecords() {
   if (!records.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.textContent = 'No hay registros guardados todavía.';
+    empty.textContent = 'No hay registros guardados todavia.';
     recordsList.append(empty);
     return;
   }
@@ -922,15 +969,18 @@ function renderRecords() {
       // Crear el card manualmente en lugar de usar el template
       const article = document.createElement('article');
       article.className = 'record-card';
+      const hasResponsible = Boolean(String(record.responsableRecibe || '').trim());
+      const responsibleText = hasResponsible ? record.responsableRecibe : 'Sin responsable';
       article.innerHTML = `
         <div>
-          <strong class="record-title">${record.peaje || 'Peaje'} - ${record.codigoSello || 'Sin código'}</strong>
-          <span class="record-meta">${formatDate(record.fecha)} · ${record.centro || 'Sin centro'} · ${record.responsableRecibe || 'Sin responsable'}</span>
+          <strong class="record-title">${record.peaje || 'Peaje'} - ${record.codigoSello || 'Sin codigo'}</strong>
+          <span class="record-meta">${formatDate(record.fecha)} - ${record.centro || 'Sin centro'} - ${responsibleText}</span>
+          ${hasResponsible ? '' : '<span class="record-warning">Advertencia: falta responsable de recibido</span>'}
         </div>
         <output class="record-total">${formatMoney(record.total)}</output>
         <div class="record-actions">
           <button class="secondary-button load-record" type="button">Editar</button>
-          <button class="secondary-button download-pdf" type="button" title="Descargar como PDF">PDF</button>
+          <button class="secondary-button download-pdf" type="button" title="Ver PDF">PDF</button>
           <button class="danger-button delete-record" type="button">Anular</button>
         </div>
       `;
@@ -940,7 +990,7 @@ function renderRecords() {
         switchView('form');
       });
       article.querySelector('.download-pdf').addEventListener('click', () => {
-        downloadRecordPdf(record);
+        showPdfPreview(record);
       });
       article.querySelector('.delete-record').addEventListener('click', () => deleteRecord(record.id));
       recordsList.append(article);
@@ -959,16 +1009,21 @@ function setOnlineStatus(message) {
   const text = String(message || '');
   const normalized = text.toLowerCase();
   let tone = 'info';
-  let title = 'Información del sistema';
+  let title = 'Informacion del sistema';
 
   if (/(correctamente|guardad|lista|limpio|impresa|base de datos)/i.test(text)) {
     tone = 'success';
-    title = 'Operación confirmada';
+    title = 'Operacion confirmada';
   }
 
-  if (/(no se pudo|falta|debe iniciar|error|invalida|inválida|no se imprimio|no se imprimió)/i.test(text)) {
+  if (/(advertencia|pendiente|revisar)/i.test(text)) {
+    tone = 'warning';
+    title = 'Advertencia';
+  }
+
+  if (/(no se pudo|falta|debe iniciar|error|invalida|no se imprimio)/i.test(text)) {
     tone = 'error';
-    title = 'Revisión requerida';
+    title = 'Revision requerida';
   }
 
   if (/(consultando|enviando|eliminando|abriendo|primero|validando)/i.test(text) || normalized.endsWith('...')) {
@@ -996,11 +1051,27 @@ async function saveRecordOnline(record, skipEmail = true) {
   if (!url) {
     throw new Error('Falta URL online');
   }
-  if (!currentUser) throw new Error('Debe iniciar sesión');
+  if (!currentUser) throw new Error('Debe iniciar sesion');
 
   setOnlineStatus('Guardando la planilla en la base online...');
 
   try {
+    const payload = await requestPostJson(url, {
+      action: 'save',
+      peaje: currentUser.peaje,
+      password: currentUser.password,
+      skipEmail: skipEmail ? 'true' : 'false',
+      record
+    });
+
+    if (!payload || !payload.ok) {
+      throw new Error(payload && payload.error ? payload.error : 'Respuesta online invalida');
+    }
+
+    setOnlineStatus('La planilla fue registrada en la base de datos online.');
+    return payload.record;
+  } catch (error) {
+    console.warn('Fallo guardado por POST, reintentando por JSONP:', error);
     const payload = await requestJsonp(url, {
       action: 'save',
       peaje: currentUser.peaje,
@@ -1010,22 +1081,20 @@ async function saveRecordOnline(record, skipEmail = true) {
     });
 
     if (!payload || !payload.ok) {
-      throw new Error(payload && payload.error ? payload.error : 'Respuesta online inválida');
+      throw new Error(payload && payload.error ? payload.error : error.message || 'Respuesta online invalida');
     }
 
     setOnlineStatus('La planilla fue registrada en la base de datos online.');
     return payload.record;
-  } catch (error) {
-    throw error;
   }
 }
 
 async function sendRecordCopyEmailOnline(record) {
-  if (!currentUser) throw new Error('Debe iniciar sesión');
+  if (!currentUser) throw new Error('Debe iniciar sesion');
   const url = getScriptUrl();
   if (!url) throw new Error('Falta URL online');
 
-  setOnlineStatus('Generando PDF exacto para envío de copia por correo...');
+  setOnlineStatus('Generando PDF exacto para envio de copia por correo...');
 
   const element = document.querySelector('.paper');
   if (!element) {
@@ -1067,7 +1136,7 @@ async function sendRecordCopyEmailOnline(record) {
 
   const payload = await response.json();
   if (!payload || !payload.ok) {
-    throw new Error(payload && payload.error ? payload.error : 'Respuesta inválida del servicio de correo.');
+    throw new Error(payload && payload.error ? payload.error : 'Respuesta invalida del servicio de correo.');
   }
 
   setOnlineStatus('Copia por correo enviada correctamente.');
@@ -1089,9 +1158,9 @@ function blobToBase64(blob) {
 async function deleteRecordOnline(id, reason) {
   const url = getScriptUrl();
   if (!url) throw new Error('Falta URL online');
-  if (!currentUser) throw new Error('Debe iniciar sesión');
+  if (!currentUser) throw new Error('Debe iniciar sesion');
 
-  setOnlineStatus('Anulando el registro en la base online y enviando notificación...');
+  setOnlineStatus('Anulando el registro en la base online y enviando notificacion...');
 
   const payload = await requestJsonp(url, {
     action: 'delete',
@@ -1102,7 +1171,7 @@ async function deleteRecordOnline(id, reason) {
   });
 
   if (!payload || !payload.ok) {
-    throw new Error(payload && payload.error ? payload.error : 'Respuesta online inválida');
+    throw new Error(payload && payload.error ? payload.error : 'Respuesta online invalida');
   }
 }
 
@@ -1137,12 +1206,13 @@ function loadOnlineRecords() {
         if (!fechasByDay[dayKey]) fechasByDay[dayKey] = [];
         fechasByDay[dayKey].push(r.id || 'sin-id');
       });
-      console.log('Registros cargados por día:', fechasByDay);
-      console.log('Total de fechas únicas:', Object.keys(fechasByDay).length);
+      console.log('Registros cargados por dia:', fechasByDay);
+      console.log('Total de fechas unicas:', Object.keys(fechasByDay).length);
       console.log('Total de registros:', onlineRecords.length);
       
       setRecords(onlineRecords);
       setOnlineStatus(`Consulta completada. Se encontraron ${onlineRecords.length} registros online.`);
+      notifyMissingRecordsIfNeeded();
     })
     .catch((error) => {
       const localRecords = getLocalRecords();
@@ -1155,27 +1225,86 @@ function loadOnlineRecords() {
     });
 }
 
-function requestJsonp(url, params) {
+function notifyMissingRecordsIfNeeded() {
+  if (!currentUser || !isAuditUser()) return;
+
+  const url = getScriptUrl();
+  if (!url) return;
+
+  requestJsonp(url, {
+    action: 'notifymissing',
+    peaje: currentUser.peaje,
+    password: currentUser.password,
+    days: '10'
+  })
+    .then((payload) => {
+      if (!payload || !payload.ok) {
+        console.warn('No fue posible revisar faltantes:', payload && payload.error);
+        return;
+      }
+
+      const sent = payload.missing && Array.isArray(payload.missing.sent) ? payload.missing.sent : [];
+      const checkedFrom = payload.missing?.checkedFrom || '';
+      const checkedTo = payload.missing?.checkedTo || '';
+
+      if (sent.length) {
+        setOnlineStatus(`Se notificaron ${sent.length} faltante(s) de planillas entre ${checkedFrom} y ${checkedTo}.`);
+      }
+    })
+    .catch((error) => {
+      console.warn('No fue posible notificar faltantes de planillas:', error);
+    });
+}
+
+async function requestPostJson(url, body) {
+  const response = await fetch(url, {
+    method: 'POST',
+    mode: 'cors',
+    headers: {
+      'Content-Type': 'text/plain;charset=utf-8'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`No se pudo conectar con Apps Script (HTTP ${response.status}).`);
+  }
+
+  const payload = await response.json();
+  return payload;
+}
+
+function requestJsonp(url, params, timeoutMs = 20000) {
   return new Promise((resolve, reject) => {
-  const callbackName = `onlinePlanillas_${Date.now()}`;
-  const script = document.createElement('script');
-  const separator = url.includes('?') ? '&' : '?';
+    const callbackName = `onlinePlanillas_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const script = document.createElement('script');
+    const separator = url.includes('?') ? '&' : '?';
     const query = new URLSearchParams({ ...params, callback: callbackName });
+    let timeoutId;
 
-  window[callbackName] = (payload) => {
-    delete window[callbackName];
-    script.remove();
+    const cleanup = () => {
+      window.clearTimeout(timeoutId);
+      delete window[callbackName];
+      script.remove();
+    };
+
+    window[callbackName] = (payload) => {
+      cleanup();
       resolve(payload);
-  };
+    };
 
-  script.onerror = () => {
-    delete window[callbackName];
-    script.remove();
+    script.onerror = () => {
+      cleanup();
       reject(new Error('No se pudo cargar Apps Script'));
-  };
+    };
+
+    timeoutId = window.setTimeout(() => {
+      cleanup();
+      reject(new Error('Apps Script no respondio a tiempo'));
+    }, timeoutMs);
 
     script.src = `${url}${separator}${query.toString()}`;
-  document.body.append(script);
+    document.body.append(script);
   });
 }
 
@@ -1311,14 +1440,20 @@ function renderAuditRecords() {
 
   records.forEach((record) => {
     const node = recordTemplate.content.firstElementChild.cloneNode(true);
-    node.querySelector('.record-title').textContent = `${record.peaje || 'Peaje'} - ${record.codigoSello || 'Sin código'} (${record.centro || 'Sin centro'})`;
-    node.querySelector('.record-meta').textContent = `${formatDate(record.fecha)} · ${record.responsableRecibe || 'Sin responsable'} · Modificado: ${formatDateTime(record.updatedAt)}`;
+    node.querySelector('.record-title').textContent = `${record.peaje || 'Peaje'} - ${record.codigoSello || 'Sin codigo'} (${record.centro || 'Sin centro'})`;
+    const hasResponsible = Boolean(String(record.responsableRecibe || '').trim());
+    node.querySelector('.record-meta').textContent = `${formatDate(record.fecha)} - ${record.responsableRecibe || 'Sin responsable'} - Modificado: ${formatDateTime(record.updatedAt)}`;
+    if (!hasResponsible) {
+      const warning = document.createElement('span');
+      warning.className = 'record-warning';
+      warning.textContent = 'Advertencia: falta responsable de recibido';
+      node.querySelector('.record-meta').after(warning);
+    }
 
     node.querySelector('.record-total').textContent = formatMoney(record.total);
-    node.querySelector('.load-record').textContent = 'Ver';
+    node.querySelector('.load-record').textContent = 'Ver PDF';
     node.querySelector('.load-record').addEventListener('click', () => {
-      fillForm(record);
-      switchView('form');
+      showPdfPreview(record);
     });
     node.querySelector('.delete-record').textContent = 'Anular';
     node.querySelector('.delete-record').addEventListener('click', () => deleteRecord(record.id));
@@ -1474,7 +1609,7 @@ function renderTopCenters(records) {
   });
 }
 
-// Agregar event listeners cuando el DOM esté completamente listo
+// Agregar event listeners cuando el DOM esta completamente listo
 document.addEventListener('DOMContentLoaded', function() {
   // Inicializar referencias a elementos del DOM
   form = document.querySelector('#moneyForm');
@@ -1614,7 +1749,7 @@ document.addEventListener('DOMContentLoaded', function() {
     button.addEventListener('click', () => switchView(button.dataset.view));
   });
 
-  // Inicializar sesión
+  // Inicializar sesion
   const storedSession = getStoredSession();
 
   if (!storedSession || !storedSession.peaje || !storedSession.password) {
