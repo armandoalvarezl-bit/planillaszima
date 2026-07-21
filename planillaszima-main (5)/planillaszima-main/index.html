@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manejo de Dineros Transbank</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="loading-theme.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- NUEVO: estilos mínimos solo para el mensaje de bienvenida y los
+       botones del modal de confirmación. Todo lo demás reutiliza tus
+       clases existentes (.loading-overlay, .loading-modal, .secondary-button,
+       .danger-button) para verse igual al resto del sistema. -->
+  <style>
+    .welcome-message {
+      margin: 4px 0 0;
+      color: #5c6b7c;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .logout-confirm-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    .logout-confirm-actions button {
+      flex: 1 1 0;
+    }
+    .dashboard-summary{
+    width:100%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.dashboard-banner{
+    display:block;
+    width:100%;
+    max-width:1400px;
+    height:auto;
+    border-radius:18px;
+}
+  </style>
+</head>
+<body>
+  <div class="app-shell is-hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">
+          <img src="assets/logo-zima.png" alt="Logo ZIMA">
+        </div>
+        <div>
+          <h1>ZIMA</h1>
+          <p>Manejo de dineros</p>
+        </div>
+      </div>
+
+      <nav class="nav" aria-label="Vistas">
+        <button class="nav-button active" data-view="home" type="button">
+          <span>Inicio</span>
+        </button>
+        <button class="nav-button" data-view="form" type="button">
+          <span>Formulario</span>
+        </button>
+        <button class="nav-button" data-view="records" type="button">
+          <span>Registros</span>
+          <strong id="recordCount">0</strong>
+        </button>
+        <button id="auditViewButton" class="nav-button" data-view="audit" type="button" style="display: none;">
+          <span>Auditoría</span>
+        </button>
+        <button id="adminViewButton" class="nav-button" data-view="admin" type="button" style="display: none;">
+          <span>Admin / Soporte</span>
+        </button>
+        <button id="alertsViewButton" class="nav-button" data-view="alerts" type="button" style="display: none;">
+          <span>Alertas</span>
+        </button>
+      </nav>
+
+      <div class="status-panel">
+        <span id="sessionPeaje">Registro actual</span>
+        <strong id="currentStatus">Sin guardar</strong>
+      </div>
+
+      <button id="logoutButton" class="logout-button" type="button">Cerrar sesión</button>
+
+    </aside>
+    <div id="pdfModal" class="pdf-modal is-hidden" aria-hidden="true">
+      <div class="pdf-modal-content">
+        <div class="pdf-modal-header">
+          <h2>Vista previa PDF</h2>
+          <button id="closePdfModal" class="close-button" type="button" aria-label="Cerrar vista previa">×</button>
+        </div>
+        <div class="pdf-modal-body">
+          <iframe id="pdfIframe" src="" frameborder="0"></iframe>
+        </div>
+      </div>
+    </div>
+    <div id="pdfDownloadOverlay" class="loading-overlay is-hidden">
+      <section class="loading-modal" role="status" aria-live="polite" aria-label="Generando PDF">
+        <div class="loading-logo-wrap">
+          <img src="assets/logo-zima.png" alt="Logo ZIMA">
+        </div>
+        <div class="loading-copy">
+          <strong>Generando PDF</strong>
+          <p>Estamos creando el archivo PDF de la planilla.</p>
+        </div>
+        <div class="loading-progress" aria-hidden="true">
+          <span></span>
+        </div>
+      </section>
+
+    </div>
+    <main class="workspace">
+      <section class="toolbar">
+        <div>
+          <p id="toolbarEyebrow" class="eyebrow">Formato digital</p>
+          <h2 id="toolbarTitle">Entrega de efectivo a Transbank</h2>
+        </div>
+        <div class="toolbar-actions" id="formToolbarActions">
+          <button id="newRecord" class="icon-button" type="button" title="Nuevo">+</button>
+          <button id="saveRecord" class="primary-button" type="button">Guardar</button>
+          <button id="clearFormButton" class="secondary-button" type="button">Limpiar</button>
+          <button id="printRecord" class="secondary-button" type="button">Imprimir</button>
+        </div>
+      </section>
+      <div id="onlineStatus" class="online-status"></div>
+      <section id="homeView" class="view active" aria-label="Inicio del sistema">
+        <section class="home-dashboard">
+          <div class="dashboard-header">
+            <div>
+              <p class="eyebrow">Sistema de gestión de Planilas</p>
+              <h2></h2>
+              <!-- NUEVO: mensaje de bienvenida, se llena por script al final del body -->
+              <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
+            </div>
+            <img src="assets/logo-zima.png" alt="Logo ZIMA Seguridad Ltda" class="dashboard-logo">
+            <div class="toolbar-actions">
+              <button id="dashboardRefresh" class="secondary-button" type="button">Actualizar</button>
+              <button id="homeNewRecord" class="primary-button" type="button">Nueva planilla</button>
+            </div>
+          </div>
+           <div class="dashboard-summary">
+              <img src="assets/home-planillas-zima.png" alt="Banner ZIMA" class="dashboard-banner">
+            </div>
+          <div class="dashboard-grid" aria-label="Resumen de registros">
+            <article class="dashboard-card">
+              <span>Total registros</span>
+              <strong id="dashTotalRecords">0</strong>
+              <small id="dashTotalRecordsChange">+0 esta semana</small>
+            </article>
+            <article class="dashboard-card">
+              <span>Total entregado</span>
+              <strong id="dashTotalMoney">$ 0</strong>
+              <small id="dashTotalMoneyChange">+$ 0 esta semana</small>
+            </article>
+            <article class="dashboard-card">
+              <span>Promedio por registro</span>
+              <strong id="dashAverageAmount">$ 0</strong>
+              <small><span id="dashMonthRecords">0</span> este mes</small>
+            </article>
+            <article class="dashboard-card">
+              <span>Dinero este mes</span>
+              <strong id="dashMonthAmount">$ 0</strong>
+              <small>Resumen mensual</small>
+            </article>
+          </div>
+
+          <section class="dashboard-section">
+            <h3>Actividad diaria</h3>
+            <div id="dashDailyChart" class="daily-chart"></div>
+          </section>
+
+          <section class="dashboard-section">
+            <h3>Resumen por peaje</h3>
+            <div id="peajeSummary" class="peaje-summary"></div>
+          </section>
+        </section>
+      </section>
+
+      <section id="formView" class="view" aria-label="Formulario de entrega">
+        <form id="moneyForm" class="form-layout">
+          <section class="paper">
+            <div class="paper-header">
+              <div class="logo-box logo-zima">
+                <img src="assets/logo-zima.png" alt="Logo ZIMA Seguridad Ltda" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span>ZIMA<br><small>SEGURIDAD LTDA</small></span>
+              </div>
+              <div class="document-title">
+                <p>MANEJO DE DINEROS ENTREGADOS A TRANSBANK</p>
+                <span>Planilla general de control</span>
+              </div>
+              <div class="logo-box logo-ani">
+                <img src="assets/logo-ani.png" alt="Logo ANI" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <span>ANI</span>
+                <div class="document-code">
+                  <label for="codigoSello">Código/Sello</label>
+                  <input id="codigoSello" name="codigoSello" placeholder="Ej. S-0001">
+                </div>
+              </div>
+            </div>
+
+            <div class="section-title">Datos generales</div>
+            <div class="grid two">
+              <label>
+                Peaje
+                <select id="peaje" name="peaje" required>
+                  <option value="PEAJE ZARAGOZA">Peaje Zaragoza</option>
+                  <option value="PEAJE FRAGUA">Peaje Fragua</option>
+                </select>
+              </label>
+              <label>
+                Centro o razón social
+                <input name="centro" required placeholder="Nombre del centro">
+              </label>
+              <label>
+                Tipo moneda
+                <select name="moneda">
+                  <option value="COP">COP - Peso colombiano</option>
+                  <option value="USD">USD - Dólar</option>
+                </select>
+              </label>
+              <label>
+                Lugar de entrega
+                <input name="lugarEntrega" placeholder="Lugar donde se entrega">
+              </label>
+              <label>
+                Responsable recibe Transbank
+                <input name="responsableRecibe" required placeholder="Nombre completo">
+              </label>
+              <label>
+                Ciudad
+                <input name="ciudad" placeholder="Ciudad">
+              </label>
+              <label>
+                Lugar de recibo
+                <input name="lugarRecibo" placeholder="Lugar de recibo">
+              </label>
+              <label>
+                Fecha
+                <input name="fecha" type="date" required>
+              </label>
+              <label>
+                Consecutivo
+                <input name="consecutivo" placeholder="Opcional">
+              </label>
+            </div>
+
+            <div class="section-title">Valores entregados</div>
+            <div class="money-table" role="group" aria-label="Valores entregados">
+              <div class="table-head">
+                <span>Concepto</span>
+                <span>Total entregado</span>
+                <span>Observaciones</span>
+              </div>
+              <div class="table-row">
+                <strong>Efectivo</strong>
+                <input name="efectivo" class="money-input" inputmode="numeric" placeholder="$ 0">
+                <input name="observacionesEfectivo" placeholder="Observaciones">
+              </div>
+              <div class="table-row total-row">
+                <strong>Total entregado a Transbank</strong>
+                <output id="totalEntregado">$ 0</output>
+                <span></span>
+              </div>
+            </div>
+
+            <div class="section-title">Declaración de valores</div>
+            <div class="grid two declarations">
+              <label>
+                Valor declarado en tula y/o bolsa
+                <input name="valorTula" class="money-input" inputmode="numeric" placeholder="$ 0">
+              </label>
+              <label>
+                Valor declarado billetes
+                <input name="valorBilletes" class="money-input" inputmode="numeric" placeholder="$ 0">
+              </label>
+            </div>
+
+            <label class="wide-label">
+              Valor en letras
+              <textarea id="valorLetras" name="valorLetras" rows="2" readonly></textarea>
+            </label>
+
+            <label class="wide-label">
+              Observaciones generales
+              <textarea name="observacionesGenerales" rows="3" placeholder="Notas adicionales"></textarea>
+            </label>
+
+            <div class="section-title">Firmas</div>
+            <div class="signatures">
+              <div>
+                <strong>Entregado por</strong>
+                <label>Nombre <input name="entregadoNombre"></label>
+                <label>Firma <input name="entregadoFirma"></label>
+              </div>
+              <div>
+                <strong>Revisado por</strong>
+                <label>Nombre <input name="revisadoNombre"></label>
+                <label>Firma <input name="revisadoFirma"></label>
+              </div>
+            </div>
+          </section>
+        </form>
+      </section>
+
+      <section id="recordsView" class="view" aria-label="Registros guardados">
+        <div class="records-header">
+          <div>
+            <p class="eyebrow">Historial online</p>
+            <h2>Registros guardados</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button id="exportCsv" class="secondary-button" type="button">CSV</button>
+            <button id="exportJson" class="secondary-button" type="button">JSON</button>
+          </div>
+        </div>
+        <div id="recordsList" class="records-list"></div>
+      </section>
+
+      <section id="auditView" class="view" aria-label="Panel de auditoría">
+        <div class="records-header">
+          <div>
+            <p class="eyebrow">Control y análisis</p>
+            <h2>Panel de auditoría</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button id="exportCsvAudit" class="secondary-button" type="button">CSV</button>
+            <button id="exportJsonAudit" class="secondary-button" type="button">JSON</button>
+          </div>
+        </div>
+
+        <div class="audit-filters">
+          <div class="filter-group">
+            <label>
+              Buscar
+              <input id="auditSearch" type="text" placeholder="Código, centro, responsable...">
+            </label>
+          </div>
+          <div class="filter-group">
+            <label>
+              Peaje
+              <select id="auditFilterPeaje">
+                <option value="">Todos</option>
+                <option value="PEAJE ZARAGOZA">Peaje Zaragoza</option>
+                <option value="PEAJE FRAGUA">Peaje Fragua</option>
+              </select>
+            </label>
+          </div>
+          <div class="filter-group">
+            <label>
+              Desde fecha
+              <input id="auditFilterDateFrom" type="date">
+            </label>
+          </div>
+          <div class="filter-group">
+            <label>
+              Hasta fecha
+              <input id="auditFilterDateTo" type="date">
+            </label>
+          </div>
+          <button id="auditFilterApply" class="secondary-button" type="button">Filtrar</button>
+          <button id="auditFilterClear" class="icon-button" type="button" title="Limpiar filtros">×</button>
+        </div>
+
+        <div class="audit-summary">
+          <div class="summary-card">
+            <strong>Total registros</strong>
+            <span id="auditTotalRecords">0</span>
+          </div>
+          <div class="summary-card">
+            <strong>Total efectivo</strong>
+            <span id="auditTotalAmount">$ 0</span>
+          </div>
+          <div class="summary-card">
+            <strong>Por peaje</strong>
+            <span id="auditByPeaje">-</span>
+          </div>
+        </div>
+
+        <div id="auditRecordsList" class="records-list"></div>
+      </section>
+
+      <section id="adminView" class="view" aria-label="Administración general">
+        <div class="records-header">
+          <div>
+            <p class="eyebrow">Administración</p>
+            <h2>Administrador general / soporte virtual</h2>
+          </div>
+          <div class="toolbar-actions">
+            <button id="adminRefreshUsers" class="secondary-button" type="button">Actualizar</button>
+            <button id="adminNotifyMissing" class="primary-button" type="button">Enviar alertas</button>
+          </div>
+        </div>
+
+        <div class="admin-panel-card">
+          <div class="admin-panel-header">
+            <span>Gestión de usuarios y soporte</span>
+            <strong>Controla accesos, alertas y seguimiento en un solo lugar.</strong>
+          </div>
+          <div class="audit-filters admin-filters">
+            <div class="filter-group">
+              <label>
+                Buscar usuario
+                <input id="adminUserSearch" type="text" placeholder="Ej. SOPORTE SISTEMA">
+              </label>
+            </div>
+            <div class="filter-group">
+              <label>
+                Usuario / peaje
+                <input id="adminUserName" type="text" placeholder="Ej. SOPORTE SISTEMA">
+              </label>
+            </div>
+            <div class="filter-group">
+              <label>
+                Nombre visible
+                <input id="adminUserDisplayName" type="text" placeholder="Ej. Soporte Sistema">
+              </label>
+            </div>
+            <div class="filter-group">
+              <label>
+                Clave inicial
+                <input id="adminUserPassword" type="text" placeholder="Clave temporal">
+              </label>
+            </div>
+            <div class="filter-group">
+              <label>
+                Rol
+                <select id="adminUserRole">
+                  <option value="PEAJE">Peaje</option>
+                  <option value="AUDITORIA">Auditoría</option>
+                  <option value="ADMIN">Administrador / Soporte</option>
+                </select>
+              </label>
+            </div>
+            <button id="adminSaveUser" class="primary-button admin-action-button" type="button">Crear usuario</button>
+          </div>
+        </div>
+
+        <div class="audit-summary">
+          <div class="summary-card">
+            <strong>Usuarios activos</strong>
+            <span id="adminUserCount">0</span>
+          </div>
+          <div class="summary-card">
+            <strong>Acción rápida</strong>
+            <span id="adminQuickAction">Gestión online</span>
+          </div>
+        </div>
+
+        <div id="adminUsersList" class="records-list"></div>
+      </section>
+
+      <section id="alertsView" class="view" aria-label="Alertas del sistema">
+        <div class="records-header">
+          <div>
+            <p class="eyebrow">Alertas</p>
+            <h2>Panel de alertas y seguimiento</h2>
+          </div>
+        </div>
+
+        <div class="admin-panel-card">
+          <div class="admin-panel-header">
+            <span>Alerta a peaje</span>
+            <strong>Envía una notificación al peaje y copia a auditoría.</strong>
+          </div>
+          <div class="admin-alert-fields">
+            <label>
+              Peaje destino
+              <select id="adminAlertPeaje">
+                <option value="">Seleccione un peaje</option>
+                <option value="PEAJE ZARAGOZA">PEAJE ZARAGOZA</option>
+                <option value="PEAJE FRAGUA">PEAJE FRAGUA</option>
+              </select>
+            </label>
+            <label>
+              Mensaje de alerta
+              <textarea id="adminAlertMessage" rows="4" placeholder="Ingrese la información de la actualización o corrección a enviar al peaje y copia a auditoría"></textarea>
+            </label>
+            <label>
+              Adjuntar imágenes
+              <input id="adminAlertImages" type="file" accept="image/*" multiple>
+            </label>
+            <button id="adminSendAlert" class="primary-button" type="button">Enviar alerta</button>
+            <p id="adminAlertStatus" class="admin-alert-status"></p>
+          </div>
+        </div>
+
+        <div class="admin-panel-card">
+          <div class="admin-panel-header">
+            <span>Registro de alertas</span>
+            <strong>Historial de envíos y seguimiento.</strong>
+          </div>
+          <div id="adminAlertsList" class="admin-alerts-list"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="recordTemplate">
+    <article class="record-card">
+      <div>
+        <strong class="record-title"></strong>
+        <span class="record-meta"></span>
+      </div>
+      <output class="record-total"></output>
+      <div class="record-actions">
+        <button class="secondary-button load-record" type="button">Abrir</button>
+        <button class="danger-button delete-record" type="button">Eliminar</button>
+      </div>
+    </article>
+  </template>
+
+  <div id="loadingOverlay" class="loading-overlay is-hidden">
+    <section class="loading-modal" role="status" aria-live="polite" aria-label="Procesando solicitud">
+      <div class="loading-logo-wrap">
+        <img src="assets/logo-zima.png" alt="Logo ZIMA">
+      </div>
+      <div class="loading-copy">
+        <strong>Procesando planilla</strong>
+        <p>Estamos guardando la información en la base online.</p>
+      </div>
+      <div class="loading-progress" aria-hidden="true">
+        <span></span>
+      </div>
+    </section>
+  </div>
+
+  <!-- NUEVO: modal de confirmación para "Cerrar sesión". Reutiliza el
+       mismo look de .loading-overlay / .loading-modal para que combine
+       con el resto del sistema. -->
+  <div id="logoutConfirmOverlay" class="loading-overlay is-hidden" aria-hidden="true">
+    <section class="loading-modal" role="alertdialog" aria-modal="true" aria-live="polite"
+      aria-label="Confirmar cierre de sesión">
+      <div class="loading-logo-wrap">
+        <img src="assets/logo-zima.png" alt="Logo ZIMA">
+      </div>
+      <div class="loading-copy">
+        <strong>¿Cerrar sesión?</strong>
+        <p>Se cerrará su sesión actual. Verifique que haya guardado los cambios pendientes.</p>
+      </div>
+      <div class="logout-confirm-actions">
+        <button id="logoutCancelButton" class="secondary-button" type="button">Cancelar</button>
+        <button id="logoutConfirmButton" class="danger-button" type="button">Sí, cerrar sesión</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="changePasswordOverlay" class="loading-overlay is-hidden" aria-hidden="true">
+    <section class="loading-modal" role="alertdialog" aria-modal="true" aria-live="polite"
+      aria-label="Cambiar contraseña de usuario">
+      <div class="loading-logo-wrap">
+        <img src="assets/logo-zima.png" alt="Logo ZIMA">
+      </div>
+      <div class="loading-copy">
+        <strong id="changePasswordTitle">Nueva clave</strong>
+        <p>Ingrese la nueva contraseña para este usuario y confirme el cambio.</p>
+        <label style="display:block; margin-top:12px;">
+          Contraseña nueva
+          <input id="changePasswordInput" type="password" style="width:100%; margin-top:6px; padding:10px; border-radius:8px; border:1px solid #cbd8e5;" autocomplete="new-password">
+        </label>
+      </div>
+      <div class="logout-confirm-actions">
+        <button id="changePasswordCancel" class="secondary-button" type="button">Cancelar</button>
+        <button id="changePasswordSave" class="primary-button" type="button">Aceptar</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="welcomeModalOverlay" class="loading-overlay is-hidden" aria-hidden="true">
+    <section class="loading-modal" role="alertdialog" aria-modal="true" aria-live="polite" aria-labelledby="welcomeModalTitle">
+      <div class="loading-logo-wrap">
+        <img src="assets/logo-zima.png" alt="Logo ZIMA">
+      </div>
+      <div class="loading-copy">
+        <strong id="welcomeModalTitle">Bienvenido/a a ZIMA</strong>
+        <p>Has iniciado sesión exitosamente. Ya puedes crear, limpiar e imprimir tu planilla.</p>
+      </div>
+      <div class="logout-confirm-actions">
+        <button id="welcomeModalClose" class="primary-button" type="button">Continuar</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+
+  <!-- NUEVO: script pequeño y autocontenido, no toca app.js.
+       1) Llena el mensaje de bienvenida cuando el panel se hace visible.
+       2) Intercepta el clic en "Cerrar sesión" para pedir confirmación
+          antes de dejar pasar el clic real hacia el listener de app.js. -->
+  <script>
+    (function () {
+      var shell = document.querySelector('.app-shell');
+      var welcomeEl = document.getElementById('welcomeMessage');
+      if (!shell || !welcomeEl) return;
+
+      function greetingByHour() {
+        var h = new Date().getHours();
+        if (h >= 5 && h < 12) return 'Buenos días';
+        if (h >= 12 && h < 19) return 'Buenas tardes';
+        return 'Buenas noches';
+      }
+
+      function renderWelcome() {
+        var peajeEl = document.getElementById('sessionPeaje');
+        var peajeText = peajeEl && peajeEl.textContent.trim() && peajeEl.textContent.trim() !== 'Registro actual'
+          ? ' — ' + peajeEl.textContent.trim()
+          : '';
+        welcomeEl.textContent = greetingByHour() + ', bienvenido/a a Planillas' + peajeText + '.';
+      }
+
+      renderWelcome();
+
+      // El nombre del peaje lo llena app.js después del login, así que
+      // se vuelve a calcular el mensaje cada vez que el panel deja de
+      // estar oculto (clase .is-hidden).
+      var observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+          if (mutation.attributeName === 'class' && !shell.classList.contains('is-hidden')) {
+            renderWelcome();
+          }
+        });
+      });
+      observer.observe(shell, { attributes: true });
+    })();
+
+    (function () {
+      var logoutButton = document.getElementById('logoutButton');
+      var overlay = document.getElementById('logoutConfirmOverlay');
+      var cancelButton = document.getElementById('logoutCancelButton');
+      var confirmButton = document.getElementById('logoutConfirmButton');
+      if (!logoutButton || !overlay || !cancelButton || !confirmButton) return;
+
+      var logoutConfirmed = false;
+
+      function showConfirm() {
+        overlay.classList.remove('is-hidden');
+        overlay.setAttribute('aria-hidden', 'false');
+      }
+
+      function hideConfirm() {
+        overlay.classList.add('is-hidden');
+        overlay.setAttribute('aria-hidden', 'true');
+      }
+
+      // Este handler se asigna vía la propiedad onclick (más temprano en
+      // el ciclo de carga que el addEventListener que agrega app.js), así
+      // que se ejecuta primero y puede bloquear el cierre de sesión real
+      // hasta que el usuario confirme.
+      logoutButton.onclick = function (event) {
+        if (logoutConfirmed) {
+          // El usuario ya confirmó: dejamos pasar el clic para que
+          // el listener original de app.js haga el cierre de sesión.
+          logoutConfirmed = false;
+          return true;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        showConfirm();
+        return false;
+      };
+
+      cancelButton.addEventListener('click', hideConfirm);
+
+      confirmButton.addEventListener('click', function () {
+        hideConfirm();
+        logoutConfirmed = true;
+        logoutButton.click();
+      });
+
+      overlay.addEventListener('click', function (event) {
+        if (event.target === overlay) hideConfirm();
+      });
+    })();
+  </script>
+</body>
+</html>
