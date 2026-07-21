@@ -467,14 +467,21 @@ function saveUser_(sheet, incoming, user) {
 }
 
 function changePassword_(sheet, targetPeaje, newPassword, user) {
-  if (!isAdminUser_(user)) {
-    throw new Error('Solo el administrador general puede cambiar claves.');
-  }
+  // Allow admins, soporte users, or users changing their own password
+  const normalizedUserPeaje = normalizeText_(user && user.peaje);
+  const isSupport = normalizedUserPeaje && normalizedUserPeaje.includes('SOPORTE');
+  const isAdminOrSupport = isAdminUser_(user) || isSupport;
 
-  const normalizedTarget = String(targetPeaje || '').trim();
+  const normalizedTarget = String(targetPeaje || normalizedUserPeaje || '').trim();
   const passwordValue = String(newPassword || '').trim();
+
   if (!normalizedTarget || !passwordValue) {
     throw new Error('Debe indicar el usuario y la nueva clave.');
+  }
+
+  // Only admin/support can change other users' passwords; others can change their own
+  if (!isAdminOrSupport && normalizeText_(normalizedTarget) !== normalizedUserPeaje) {
+    throw new Error('No tiene permisos para cambiar la clave de otro usuario.');
   }
 
   const existingRow = findUserRowByPeaje_(sheet, normalizedTarget);
