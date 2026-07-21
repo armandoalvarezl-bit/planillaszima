@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmZtAdVD5E5PzkQmH8XGi0hmybCgbSGTktKUyYxocxlr8Eofm0fDYuIdIYi18PVfsZ4Q/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJErk9rJV1S07lIDXjed58BQIcUpl6l4VdhR6eV9iVCI6-lb0C3c-LFtbFa-LFT-XyvQ/exec';
 const SESSION_KEY = 'transbankSession';
 
 // Elementos del DOM - se inicializaran en DOMContentLoaded
@@ -1520,15 +1520,26 @@ async function saveAdminUser() {
 }
 
 async function changePasswordOnline(targetPeaje, passwordValue) {
-  const payload = await requestJsonp(getScriptUrl(), {
-    action: 'changepassword',
-    peaje: currentUser.peaje,
-    password: currentUser.password,
-    targetPeaje,
-    passwordValue
-  });
-  if (!payload || !payload.ok) throw new Error(payload && payload.error ? payload.error : 'No se pudo cambiar la clave');
-  return payload.user;
+  try {
+    console.debug('changePasswordOnline -> params', { peaje: currentUser && currentUser.peaje, targetPeaje, passwordLength: (passwordValue || '').length });
+    const params = {
+      action: 'changepassword',
+      peaje: currentUser.peaje,
+      password: currentUser.password,
+      targetPeaje,
+      passwordValue
+    };
+    const payload = await requestJsonp(getScriptUrl(), params);
+    console.debug('changePasswordOnline -> response', payload);
+    if (!payload || !payload.ok) {
+      console.error('changePasswordOnline failed', payload);
+      throw new Error(payload && payload.error ? payload.error : 'No se pudo cambiar la clave');
+    }
+    return payload.user;
+  } catch (err) {
+    console.error('changePasswordOnline exception', err && err.message ? err.message : err);
+    throw err;
+  }
 }
 
 async function deleteUserOnline(targetPeaje) {
@@ -1849,6 +1860,7 @@ document.addEventListener('DOMContentLoaded', function() {
   adminPasswordInput = document.querySelector('#changePasswordInput');
   adminPasswordCancel = document.querySelector('#changePasswordCancel');
   adminPasswordSave = document.querySelector('#changePasswordSave');
+  adminPasswordStatus = document.querySelector('#changePasswordStatus');
   loadingOverlay = document.querySelector('#loadingOverlay');
   homeWelcome = document.querySelector('#homeWelcome');
   homePeaje = document.querySelector('#homePeaje');
@@ -1994,22 +2006,30 @@ document.addEventListener('DOMContentLoaded', function() {
   if (adminPasswordSave) adminPasswordSave.addEventListener('click', async () => {
     const nextPassword = (adminPasswordInput?.value || '').trim();
     if (!nextPassword || !adminPasswordTarget) {
-      setOnlineStatus('Ingrese una nueva contraseña para continuar.');
+      if (adminPasswordStatus) adminPasswordStatus.textContent = 'Ingrese una nueva contraseña para continuar.';
       return;
     }
 
     try {
+      // disable controls while request is in flight
+      adminPasswordSave.disabled = true;
+      adminPasswordCancel.disabled = true;
+      if (adminPasswordStatus) adminPasswordStatus.textContent = 'Cambiando contraseña...';
+
       await changePasswordOnline(adminPasswordTarget, nextPassword);
       if (currentUser?.peaje === adminPasswordTarget) {
         currentUser.password = nextPassword;
         saveSession(currentUser, nextPassword);
       }
-      setOnlineStatus(`Contraseña actualizada en la hoja de usuarios. Se recargó la lista.`);
+      if (adminPasswordStatus) adminPasswordStatus.textContent = 'Contraseña actualizada correctamente.';
       closeChangePasswordModal();
       if (adminPasswordInput) adminPasswordInput.value = '';
       await loadAdminUsers();
     } catch (error) {
-      setOnlineStatus(`No fue posible cambiar la clave: ${error.message}`);
+      if (adminPasswordStatus) adminPasswordStatus.textContent = `No fue posible cambiar la clave: ${error.message}`;
+    } finally {
+      adminPasswordSave.disabled = false;
+      adminPasswordCancel.disabled = false;
     }
   });
 

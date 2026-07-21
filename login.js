@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmZtAdVD5E5PzkQmH8XGi0hmybCgbSGTktKUyYxocxlr8Eofm0fDYuIdIYi18PVfsZ4Q/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJErk9rJV1S07lIDXjed58BQIcUpl6l4VdhR6eV9iVCI6-lb0C3c-LFtbFa-LFT-XyvQ/exec';
 const SESSION_KEY = 'transbankSession';
 
 const loginForm = document.querySelector('#loginForm');
@@ -109,7 +109,9 @@ function requestJsonp(url, params) {
       reject(new Error('No se pudo cargar Apps Script'));
     };
 
-    script.src = `${url}${separator}${query.toString()}`;
+    const src = `${url}${separator}${query.toString()}`;
+    console.debug('requestJsonp -> src', src);
+    script.src = src;
     document.body.append(script);
   });
 }

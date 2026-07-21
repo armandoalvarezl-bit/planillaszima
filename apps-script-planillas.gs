@@ -475,21 +475,27 @@ function changePassword_(sheet, targetPeaje, newPassword, user) {
   const normalizedTarget = String(targetPeaje || normalizedUserPeaje || '').trim();
   const passwordValue = String(newPassword || '').trim();
 
+  Logger.log('changePassword_ request by=%s target=%s isAdminOrSupport=%s', normalizedUserPeaje, normalizedTarget, String(isAdminOrSupport));
+
   if (!normalizedTarget || !passwordValue) {
     throw new Error('Debe indicar el usuario y la nueva clave.');
   }
 
   // Only admin/support can change other users' passwords; others can change their own
   if (!isAdminOrSupport && normalizeText_(normalizedTarget) !== normalizedUserPeaje) {
+    Logger.log('changePassword_ permission denied caller=%s target=%s', normalizedUserPeaje, normalizedTarget);
     throw new Error('No tiene permisos para cambiar la clave de otro usuario.');
   }
 
   const existingRow = findUserRowByPeaje_(sheet, normalizedTarget);
   if (!existingRow) {
+    Logger.log('changePassword_ user not found target=%s', normalizedTarget);
     throw new Error('No existe el usuario indicado.');
   }
 
+  Logger.log('changePassword_ changing password for %s at row %s (newLength=%s)', normalizedTarget, existingRow, String((passwordValue || '').length));
   sheet.getRange(existingRow, 3, 1, 1).setValue(passwordValue);
+  Logger.log('changePassword_ saved password for %s', normalizedTarget);
   return { peaje: normalizedTarget, passwordChanged: true };
 }
 
