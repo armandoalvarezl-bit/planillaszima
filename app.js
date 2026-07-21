@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJErk9rJV1S07lIDXjed58BQIcUpl6l4VdhR6eV9iVCI6-lb0C3c-LFtbFa-LFT-XyvQ/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxj1JCL968EglT2nvpbVFjJ-vKQbWPEW04yD6CWgIvdSh1klCjBkpKR2QX3givRA6S8RA/exec';
 const SESSION_KEY = 'transbankSession';
 
 // Elementos del DOM - se inicializaran en DOMContentLoaded
@@ -1522,14 +1522,13 @@ async function saveAdminUser() {
 async function changePasswordOnline(targetPeaje, passwordValue) {
   try {
     console.debug('changePasswordOnline -> params', { peaje: currentUser && currentUser.peaje, targetPeaje, passwordLength: (passwordValue || '').length });
-    const params = {
+    const payload = await requestPostJson(getScriptUrl(), {
       action: 'changepassword',
       peaje: currentUser.peaje,
       password: currentUser.password,
       targetPeaje,
       passwordValue
-    };
-    const payload = await requestJsonp(getScriptUrl(), params);
+    });
     console.debug('changePasswordOnline -> response', payload);
     if (!payload || !payload.ok) {
       console.error('changePasswordOnline failed', payload);
@@ -1543,7 +1542,7 @@ async function changePasswordOnline(targetPeaje, passwordValue) {
 }
 
 async function deleteUserOnline(targetPeaje) {
-  const payload = await requestJsonp(getScriptUrl(), {
+  const payload = await requestPostJson(getScriptUrl(), {
     action: 'deleteuser',
     peaje: currentUser.peaje,
     password: currentUser.password,

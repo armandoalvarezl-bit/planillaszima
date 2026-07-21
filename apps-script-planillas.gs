@@ -7,14 +7,6 @@ const SPREADSHEET_ID = '';
 
 const USER_HEADERS = ['peaje', 'nombre', 'password', 'activo', 'rol'];
 const ALERT_HEADERS = ['id', 'createdAt', 'sentAt', 'sentBy', 'targetPeaje', 'message', 'attachmentNames', 'recipients'];
-const DEFAULT_USERS = [
-  ['PEAJE ZARAGOZA', 'Peaje Zaragoza', 'zaragoza123', 'SI', 'PEAJE'],
-  ['PEAJE FRAGUA', 'Peaje Fragua', 'fragua123', 'SI', 'PEAJE'],
-  ['AUDITORIA DE OPERACIONES', 'Auditoría de la Jefa Beatriz', 'auditoria123', 'SI', 'AUDITORIA'],
-  ['ADMINISTRADOR GENERAL', 'Administrador General', 'adminzima2026', 'SI', 'ADMIN'],
-  ['SOPORTE SISTEMA', 'Soporte Sistema', 'soporte123', 'SI', 'ADMIN']
-];
-
 const HEADERS = [
   'id',
   'createdAt',
@@ -88,6 +80,9 @@ function doGet(e) {
     } else if (action === 'changepassword') {
       const user = authenticateUser_(usersSheet, params.peaje, params.password);
       payload = { ok: true, user: changePassword_(usersSheet, params.targetPeaje || params.userPeaje, params.passwordValue || params.newPassword, user) };
+    } else if (action === 'deleteuser') {
+      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      payload = { ok: true, user: disableUser_(usersSheet, params.targetPeaje || params.userPeaje, user) };
     } else if (action === 'delete') {
       const user = authenticateUser_(usersSheet, params.peaje, params.password);
       payload = { ok: true, deleted: deleteRecord_(sheet, params.id, user, params.reason) };
@@ -190,7 +185,6 @@ function getUsersSheet_() {
   }
 
   ensureUserHeaders_(sheet);
-  seedDefaultUsers_(sheet);
   return sheet;
 }
 
@@ -262,30 +256,6 @@ function ensureUserHeaders_(sheet) {
     sheet.setFrozenRows(1);
     sheet.autoResizeColumns(1, USER_HEADERS.length);
   }
-}
-
-function seedDefaultUsers_(sheet) {
-  const lastRow = sheet.getLastRow();
-  if (lastRow >= 2) {
-    ensureDefaultUsers_(sheet);
-    return;
-  }
-
-  sheet.getRange(2, 1, DEFAULT_USERS.length, USER_HEADERS.length).setValues(DEFAULT_USERS);
-}
-
-function ensureDefaultUsers_(sheet) {
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return;
-
-  const existingUsers = sheet.getRange(2, 1, lastRow - 1, 1).getValues().map(row => normalizeText_(row[0]));
-
-  DEFAULT_USERS.forEach((defaultUser) => {
-    const normalizedPeaje = normalizeText_(defaultUser[0]);
-    if (!existingUsers.includes(normalizedPeaje)) {
-      sheet.appendRow(defaultUser);
-    }
-  });
 }
 
 function authenticateUser_(sheet, peaje, password) {
