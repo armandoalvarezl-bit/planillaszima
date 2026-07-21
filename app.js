@@ -1,6 +1,5 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzCLrZPIN9utsz69d89Wgk0aKXBAqMVIBWoiLMOsrhEVqL4ovw4emLoE82pZMJcrurm/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx7LG94nLVytLdHnr3KlCVc4iNG2kj6U3kr5kDdC1i5Ijd5n1XAmtEZOYljbA4MR21wBg/exec';
 const SESSION_KEY = 'transbankSession';
-const LOCAL_RECORDS_KEY = 'transbankLocalRecords';
 
 // Elementos del DOM - se inicializaran en DOMContentLoaded
 let form;
@@ -25,6 +24,8 @@ let welcomeModalCloseButton;
 let dashboardButton;
 let dashboardRefresh;
 let auditViewButton;
+let adminViewButton;
+let alertsViewButton;
 let auditSearch;
 let auditFilterPeaje;
 let auditFilterDateFrom;
@@ -32,6 +33,29 @@ let auditFilterDateTo;
 let auditFilterApply;
 let auditFilterClear;
 let auditRecordsList;
+let adminUsersList;
+let adminUserSearch;
+let adminUserName;
+let adminUserDisplayName;
+let adminUserPassword;
+let adminUserRole;
+let adminSaveUser;
+let adminRefreshUsers;
+let adminNotifyMissing;
+let adminAlertPeaje;
+let adminAlertMessage;
+let adminAlertImages;
+let adminSendAlert;
+let adminAlertStatus;
+let adminAlertsList;
+let adminUserCount;
+let adminQuickAction;
+let adminPasswordOverlay;
+let adminPasswordTitle;
+let adminPasswordInput;
+let adminPasswordCancel;
+let adminPasswordSave;
+let adminPasswordTarget;
 let auditTotalRecords;
 let auditTotalAmount;
 let auditByPeaje;
@@ -55,6 +79,8 @@ let recordsCache = [];
 let configuredScriptUrl = DEFAULT_SCRIPT_URL;
 let currentUser = null;
 let shouldClearAfterPrint = false;
+let autoSaveTimer = null;
+const AUTO_SAVE_DELAY_MS = 2000;
 
 const currency = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -201,34 +227,6 @@ function getRecords() {
   return recordsCache;
 }
 
-function getLocalRecords() {
-  try {
-    const stored = localStorage.getItem(LOCAL_RECORDS_KEY);
-    const parsed = stored ? JSON.parse(stored) : [];
-    return Array.isArray(parsed) ? parsed : [];
-  } catch (error) {
-    console.error('No se pudieron leer los registros locales:', error);
-    return [];
-  }
-}
-
-function persistLocalRecords(records) {
-  try {
-    localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(records));
-  } catch (error) {
-    console.error('No se pudieron guardar los registros locales:', error);
-  }
-}
-
-function removeLocalRecordById(id) {
-  if (!id) return;
-  const localRecords = getLocalRecords();
-  const nextRecords = localRecords.filter((record) => record.id !== id);
-  if (nextRecords.length !== localRecords.length) {
-    persistLocalRecords(nextRecords);
-  }
-}
-
 function setRecords(records) {
   recordsCache = Array.isArray(records) ? records : [];
   console.log('setRecords:', recordsCache.length, 'elementos');
@@ -251,6 +249,30 @@ function isAuditUser() {
     currentUser?.peaje === 'AUDITORIA DE OPERACIONES' ||
     String(currentUser?.nombre || '').toUpperCase().includes('AUDITORIA')
   );
+}
+
+function clearAutoSaveTimer() {
+  if (autoSaveTimer) {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = null;
+  }
+}
+
+function scheduleAutoSave() {
+  if (!form || !currentUser) return;
+  clearAutoSaveTimer();
+
+  autoSaveTimer = window.setTimeout(async () => {
+    autoSaveTimer = null;
+    if (!form.checkValidity()) return;
+    if (!currentStatus || currentStatus.textContent !== 'Con cambios') return;
+
+    setOnlineStatus('Guardando automáticamente la planilla...');
+    const saved = await saveRecord({ clearAfterSave: false, promptEmail: false, isAutoSave: true });
+    if (saved) {
+      setOnlineStatus('Planilla guardada automáticamente.');
+    }
+  }, AUTO_SAVE_DELAY_MS);
 }
 
 function formData() {
@@ -549,68 +571,6 @@ async function showPdfPreview(record) {
   pdfModal.setAttribute('aria-hidden', 'false');
 }
 
-function getUnsyncedLocalRecords() {
-  return getLocalRecords();
-}
-
-function hasUnsyncedRecords() {
-  return getUnsyncedLocalRecords().length > 0;
-}
-
-async function showUnsyncedWarning() {
-  const unsynced = getUnsyncedLocalRecords();
-  if (unsynced.length === 0) return false;
-
-  const count = unsynced.length;
-  const detail = unsynced.slice(0, 3).map(r => 
-    `${formatDate(r.fecha)} - ${r.codigoSello || 'sin codigo'}: $${onlyDigits(r.total)}`
-  ).join('\n');
-  
-  const moreText = count > 3 ? `\n...y ${count - 3} mas` : '';
-
-  const result = await showConfirmationDialog({
-    title: 'Registro pendiente de sincronizacion',
-    message: `Hay ${count} planilla(s) guardada(s) localmente que no se sincronizo(sincronizaron) con la base online:\n\n${detail}${moreText}\n\nDesea recuperarla(s) y reintentar?`,
-    confirmText: 'Recuperar y reintentar',
-    cancelText: 'Descartar',
-    danger: true
-  });
-
-  if (!result) {
-    const localRecords = getLocalRecords();
-    const toKeep = localRecords.filter(r => !unsynced.find(u => u.id === r.id));
-    persistLocalRecords(toKeep);
-    setOnlineStatus('Registros pendientes descartados.');
-    return false;
-  }
-
-  // Intentar sincronizar
-  setOnlineStatus('Reintentando sincronizar registros pendientes...');
-  let successCount = 0;
-  let failCount = 0;
-
-  for (const record of unsynced) {
-    try {
-      const saved = await saveRecordOnline(record, true);
-      removeLocalRecordById(saved.id || record.id);
-      successCount++;
-    } catch (error) {
-      console.warn('No se pudo sincronizar:', record.id, error);
-      failCount++;
-    }
-  }
-
-  if (successCount > 0) {
-    await loadOnlineRecords();
-    setOnlineStatus(`${successCount} planilla(s) sincronizada(s) correctamente.`);
-  }
-  if (failCount > 0) {
-    setOnlineStatus(`Se sincronizaron ${successCount}. No se pudo sincronizar ${failCount} planilla(s). Reintente mas tarde.`);
-  }
-
-  return failCount === 0;
-}
-
 function clearForm() {
   form.reset();
   form.elements.fecha.value = today();
@@ -628,19 +588,13 @@ function recalculate() {
 }
 
 async function saveRecord(options = {}) {
-  const { clearAfterSave = true } = options;
+  const { clearAfterSave = true, promptEmail = true, isAutoSave = false } = options;
+
+  clearAutoSaveTimer();
 
   if (!currentUser) {
     setOnlineStatus('Debe iniciar sesion.');
     return null;
-  }
-
-  // Verificar si hay registros pendientes sin sincronizar
-  if (hasUnsyncedRecords()) {
-    const recovered = await showUnsyncedWarning();
-    if (!recovered) {
-      return null;
-    }
   }
 
   if (!form.reportValidity()) return null;
@@ -664,7 +618,6 @@ async function saveRecord(options = {}) {
 
   try {
     const saved = await saveRecordOnline(record, true);
-    removeLocalRecordById(saved.id);
     const records = getRecords();
     const index = records.findIndex((item) => item.id === saved.id);
 
@@ -678,33 +631,37 @@ async function saveRecord(options = {}) {
 
     hideLoading();
 
-    const sendCopy = await showConfirmationDialog({
-      title: 'Enviar copia por correo',
-      message: 'La planilla ya fue guardada. Desea enviar una copia en PDF por correo?',
-      confirmText: 'Enviar copia',
-      cancelText: 'No enviar',
-      danger: false
-    });
+    if (promptEmail) {
+      const sendCopy = await showConfirmationDialog({
+        title: 'Enviar copia por correo',
+        message: 'La planilla ya fue guardada. Desea enviar una copia en PDF por correo?',
+        confirmText: 'Enviar copia',
+        cancelText: 'No enviar',
+        danger: false
+      });
 
-    if (sendCopy) {
-      showLoading();
-      try {
-        await sendRecordCopyEmailOnline(saved);
-      } catch (emailError) {
-        console.warn('No se pudo enviar la copia por correo:', emailError);
-        setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo automaticamente: ${emailError.message}`);
+      if (sendCopy) {
+        showLoading();
         try {
-          await saveRecordOnline(saved, false);
-          setOnlineStatus('Planilla guardada y copia por correo enviada desde el servidor.');
-        } catch (fallbackError) {
-          console.warn('Fallo el respaldo de correo del servidor:', fallbackError);
-          setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo: ${fallbackError.message}`);
+          await sendRecordCopyEmailOnline(saved);
+        } catch (emailError) {
+          console.warn('No se pudo enviar la copia por correo:', emailError);
+          setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo automaticamente: ${emailError.message}`);
+          try {
+            await saveRecordOnline(saved, false);
+            setOnlineStatus('Planilla guardada y copia por correo enviada desde el servidor.');
+          } catch (fallbackError) {
+            console.warn('Fallo el respaldo de correo del servidor:', fallbackError);
+            setOnlineStatus(`Planilla guardada. No se pudo enviar la copia por correo: ${fallbackError.message}`);
+          }
+        } finally {
+          hideLoading();
         }
-      } finally {
-        hideLoading();
+      } else {
+        setOnlineStatus('Planilla guardada. No se envio copia por correo.');
       }
-    } else {
-      setOnlineStatus('Planilla guardada. No se envio copia por correo.');
+    } else if (!isAutoSave) {
+      setOnlineStatus('Planilla guardada.');
     }
     if (clearAfterSave) {
       setTimeout(() => {
@@ -718,25 +675,11 @@ async function saveRecord(options = {}) {
     
     return saved;
   } catch (error) {
-    const localRecords = getLocalRecords();
-    const localIndex = localRecords.findIndex((item) => item.id === record.id);
-    const fallbackRecord = { ...record, updatedAt: record.updatedAt, createdAt: record.createdAt, __localOnly: true };
-
-    if (localIndex >= 0) localRecords[localIndex] = fallbackRecord;
-    else localRecords.unshift(fallbackRecord);
-
-    persistLocalRecords(localRecords);
-    activeRecordId = fallbackRecord.id;
-    setRecords(localRecords);
     hideLoading();
-    currentStatus.textContent = 'Pendiente de sincronizar';
+    currentStatus.textContent = 'Error de guardado';
     updateSaveButtonLabel();
-
-    setTimeout(() => {
-      setOnlineStatus('La planilla quedo pendiente de sincronizacion local. No imprima ni cierre hasta reintentar y confirmar guardado online.');
-    }, 1000);
-
-    return fallbackRecord;
+    setOnlineStatus(`No se pudo guardar la planilla online. Verifique conexión y vuelva a intentarlo. ${error.message}`);
+    return null;
   }
 }
 
@@ -761,14 +704,6 @@ async function printRecordSafely() {
     printButton.disabled = false;
     if (saveButton) saveButton.disabled = false;
     setOnlineStatus('Impresion detenida. Primero debe guardarse correctamente el registro.');
-    return;
-  }
-
-  if (saved.__localOnly) {
-    printButton.textContent = originalText;
-    printButton.disabled = false;
-    if (saveButton) saveButton.disabled = false;
-    setOnlineStatus('Impresion detenida. La planilla esta solo en respaldo local y falta sincronizarla con la base online.');
     return;
   }
 
@@ -836,6 +771,9 @@ function switchView(viewName) {
   document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.id === `${viewName}View`));
   document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.view === viewName));
   updateToolbar(viewName);
+  if (viewName === 'admin' || viewName === 'alerts') {
+    void loadAdminAlerts();
+  }
 }
 
 function updateHome() {
@@ -865,7 +803,9 @@ function updateToolbar(viewName) {
     home: ['Formato digital', 'Entrega de efectivo a Transbank'],
     form: ['Formato digital', 'Entrega de efectivo a Transbank'],
     records: ['Historial online', 'Registros guardados'],
-    audit: ['Control y analisis', 'Panel de auditoria']
+    audit: ['Control y analisis', 'Panel de auditoria'],
+    admin: ['Administración', 'Administrador general / soporte virtual'],
+    alerts: ['Alertas', 'Panel de alertas y seguimiento']
   };
   const [eyebrow, title] = labels[viewName] || labels.home;
 
@@ -898,13 +838,21 @@ async function startSession(user) {
   currentUser = user;
   appShell.classList.remove('is-hidden');
   sessionPeaje.textContent = currentUser.nombre;
-  form.elements.peaje.disabled = !isAuditUser();
+  const canAuditPanel = isAuditUser() || isAdminUser();
+  form.elements.peaje.disabled = !canAuditPanel;
   
-  if (isAuditUser() && auditViewButton) {
+  if (canAuditPanel && auditViewButton) {
     auditViewButton.style.display = 'block';
   }
+
+  if (isAdminUser() && adminViewButton) {
+    adminViewButton.style.display = 'block';
+  }
+  if (isAdminUser() && alertsViewButton) {
+    alertsViewButton.style.display = 'block';
+  }
   
-  if (isAuditUser() && dashboardButton) {
+  if (canAuditPanel && dashboardButton) {
     dashboardButton.style.display = 'block';
   }
   
@@ -913,16 +861,6 @@ async function startSession(user) {
   updateDashboard();
   switchView('home');
   showWelcomeModal();
-  
-  const localRecords = getLocalRecords();
-  if (localRecords.length) {
-    setRecords(localRecords);
-    // Mostrar alerta si hay registros pendientes
-    if (hasUnsyncedRecords()) {
-      setTimeout(() => showUnsyncedWarning(), 500);
-    }
-  }
-  
   loadOnlineRecords();
 }
 
@@ -933,6 +871,14 @@ function clearSession() {
   form.elements.peaje.disabled = false;
   sessionStorage.removeItem(SESSION_KEY);
   window.location.href = 'login.html';
+}
+
+function isAdminUser() {
+  const user = currentUser || {};
+  const role = String(user.role || user.rol || '').toUpperCase();
+  const peaje = String(user.peaje || '').toUpperCase();
+  const nombre = String(user.nombre || '').toUpperCase();
+  return role === 'ADMIN' || peaje.includes('ADMIN') || nombre.includes('ADMIN') || peaje.includes('SOPORTE') || nombre.includes('SOPORTE');
 }
 
 function renderRecords() {
@@ -964,6 +910,7 @@ function renderRecords() {
     return;
   }
 
+  const fragment = document.createDocumentFragment();
   records.forEach((record, index) => {
     try {
       // Crear el card manualmente en lugar de usar el template
@@ -993,11 +940,12 @@ function renderRecords() {
         showPdfPreview(record);
       });
       article.querySelector('.delete-record').addEventListener('click', () => deleteRecord(record.id));
-      recordsList.append(article);
+      fragment.append(article);
     } catch (e) {
       console.error(`Error renderizando registro ${index}:`, e);
     }
   });
+  recordsList.append(fragment);
 }
 
 function getScriptUrl() {
@@ -1215,13 +1163,7 @@ function loadOnlineRecords() {
       notifyMissingRecordsIfNeeded();
     })
     .catch((error) => {
-      const localRecords = getLocalRecords();
-      if (localRecords.length) {
-        setRecords(localRecords);
-        setOnlineStatus(`No fue posible conectar con la base online. Se muestran ${localRecords.length} registros guardados localmente. Detalle: ${error.message}`);
-      } else {
-        setOnlineStatus(`No fue posible conectar con la base online. Detalle: ${error.message}`);
-      }
+      setOnlineStatus(`No fue posible conectar con la base online. Intente nuevamente cuando la conexión esté disponible. Detalle: ${error.message}`);
     });
 }
 
@@ -1478,6 +1420,245 @@ function exportAuditCsv() {
   downloadFile('registros-auditoria.csv', [headers.join(','), ...rows].join('\n'), 'text/csv;charset=utf-8');
 }
 
+function renderAdminUsers(users) {
+  if (!adminUsersList) return;
+
+  adminUsersList.replaceChildren();
+  const filtered = (users || []).filter((user) => {
+    const search = (adminUserSearch?.value || '').trim().toUpperCase();
+    if (!search) return true;
+    return [user.peaje, user.nombre, user.rol].join(' ').toUpperCase().includes(search);
+  });
+
+  if (!filtered.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'No hay usuarios para mostrar.';
+    adminUsersList.append(empty);
+    return;
+  }
+
+  filtered.forEach((user) => {
+    const article = document.createElement('article');
+    article.className = 'record-card admin-user-card';
+    const activeText = user.activo === 'NO' ? 'Inactivo' : 'Activo';
+    article.innerHTML = `
+      <div class="record-content">
+        <strong class="record-title">${user.peaje || 'Sin peaje'}</strong>
+        <span class="record-meta">${user.nombre || 'Sin nombre'} · ${user.rol || 'PEAJE'} · ${activeText}</span>
+      </div>
+      <div class="record-actions admin-actions">
+        <button class="secondary-button reset-password" type="button">Cambiar clave</button>
+        <button class="secondary-button deactivate-user" type="button">Desactivar</button>
+      </div>
+    `;
+    article.querySelector('.reset-password').addEventListener('click', (event) => {
+      event.preventDefault();
+      openChangePasswordModal(user.peaje, user.nombre || user.peaje);
+    });
+    article.querySelector('.deactivate-user').addEventListener('click', async () => {
+      try {
+        await deleteUserOnline(user.peaje);
+        setOnlineStatus(`Usuario ${user.peaje} desactivado.`);
+        await loadAdminUsers();
+      } catch (error) {
+        setOnlineStatus(`No fue posible desactivar el usuario: ${error.message}`);
+      }
+    });
+    adminUsersList.append(article);
+  });
+}
+
+async function loadAdminUsers() {
+  if (!isAdminUser()) return;
+  try {
+    const payload = await requestJsonp(getScriptUrl(), {
+      action: 'users',
+      peaje: currentUser.peaje,
+      password: currentUser.password
+    });
+    if (!payload || !payload.ok) throw new Error(payload && payload.error ? payload.error : 'No se pudo cargar usuarios');
+    const users = Array.isArray(payload.users) ? payload.users : [];
+    renderAdminUsers(users);
+    if (adminUserCount) adminUserCount.textContent = users.filter((user) => user.activo !== 'NO').length;
+    if (adminQuickAction) adminQuickAction.textContent = `Usuarios online: ${users.length}`;
+  } catch (error) {
+    setOnlineStatus(`No fue posible consultar usuarios: ${error.message}`);
+  }
+}
+
+async function saveAdminUser() {
+  if (!isAdminUser()) {
+    setOnlineStatus('Solo el administrador general puede crear usuarios.');
+    return;
+  }
+  const peaje = (adminUserName?.value || '').trim();
+  const nombre = (adminUserDisplayName?.value || peaje).trim();
+  const password = (adminUserPassword?.value || '').trim();
+  const role = (adminUserRole?.value || 'PEAJE').trim().toUpperCase();
+  if (!peaje || !nombre || !password) {
+    setOnlineStatus('Complete el usuario, el nombre visible y la clave inicial.');
+    return;
+  }
+
+  try {
+    const payload = await requestJsonp(getScriptUrl(), {
+      action: 'saveuser',
+      peaje: currentUser.peaje,
+      password: currentUser.password,
+      user: JSON.stringify({ peaje, nombre, password, activo: 'SI', rol: role })
+    });
+    if (!payload || !payload.ok) throw new Error(payload && payload.error ? payload.error : 'No se pudo crear el usuario');
+    setOnlineStatus(`Usuario ${peaje} creado correctamente.`);
+    if (adminUserPassword) adminUserPassword.value = '';
+    if (adminUserName) adminUserName.value = '';
+    if (adminUserDisplayName) adminUserDisplayName.value = '';
+    await loadAdminUsers();
+  } catch (error) {
+    setOnlineStatus(`No fue posible crear el usuario: ${error.message}`);
+  }
+}
+
+async function changePasswordOnline(targetPeaje, passwordValue) {
+  const payload = await requestJsonp(getScriptUrl(), {
+    action: 'changepassword',
+    peaje: currentUser.peaje,
+    password: currentUser.password,
+    targetPeaje,
+    passwordValue
+  });
+  if (!payload || !payload.ok) throw new Error(payload && payload.error ? payload.error : 'No se pudo cambiar la clave');
+  return payload.user;
+}
+
+async function deleteUserOnline(targetPeaje) {
+  const payload = await requestJsonp(getScriptUrl(), {
+    action: 'deleteuser',
+    peaje: currentUser.peaje,
+    password: currentUser.password,
+    targetPeaje
+  });
+  if (!payload || !payload.ok) throw new Error(payload && payload.error ? payload.error : 'No se pudo desactivar el usuario');
+  return payload.user;
+}
+
+function openChangePasswordModal(peaje, nombre) {
+  if (!adminPasswordOverlay || !adminPasswordTitle || !adminPasswordInput) return;
+  adminPasswordTarget = peaje;
+  adminPasswordTitle.textContent = `Nueva clave para ${nombre}`;
+  adminPasswordInput.value = '';
+  adminPasswordOverlay.classList.remove('is-hidden');
+  adminPasswordOverlay.setAttribute('aria-hidden', 'false');
+  adminPasswordInput.focus();
+}
+
+function closeChangePasswordModal() {
+  if (!adminPasswordOverlay) return;
+  adminPasswordTarget = null;
+  adminPasswordOverlay.classList.add('is-hidden');
+  adminPasswordOverlay.setAttribute('aria-hidden', 'true');
+}
+
+async function notifyAdminMissingPlanillas() {
+  if (!isAdminUser()) {
+    setOnlineStatus('Solo el administrador general puede enviar alertas.');
+    return;
+  }
+
+  try {
+    const payload = await requestJsonp(getScriptUrl(), {
+      action: 'notifymissing',
+      peaje: currentUser.peaje,
+      password: currentUser.password,
+      days: '10'
+    });
+    if (!payload || !payload.ok) throw new Error(payload && payload.error ? payload.error : 'No se pudieron enviar alertas');
+    const sent = payload.missing && Array.isArray(payload.missing.sent) ? payload.missing.sent : [];
+    setOnlineStatus(sent.length ? `Alertas enviadas para ${sent.length} fecha(s).` : 'No se encontraron faltantes para notificar.');
+  } catch (error) {
+    setOnlineStatus(`No fue posible enviar las alertas: ${error.message}`);
+  }
+}
+
+async function encodeFileAsBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const content = reader.result;
+      const base64 = content.split(',')[1] || '';
+      resolve({ name: file.name, mimeType: file.type || 'application/octet-stream', data: base64 });
+    };
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function sendAdminAlertOnline(targetPeaje, message, files = []) {
+  const attachments = await Promise.all(files.map((file) => encodeFileAsBase64(file)));
+  const payload = await requestPostJson(getScriptUrl(), {
+    action: 'sendalert',
+    peaje: currentUser.peaje,
+    password: currentUser.password,
+    targetPeaje,
+    message,
+    attachments: JSON.stringify(attachments)
+  });
+
+  if (!payload || !payload.ok) {
+    throw new Error(payload && payload.error ? payload.error : 'No fue posible enviar la alerta');
+  }
+
+  return payload;
+}
+
+async function loadAdminAlerts() {
+  if (!isAdminUser()) return;
+
+  try {
+    const payload = await requestJsonp(getScriptUrl(), {
+      action: 'alerts',
+      peaje: currentUser.peaje,
+      password: currentUser.password
+    });
+    if (!payload || !payload.ok) throw new Error(payload && payload.error ? payload.error : 'No se pudo cargar el historial de alertas');
+    const alerts = Array.isArray(payload.alerts) ? payload.alerts : [];
+    renderAdminAlerts(alerts);
+  } catch (error) {
+    console.error('No fue posible cargar el historial de alertas:', error);
+  }
+}
+
+function renderAdminAlerts(alerts) {
+  if (!adminAlertsList) return;
+  adminAlertsList.replaceChildren();
+
+  if (!alerts.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'No hay alertas enviadas aún.';
+    adminAlertsList.append(empty);
+    return;
+  }
+
+  alerts.forEach((alert) => {
+    const article = document.createElement('article');
+    article.className = 'record-card admin-user-card';
+    const sentAt = alert.sentAt ? formatDateTime(alert.sentAt) : 'Fecha desconocida';
+    const attachmentCount = alert.attachmentNames ? alert.attachmentNames.split('|').filter(Boolean).length : 0;
+    article.innerHTML = `
+      <div class="record-content">
+        <strong class="record-title">${alert.targetPeaje || 'Peaje desconocido'}</strong>
+        <span class="record-meta">Enviado por ${alert.sentBy || 'Administrador'} · ${sentAt}</span>
+        <p class="record-note">${String(alert.message || '').slice(0, 180)}</p>
+      </div>
+      <div class="record-actions admin-actions">
+        <span class="record-note">Adjuntos: ${attachmentCount}</span>
+      </div>
+    `;
+    adminAlertsList.append(article);
+  });
+}
+
 function updateDashboard() {
   if (!document.querySelector('#dashTotalRecords')) return; // Dashboard not in DOM
   
@@ -1631,6 +1812,8 @@ document.addEventListener('DOMContentLoaded', function() {
   dashboardButton = document.querySelector('#dashboardButton');
   dashboardRefresh = document.querySelector('#dashboardRefresh');
   auditViewButton = document.querySelector('#auditViewButton');
+  adminViewButton = document.querySelector('#adminViewButton');
+  alertsViewButton = document.querySelector('#alertsViewButton');
   auditSearch = document.querySelector('#auditSearch');
   auditFilterPeaje = document.querySelector('#auditFilterPeaje');
   auditFilterDateFrom = document.querySelector('#auditFilterDateFrom');
@@ -1644,6 +1827,28 @@ document.addEventListener('DOMContentLoaded', function() {
   auditByPeaje = document.querySelector('#auditByPeaje');
   exportCsvAudit = document.querySelector('#exportCsvAudit');
   exportJsonAudit = document.querySelector('#exportJsonAudit');
+  adminUsersList = document.querySelector('#adminUsersList');
+  adminUserSearch = document.querySelector('#adminUserSearch');
+  adminUserName = document.querySelector('#adminUserName');
+  adminUserDisplayName = document.querySelector('#adminUserDisplayName');
+  adminUserPassword = document.querySelector('#adminUserPassword');
+  adminUserRole = document.querySelector('#adminUserRole');
+  adminSaveUser = document.querySelector('#adminSaveUser');
+  adminRefreshUsers = document.querySelector('#adminRefreshUsers');
+  adminNotifyMissing = document.querySelector('#adminNotifyMissing');
+  adminAlertPeaje = document.querySelector('#adminAlertPeaje');
+  adminAlertMessage = document.querySelector('#adminAlertMessage');
+  adminAlertImages = document.querySelector('#adminAlertImages');
+  adminSendAlert = document.querySelector('#adminSendAlert');
+  adminAlertStatus = document.querySelector('#adminAlertStatus');
+  adminAlertsList = document.querySelector('#adminAlertsList');
+  adminUserCount = document.querySelector('#adminUserCount');
+  adminQuickAction = document.querySelector('#adminQuickAction');
+  adminPasswordOverlay = document.querySelector('#changePasswordOverlay');
+  adminPasswordTitle = document.querySelector('#changePasswordTitle');
+  adminPasswordInput = document.querySelector('#changePasswordInput');
+  adminPasswordCancel = document.querySelector('#changePasswordCancel');
+  adminPasswordSave = document.querySelector('#changePasswordSave');
   loadingOverlay = document.querySelector('#loadingOverlay');
   homeWelcome = document.querySelector('#homeWelcome');
   homePeaje = document.querySelector('#homePeaje');
@@ -1671,6 +1876,9 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('input', () => {
       if (currentStatus && currentStatus.textContent === 'Guardado') {
         currentStatus.textContent = 'Con cambios';
+      }
+      if (currentStatus && currentStatus.textContent === 'Con cambios') {
+        scheduleAutoSave();
       }
     });
   }
@@ -1743,6 +1951,67 @@ document.addEventListener('DOMContentLoaded', function() {
   });
   if (exportJsonAudit) exportJsonAudit.addEventListener('click', exportAuditJson);
   if (exportCsvAudit) exportCsvAudit.addEventListener('click', exportAuditCsv);
+  if (adminSaveUser) adminSaveUser.addEventListener('click', saveAdminUser);
+  if (adminRefreshUsers) adminRefreshUsers.addEventListener('click', async () => {
+    await loadAdminUsers();
+    await loadAdminAlerts();
+  });
+  if (adminNotifyMissing) adminNotifyMissing.addEventListener('click', notifyAdminMissingPlanillas);
+  if (alertsViewButton) alertsViewButton.addEventListener('click', () => switchView('alerts'));
+  if (adminSendAlert) adminSendAlert.addEventListener('click', async () => {
+    if (!isAdminUser()) {
+      if (adminAlertStatus) adminAlertStatus.textContent = 'Solo el administrador general puede enviar alertas.';
+      return;
+    }
+
+    const targetPeaje = (adminAlertPeaje?.value || '').trim();
+    const message = (adminAlertMessage?.value || '').trim();
+    const files = adminAlertImages ? Array.from(adminAlertImages.files) : [];
+
+    if (!targetPeaje || !message) {
+      if (adminAlertStatus) adminAlertStatus.textContent = 'Complete el peaje destino y el mensaje antes de enviar.';
+      return;
+    }
+
+    try {
+      if (adminAlertStatus) adminAlertStatus.textContent = 'Enviando alerta...';
+      await sendAdminAlertOnline(targetPeaje, message, files);
+      if (adminAlertStatus) adminAlertStatus.textContent = `Alerta enviada a ${targetPeaje}. Copia enviada a auditoría.`;
+      if (adminAlertMessage) adminAlertMessage.value = '';
+      if (adminAlertPeaje) adminAlertPeaje.value = '';
+      if (adminAlertImages) adminAlertImages.value = '';
+      await loadAdminAlerts();
+    } catch (error) {
+      if (adminAlertStatus) adminAlertStatus.textContent = `No fue posible enviar la alerta: ${error.message}`;
+    }
+  });
+  if (adminUserSearch) adminUserSearch.addEventListener('input', () => {
+    if (currentUser && isAdminUser()) {
+      loadAdminUsers();
+    }
+  });
+  if (adminPasswordCancel) adminPasswordCancel.addEventListener('click', closeChangePasswordModal);
+  if (adminPasswordSave) adminPasswordSave.addEventListener('click', async () => {
+    const nextPassword = (adminPasswordInput?.value || '').trim();
+    if (!nextPassword || !adminPasswordTarget) {
+      setOnlineStatus('Ingrese una nueva contraseña para continuar.');
+      return;
+    }
+
+    try {
+      await changePasswordOnline(adminPasswordTarget, nextPassword);
+      if (currentUser?.peaje === adminPasswordTarget) {
+        currentUser.password = nextPassword;
+        saveSession(currentUser, nextPassword);
+      }
+      setOnlineStatus(`Contraseña actualizada en la hoja de usuarios. Se recargó la lista.`);
+      closeChangePasswordModal();
+      if (adminPasswordInput) adminPasswordInput.value = '';
+      await loadAdminUsers();
+    } catch (error) {
+      setOnlineStatus(`No fue posible cambiar la clave: ${error.message}`);
+    }
+  });
 
   // Agregar listeners para vista y navbar
   document.querySelectorAll('.nav-button').forEach((button) => {
