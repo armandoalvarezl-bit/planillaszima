@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxj1JCL968EglT2nvpbVFjJ-vKQbWPEW04yD6CWgIvdSh1klCjBkpKR2QX3givRA6S8RA/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwH67sLDpOnPgPt9sdmvNvj8f4YRGGCa_NkrcgI2Vko5bwqLHA99CSk6wagIa2JaMgYQ/exec';
 
 const form = document.querySelector('#moneyForm');
 const totalEntregado = document.querySelector('#totalEntregado');

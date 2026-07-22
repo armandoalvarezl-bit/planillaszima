@@ -220,9 +220,9 @@ function getSpreadsheet_() {
     return spreadsheet;
   }
 
-  const spreadsheet = SpreadsheetApp.create(SPREADSHEET_NAME);
-  properties.setProperty(SPREADSHEET_ID_PROPERTY, spreadsheet.getId());
-  return spreadsheet;
+  throw new Error(
+    `No se encontró el spreadsheet '${SPREADSHEET_NAME}'. Configure el ID en SPREADSHEET_ID o establezca la propiedad de script '${SPREADSHEET_ID_PROPERTY}'.`
+  );
 }
 
 function ensureHeaders_(sheet) {
@@ -266,11 +266,6 @@ function authenticateUser_(sheet, peaje, password) {
     throw new Error('Debe iniciar sesion.');
   }
 
-  const fallbackUser = getFallbackUser_(normalizedPeaje, incomingPassword);
-  if (fallbackUser) {
-    return fallbackUser;
-  }
-
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) {
     throw new Error('No hay usuarios configurados.');
@@ -299,56 +294,6 @@ function authenticateUser_(sheet, peaje, password) {
   throw new Error('Usuario de peaje no encontrado.');
 }
 
-function getFallbackUser_(normalizedPeaje, incomingPassword) {
-  const fallbackUsers = {
-    'ADMINISTRADOR GENERAL': {
-      peaje: 'ADMINISTRADOR GENERAL',
-      nombre: 'Administrador General',
-      password: 'adminzima2026',
-      activo: 'SI',
-      rol: 'ADMIN'
-    },
-    'SOPORTE SISTEMA': {
-      peaje: 'SOPORTE SISTEMA',
-      nombre: 'Soporte Sistema',
-      password: 'soporte123',
-      activo: 'SI',
-      rol: 'ADMIN'
-    },
-    'AUDITORIA DE OPERACIONES': {
-      peaje: 'AUDITORIA DE OPERACIONES',
-      nombre: 'Auditoría de la Jefa Beatriz',
-      password: 'auditoria123',
-      activo: 'SI',
-      rol: 'AUDITORIA'
-    },
-    'PEAJE ZARAGOZA': {
-      peaje: 'PEAJE ZARAGOZA',
-      nombre: 'Peaje Zaragoza',
-      password: 'zaragoza123',
-      activo: 'SI',
-      rol: 'PEAJE'
-    },
-    'PEAJE FRAGUA': {
-      peaje: 'PEAJE FRAGUA',
-      nombre: 'Peaje Fragua',
-      password: 'fragua123',
-      activo: 'SI',
-      rol: 'PEAJE'
-    }
-  };
-
-  const fallbackUser = fallbackUsers[normalizedPeaje];
-  if (!fallbackUser) {
-    return null;
-  }
-
-  if (fallbackUser.password !== incomingPassword) {
-    throw new Error('Clave incorrecta.');
-  }
-
-  return fallbackUser;
-}
 
 function isAuditUser_(user) {
   const peaje = normalizeText_(user && user.peaje);
