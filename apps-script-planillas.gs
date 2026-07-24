@@ -636,7 +636,7 @@ function sendRecordCopyEmail_(record, pdfBase64) {
   let pdf;
   if (pdfBase64) {
     const cleanBase64 = String(pdfBase64 || '').replace(/^data:application\/pdf;base64,/, '');
-    const documentName = `Planilla_${record.peaje || 'SinPeaje'}_${record.codigoSello || 'SinCodigo'}_${record.fecha || today()}.pdf`;
+    const documentName = `Planilla_${record.peaje || 'SinPeaje'}_${record.codigoSello || 'SinCodigo'}_${record.fecha || dateKey_(new Date())}.pdf`;
     pdf = Utilities.newBlob(Utilities.base64Decode(cleanBase64), MimeType.PDF, documentName);
   } else {
     pdf = buildRecordPdf_(record);
@@ -928,7 +928,7 @@ function formatMoney_(value, currency) {
 }
 
 function buildRecordPdf_(record) {
-  const documentName = `Planilla_${record.peaje || 'SinPeaje'}_${record.codigoSello || 'SinCodigo'}_${record.fecha || today()}`;
+  const documentName = `Planilla_${record.peaje || 'SinPeaje'}_${record.codigoSello || 'SinCodigo'}_${record.fecha || dateKey_(new Date())}`;
   const field = (value) => String(value || '');
   const escapeHtml = (value) => String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const formattedEfectivo = formatMoney_(record.efectivo, record.moneda);

@@ -45,7 +45,7 @@
     width:100%;
     max-width:1400px;
     height:auto;
-    border-radius:18px;
+    border-radius:8px;
 }
   </style>
 </head>
@@ -136,7 +136,7 @@
         <section class="home-dashboard">
           <div class="dashboard-header">
             <div>
-              <p class="eyebrow">Sistema de gestión de Planilas</p>
+              <p class="eyebrow">Sistema de gestión de planillas</p>
               <h2></h2>
               <!-- NUEVO: mensaje de bienvenida, se llena por script al final del body -->
               <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
@@ -251,6 +251,10 @@
                 Consecutivo
                 <input name="consecutivo" placeholder="Opcional">
               </label>
+              <label style="align-items:center;display:flex;gap:8px;">
+                <input id="esPrueba" name="esPrueba" type="checkbox" style="width:18px;height:18px;">
+                <span>Planilla de prueba (no enviar correos)</span>
+              </label>
             </div>
 
             <div class="section-title">Valores entregados</div>
@@ -332,6 +336,7 @@
             <h2>Panel de auditoría</h2>
           </div>
           <div class="toolbar-actions">
+            <button id="printMonthlyAudit" class="primary-button" type="button">Informe mensual</button>
             <button id="exportCsvAudit" class="secondary-button" type="button">CSV</button>
             <button id="exportJsonAudit" class="secondary-button" type="button">JSON</button>
           </div>
@@ -364,6 +369,12 @@
             <label>
               Hasta fecha
               <input id="auditFilterDateTo" type="date">
+            </label>
+          </div>
+          <div class="filter-group">
+            <label>
+              Mes informe
+              <input id="auditReportMonth" type="month">
             </label>
           </div>
           <button id="auditFilterApply" class="secondary-button" type="button">Filtrar</button>

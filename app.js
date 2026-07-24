@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwwH67sLDpOnPgPt9sdmvNvj8f4YRGGCa_NkrcgI2Vko5bwqLHA99CSk6wagIa2JaMgYQ/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmfUJNDN0JtbQneLrcd1gpWDe83QI6PUH_YKEfexxhUKSg7dz7N7BAyzK7y3tQK26yVg/exec';
 const SESSION_KEY = 'transbankSession';
 
 // Elementos del DOM - se inicializaran en DOMContentLoaded
@@ -33,6 +33,8 @@ let auditFilterDateTo;
 let auditFilterApply;
 let auditFilterClear;
 let auditRecordsList;
+let auditReportMonth;
+let printMonthlyAudit;
 let adminUsersList;
 let adminUserSearch;
 let adminUserName;
@@ -125,6 +127,13 @@ function formatDateTime(dateString) {
   }
 }
 
+function monthLabel(monthKey) {
+  if (!monthKey) return '-';
+  const [year, month] = String(monthKey).split('-').map(Number);
+  if (!year || !month) return monthKey;
+  return new Date(year, month - 1, 1).toLocaleDateString('es-CO', { year: 'numeric', month: 'long' });
+}
+
 function onlyDigits(value) {
   return Number(String(value || '').replace(/[^\d]/g, '')) || 0;
 }
@@ -200,12 +209,21 @@ function dateKeyFromDate(date) {
   return `${year}-${month}-${day}`;
 }
 
+function monthKeyFromRecord(record) {
+  const key = recordDateKey(record && record.fecha);
+  return key ? key.slice(0, 7) : '';
+}
+
 function getLatestRecordDateKey(records) {
   return records
     .map((record) => recordDateKey(record.fecha))
     .filter(Boolean)
     .sort()
     .at(-1) || today();
+}
+
+function getLatestRecordMonthKey(records) {
+  return getLatestRecordDateKey(records).slice(0, 7);
 }
 
 function syncCodigoSelloConsecutivo() {
@@ -230,6 +248,7 @@ function getRecords() {
 function setRecords(records) {
   recordsCache = Array.isArray(records) ? records : [];
   console.log('setRecords:', recordsCache.length, 'elementos');
+  setDefaultAuditReportMonth();
   updateHome();
   try {
     renderRecords();
@@ -240,6 +259,11 @@ function setRecords(records) {
     updateDashboard();
   } catch (e) {
     console.error('Error en updateDashboard:', e);
+  }
+  try {
+    applyAuditFilters();
+  } catch (e) {
+    console.error('Error en applyAuditFilters:', e);
   }
 }
 
@@ -697,33 +721,35 @@ async function printRecordSafely() {
   printButton.textContent = 'Guardando...';
   currentStatus.textContent = 'Guardando antes de imprimir...';
 
-  const saved = await saveRecord({ clearAfterSave: false });
-
-  if (!saved) {
-    printButton.textContent = originalText;
-    printButton.disabled = false;
-    if (saveButton) saveButton.disabled = false;
-    setOnlineStatus('Impresion detenida. Primero debe guardarse correctamente el registro.');
-    return;
-  }
-
-  printButton.textContent = 'Imprimiendo...';
-  setOnlineStatus('Registro guardado. Generando vista previa del PDF...');
-
   try {
-    await showPdfPreview(saved);
-    setOnlineStatus('Revise la vista previa del PDF. Luego imprima desde el visor o use Ctrl+P.');
-  } catch (error) {
-    console.warn('No se pudo generar la vista previa del PDF:', error);
-    setOnlineStatus(`No se pudo mostrar la vista previa del PDF: ${error.message}. Abriendo impresion normal.`);
-    window.print();
-  }
+    const saved = await saveRecord({ clearAfterSave: false, promptEmail: false });
 
-  window.setTimeout(() => {
+    if (!saved) {
+      setOnlineStatus('Impresion detenida. Primero debe guardarse correctamente el registro.');
+      return;
+    }
+
+    printButton.textContent = 'Imprimiendo...';
+    setOnlineStatus('Registro guardado. Generando vista previa del PDF...');
+
+    try {
+      await showPdfPreview(saved);
+      setOnlineStatus('Revise la vista previa del PDF. Luego imprima desde el visor o use Ctrl+P.');
+    } catch (error) {
+      console.warn('No se pudo generar la vista previa del PDF:', error);
+      fillForm(saved);
+      switchView('form');
+      await withRenderablePaper(async () => {
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        setOnlineStatus(`No se pudo mostrar la vista previa del PDF: ${error.message}. Abriendo impresion normal.`);
+        window.print();
+      });
+    }
+  } finally {
     printButton.textContent = originalText;
     printButton.disabled = false;
     if (saveButton) saveButton.disabled = false;
-  }, 500);
+  }
 }
 
 window.addEventListener('afterprint', () => {
@@ -1067,7 +1093,7 @@ async function sendRecordCopyEmailOnline(record) {
     method: 'POST',
     mode: 'cors',
     headers: {
-      'Content-Type': 'application/json'
+      'Content-Type': 'text/plain;charset=utf-8'
     },
     body: JSON.stringify({
       action: 'emailcopy',
@@ -1418,6 +1444,232 @@ function exportAuditCsv() {
     return rowData;
   });
   downloadFile('registros-auditoria.csv', [headers.join(','), ...rows].join('\n'), 'text/csv;charset=utf-8');
+}
+
+function setDefaultAuditReportMonth() {
+  if (!auditReportMonth || auditReportMonth.value) return;
+  auditReportMonth.value = getLatestRecordMonthKey(getRecords());
+}
+
+function recordsForMonthlyAuditReport() {
+  setDefaultAuditReportMonth();
+  const monthKey = auditReportMonth?.value || getLatestRecordMonthKey(getRecords());
+  const selectedPeaje = auditFilterPeaje?.value || '';
+
+  return getRecords()
+    .filter((record) => monthKeyFromRecord(record) === monthKey)
+    .filter((record) => !selectedPeaje || String(record.peaje || '').toUpperCase() === selectedPeaje.toUpperCase())
+    .sort((a, b) => {
+      const dateCompare = recordDateKey(a.fecha).localeCompare(recordDateKey(b.fecha));
+      if (dateCompare) return dateCompare;
+      return String(a.peaje || '').localeCompare(String(b.peaje || ''));
+    });
+}
+
+function buildMonthlyAuditReportHtml(records, monthKey) {
+  const escapeHtml = (value) => String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+  const totalAmount = records.reduce((sum, record) => sum + onlyDigits(record.total), 0);
+  const byDate = {};
+
+  records.forEach((record) => {
+    const key = recordDateKey(record.fecha) || 'Sin fecha';
+    if (!byDate[key]) byDate[key] = [];
+    byDate[key].push(record);
+  });
+
+  const [year, month] = String(monthKey || '').split('-').map(Number);
+  const lastDay = year && month ? new Date(year, month, 0).getDate() : 0;
+  const dateKeys = lastDay
+    ? Array.from({ length: lastDay }, (_, index) => `${year}-${String(month).padStart(2, '0')}-${String(index + 1).padStart(2, '0')}`)
+    : Object.keys(byDate).sort();
+
+  const daySections = dateKeys.map((dateKey) => {
+    const dayRecords = byDate[dateKey] || [];
+    const dayTotal = dayRecords.reduce((sum, record) => sum + onlyDigits(record.total), 0);
+    const rows = dayRecords.length
+      ? dayRecords.map((record, index) => `
+          <tr>
+            <td>${index + 1}</td>
+            <td>${escapeHtml(record.peaje || '')}</td>
+            <td>${escapeHtml(record.codigoSello || record.consecutivo || '')}</td>
+            <td>${escapeHtml(record.centro || '')}</td>
+            <td>${escapeHtml(record.responsableRecibe || '')}</td>
+            <td class="money">${escapeHtml(formatMoney(record.total || record.efectivo || 0))}</td>
+            <td>${escapeHtml(formatDateTime(record.updatedAt))}</td>
+          </tr>
+        `).join('')
+      : '<tr class="empty-row"><td colspan="7">Sin planillas registradas para este dia.</td></tr>';
+
+    return `
+      <section class="day-block">
+        <div class="day-title">
+          <strong>${escapeHtml(formatDate(dateKey))}</strong>
+          <span>${dayRecords.length} registro(s) - ${escapeHtml(formatMoney(dayTotal))}</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Peaje</th>
+              <th>Codigo/Sello</th>
+              <th>Centro</th>
+              <th>Responsable recibe</th>
+              <th>Total enviado</th>
+              <th>Modificado</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </section>
+    `;
+  }).join('');
+
+  return `<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <base href="${escapeHtml(window.location.href)}">
+  <title>Informe mensual auditoria - ${escapeHtml(monthLabel(monthKey))}</title>
+  <style>
+    @page { size: letter portrait; margin: 10mm; }
+    * { box-sizing: border-box; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    body { margin: 0; color: #111827; font-family: Arial, Helvetica, sans-serif; font-size: 10px; background: #fff; }
+    .report { width: 100%; }
+    .header { display: grid; grid-template-columns: 120px 1fr 120px; border: 1px solid #111827; }
+    .logo { display: grid; min-height: 74px; place-items: center; padding: 8px; border-right: 1px solid #111827; font-weight: 800; text-align: center; }
+    .logo:last-child { border-right: 0; border-left: 1px solid #111827; }
+    .logo img { max-width: 96px; max-height: 52px; object-fit: contain; }
+    .title { display: grid; align-content: center; justify-items: center; padding: 10px; text-align: center; }
+    .title h1 { margin: 0; font-size: 16px; letter-spacing: 0; text-transform: uppercase; }
+    .title p { margin: 5px 0 0; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .meta { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #111827; border-top: 0; }
+    .meta div { min-height: 42px; padding: 7px 8px; border-right: 1px solid #111827; }
+    .meta div:last-child { border-right: 0; }
+    .meta span { display: block; color: #374151; font-size: 8px; font-weight: 800; text-transform: uppercase; }
+    .meta strong { display: block; margin-top: 4px; font-size: 12px; }
+    .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0; }
+    .summary div { padding: 8px; border: 1px solid #9ca3af; background: #f3f4f6; }
+    .summary span { display: block; color: #374151; font-size: 8px; font-weight: 800; text-transform: uppercase; }
+    .summary strong { display: block; margin-top: 4px; font-size: 13px; }
+    .day-block { page-break-inside: avoid; margin-top: 10px; }
+    .day-title { display: flex; justify-content: space-between; gap: 12px; padding: 6px 8px; border: 1px solid #111827; background: #e5e7eb; font-size: 10px; text-transform: uppercase; }
+    table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    th, td { padding: 5px 4px; border: 1px solid #9ca3af; vertical-align: top; overflow-wrap: anywhere; }
+    th { background: #f3f4f6; font-size: 8px; text-transform: uppercase; }
+    th:nth-child(1), td:nth-child(1) { width: 28px; text-align: center; }
+    th:nth-child(2), td:nth-child(2) { width: 92px; }
+    th:nth-child(3), td:nth-child(3) { width: 72px; }
+    th:nth-child(6), td:nth-child(6) { width: 80px; }
+    th:nth-child(7), td:nth-child(7) { width: 94px; }
+    .money { text-align: right; font-weight: 700; }
+    .empty-row td { color: #6b7280; font-style: italic; text-align: center; }
+    .footer { margin-top: 14px; padding-top: 8px; border-top: 1px solid #9ca3af; color: #4b5563; font-size: 9px; }
+    @media screen { body { padding: 18px; background: #e5e7eb; } .report { max-width: 860px; margin: 0 auto; padding: 18px; background: #fff; box-shadow: 0 20px 60px rgba(0,0,0,.18); } }
+  </style>
+</head>
+<body>
+  <main class="report">
+    <header class="header">
+      <div class="logo"><img src="assets/logo-zima.png" alt="ZIMA"></div>
+      <div class="title">
+        <h1>Recaudo auditado</h1>
+        <p>Informe mensual de planillas enviadas dia por dia</p>
+      </div>
+      <div class="logo"><img src="assets/logo-ani.png" alt="ANI"></div>
+    </header>
+    <section class="meta">
+      <div><span>Periodo</span><strong>${escapeHtml(monthLabel(monthKey))}</strong></div>
+      <div><span>Peaje</span><strong>${escapeHtml(auditFilterPeaje?.value || 'Todos')}</strong></div>
+      <div><span>Generado por</span><strong>${escapeHtml(currentUser?.nombre || currentUser?.peaje || 'Sistema')}</strong></div>
+      <div><span>Fecha generacion</span><strong>${escapeHtml(formatDateTime(new Date().toISOString()))}</strong></div>
+    </section>
+    <section class="summary">
+      <div><span>Total registros</span><strong>${records.length}</strong></div>
+      <div><span>Total enviado</span><strong>${escapeHtml(formatMoney(totalAmount))}</strong></div>
+      <div><span>Dias con envio</span><strong>${Object.keys(byDate).length}</strong></div>
+    </section>
+    ${daySections}
+    <p class="footer">Documento generado desde el panel de auditoria del sistema de planillas ZIMA.</p>
+  </main>
+</body>
+</html>`;
+}
+
+async function saveMonthlyAuditReportPdf(html, monthKey) {
+  if (typeof html2pdf !== 'function') {
+    throw new Error('El generador PDF no esta disponible.');
+  }
+
+  const container = document.createElement('div');
+  container.className = 'monthly-report-render';
+  container.style.position = 'fixed';
+  container.style.left = '-10000px';
+  container.style.top = '0';
+  container.style.width = '216mm';
+  container.style.background = '#ffffff';
+  container.innerHTML = html;
+  document.body.append(container);
+
+  try {
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    const report = container.querySelector('.report') || container;
+    await html2pdf()
+      .set({
+        filename: `RECAUDOAUDITADO_${monthKey}.pdf`,
+        margin: [10, 10, 10, 10],
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, scrollX: 0, scrollY: 0 },
+        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      })
+      .from(report)
+      .save();
+  } finally {
+    container.remove();
+  }
+}
+
+function printMonthlyAuditReport() {
+  const monthKey = auditReportMonth?.value || getLatestRecordMonthKey(getRecords());
+  if (!monthKey) {
+    setOnlineStatus('No hay registros disponibles para generar el informe mensual.');
+    return;
+  }
+
+  const records = recordsForMonthlyAuditReport();
+  const html = buildMonthlyAuditReportHtml(records, monthKey);
+  setOnlineStatus(`Generando PDF del informe mensual de ${monthLabel(monthKey)}...`);
+
+  saveMonthlyAuditReportPdf(html, monthKey)
+    .then(() => {
+      setOnlineStatus(`PDF del informe mensual de ${monthLabel(monthKey)} generado correctamente.`);
+    })
+    .catch((error) => {
+      console.warn('No se pudo generar el PDF mensual, usando impresion del navegador:', error);
+      openMonthlyAuditPrintWindow(html, monthKey);
+    });
+}
+
+function openMonthlyAuditPrintWindow(html, monthKey) {
+  const reportWindow = window.open('', '_blank', 'width=980,height=720');
+  if (!reportWindow) {
+    downloadFile(`informe-auditoria-${monthKey}.html`, html, 'text/html;charset=utf-8');
+    setOnlineStatus('El navegador bloqueo la ventana de impresion. Se descargo el informe HTML para abrirlo e imprimirlo.');
+    return;
+  }
+
+  reportWindow.document.open();
+  reportWindow.document.write(html);
+  reportWindow.document.close();
+  reportWindow.focus();
+  reportWindow.setTimeout(() => {
+    reportWindow.print();
+  }, 500);
+  setOnlineStatus(`Informe mensual de ${monthLabel(monthKey)} listo para imprimir.`);
 }
 
 function renderAdminUsers(users) {
@@ -1831,6 +2083,8 @@ document.addEventListener('DOMContentLoaded', function() {
   auditFilterApply = document.querySelector('#auditFilterApply');
   auditFilterClear = document.querySelector('#auditFilterClear');
   auditRecordsList = document.querySelector('#auditRecordsList');
+  auditReportMonth = document.querySelector('#auditReportMonth');
+  printMonthlyAudit = document.querySelector('#printMonthlyAudit');
   clearFormButton = document.querySelector('#clearFormButton');
   auditTotalRecords = document.querySelector('#auditTotalRecords');
   auditTotalAmount = document.querySelector('#auditTotalAmount');
@@ -1960,6 +2214,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (auditFilterDateTo) auditFilterDateTo.value = '';
     applyAuditFilters();
   });
+  if (printMonthlyAudit) printMonthlyAudit.addEventListener('click', printMonthlyAuditReport);
   if (exportJsonAudit) exportJsonAudit.addEventListener('click', exportAuditJson);
   if (exportCsvAudit) exportCsvAudit.addEventListener('click', exportAuditCsv);
   if (adminSaveUser) adminSaveUser.addEventListener('click', saveAdminUser);
