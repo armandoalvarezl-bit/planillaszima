@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -8,8 +8,8 @@
   <link rel="stylesheet" href="loading-theme.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-  <!-- NUEVO: estilos mínimos solo para el mensaje de bienvenida y los
-       botones del modal de confirmación. Todo lo demás reutiliza tus
+  <!-- NUEVO: estilos minimos solo para el mensaje de bienvenida y los
+       botones del modal de confirmacion. Todo lo demas reutiliza tus
        clases existentes (.loading-overlay, .loading-modal, .secondary-button,
        .danger-button) para verse igual al resto del sistema. -->
   <style>
@@ -74,7 +74,7 @@
           <strong id="recordCount">0</strong>
         </button>
         <button id="auditViewButton" class="nav-button" data-view="audit" type="button" style="display: none;">
-          <span>Auditoría</span>
+          <span>Auditoria</span>
         </button>
         <button id="adminViewButton" class="nav-button" data-view="admin" type="button" style="display: none;">
           <span>Admin / Soporte</span>
@@ -89,14 +89,15 @@
         <strong id="currentStatus">Sin guardar</strong>
       </div>
 
-      <button id="logoutButton" class="logout-button" type="button">Cerrar sesión</button>
+
+      <button id="logoutButton" class="logout-button" type="button">Cerrar sesion</button>
 
     </aside>
     <div id="pdfModal" class="pdf-modal is-hidden" aria-hidden="true">
       <div class="pdf-modal-content">
         <div class="pdf-modal-header">
           <h2>Vista previa PDF</h2>
-          <button id="closePdfModal" class="close-button" type="button" aria-label="Cerrar vista previa">×</button>
+          <button id="closePdfModal" class="close-button" type="button" aria-label="Cerrar vista previa">x</button>
         </div>
         <div class="pdf-modal-body">
           <iframe id="pdfIframe" src="" frameborder="0"></iframe>
@@ -125,7 +126,7 @@
           <h2 id="toolbarTitle">Entrega de efectivo a Transbank</h2>
         </div>
         <div class="toolbar-actions" id="formToolbarActions">
-          <button id="newRecord" class="icon-button" type="button" title="Nuevo">+</button>
+          <button id="newRecord" class="secondary-button new-record-button" type="button">Nueva planilla</button>
           <button id="saveRecord" class="primary-button" type="button">Guardar</button>
           <button id="clearFormButton" class="secondary-button" type="button">Limpiar</button>
           <button id="printRecord" class="secondary-button" type="button">Imprimir</button>
@@ -136,7 +137,7 @@
         <section class="home-dashboard">
           <div class="dashboard-header">
             <div>
-              <p class="eyebrow">Sistema de gestión de planillas</p>
+              <p class="eyebrow">Sistema de gestion de planillas</p>
               <h2></h2>
               <!-- NUEVO: mensaje de bienvenida, se llena por script al final del body -->
               <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
@@ -200,8 +201,8 @@
               <div class="logo-box logo-ani">
                 <img src="assets/logo-ani.png" alt="Logo ANI" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                 <span>ANI</span>
-                <div class="document-code">
-                  <label for="codigoSello">Código/Sello</label>
+                <div class="document-code priority-field">
+                  <label for="codigoSello">Codigo/Sello</label>
                   <input id="codigoSello" name="codigoSello" placeholder="Ej. S-0001">
                 </div>
               </div>
@@ -216,44 +217,40 @@
                   <option value="PEAJE FRAGUA">Peaje Fragua</option>
                 </select>
               </label>
-              <label>
-                Centro o razón social
+              <label class="auto-field">
+                Centro o razon social
                 <input name="centro" required placeholder="Nombre del centro">
               </label>
-              <label>
+              <label class="auto-field">
                 Tipo moneda
                 <select name="moneda">
                   <option value="COP">COP - Peso colombiano</option>
-                  <option value="USD">USD - Dólar</option>
+                  <option value="USD">USD - Dolar</option>
                 </select>
               </label>
-              <label>
+              <label class="auto-field">
                 Lugar de entrega
                 <input name="lugarEntrega" placeholder="Lugar donde se entrega">
               </label>
-              <label>
+              <label class="auto-field">
                 Responsable recibe Transbank
                 <input name="responsableRecibe" required placeholder="Nombre completo">
               </label>
-              <label>
+              <label class="auto-field">
                 Ciudad
                 <input name="ciudad" placeholder="Ciudad">
               </label>
-              <label>
+              <label class="auto-field">
                 Lugar de recibo
                 <input name="lugarRecibo" placeholder="Lugar de recibo">
               </label>
-              <label>
+              <label class="priority-field">
                 Fecha
                 <input name="fecha" type="date" required>
               </label>
               <label>
                 Consecutivo
                 <input name="consecutivo" placeholder="Opcional">
-              </label>
-              <label style="align-items:center;display:flex;gap:8px;">
-                <input id="esPrueba" name="esPrueba" type="checkbox" style="width:18px;height:18px;">
-                <span>Planilla de prueba (no enviar correos)</span>
               </label>
             </div>
 
@@ -264,8 +261,8 @@
                 <span>Total entregado</span>
                 <span>Observaciones</span>
               </div>
-              <div class="table-row">
-                <strong>Efectivo</strong>
+              <div class="table-row priority-money-row">
+                <strong>Valor tula</strong>
                 <input name="efectivo" class="money-input" inputmode="numeric" placeholder="$ 0">
                 <input name="observacionesEfectivo" placeholder="Observaciones">
               </div>
@@ -276,7 +273,7 @@
               </div>
             </div>
 
-            <div class="section-title">Declaración de valores</div>
+            <div class="section-title">Declaracion de valores</div>
             <div class="grid two declarations">
               <label>
                 Valor declarado en tula y/o bolsa
@@ -326,14 +323,31 @@
             <button id="exportJson" class="secondary-button" type="button">JSON</button>
           </div>
         </div>
+        <div class="record-query">
+          <label>
+            Buscar
+            <input id="recordsSearch" type="text" placeholder="Sello, centro o responsable">
+          </label>
+          <label>
+            Desde
+            <input id="recordsDateFrom" type="date">
+          </label>
+          <label>
+            Hasta
+            <input id="recordsDateTo" type="date">
+          </label>
+          <button id="recordsShowAll" class="secondary-button" type="button">Consultar historial</button>
+          <button id="recordsClearQuery" class="secondary-button" type="button">Recientes</button>
+        </div>
+        <p id="recordsQueryStatus" class="records-query-status" aria-live="polite"></p>
         <div id="recordsList" class="records-list"></div>
       </section>
 
-      <section id="auditView" class="view" aria-label="Panel de auditoría">
+      <section id="auditView" class="view" aria-label="Panel de auditoria">
         <div class="records-header">
           <div>
-            <p class="eyebrow">Control y análisis</p>
-            <h2>Panel de auditoría</h2>
+            <p class="eyebrow">Control y analisis</p>
+            <h2>Panel de auditoria</h2>
           </div>
           <div class="toolbar-actions">
             <button id="printMonthlyAudit" class="primary-button" type="button">Informe mensual</button>
@@ -346,7 +360,7 @@
           <div class="filter-group">
             <label>
               Buscar
-              <input id="auditSearch" type="text" placeholder="Código, centro, responsable...">
+              <input id="auditSearch" type="text" placeholder="Codigo, centro, responsable...">
             </label>
           </div>
           <div class="filter-group">
@@ -378,7 +392,7 @@
             </label>
           </div>
           <button id="auditFilterApply" class="secondary-button" type="button">Filtrar</button>
-          <button id="auditFilterClear" class="icon-button" type="button" title="Limpiar filtros">×</button>
+          <button id="auditFilterClear" class="icon-button" type="button" title="Limpiar filtros">x</button>
         </div>
 
         <div class="audit-summary">
@@ -399,10 +413,10 @@
         <div id="auditRecordsList" class="records-list"></div>
       </section>
 
-      <section id="adminView" class="view" aria-label="Administración general">
+      <section id="adminView" class="view" aria-label="Administracion general">
         <div class="records-header">
           <div>
-            <p class="eyebrow">Administración</p>
+            <p class="eyebrow">Administracion</p>
             <h2>Administrador general / soporte virtual</h2>
           </div>
           <div class="toolbar-actions">
@@ -413,7 +427,7 @@
 
         <div class="admin-panel-card">
           <div class="admin-panel-header">
-            <span>Gestión de usuarios y soporte</span>
+            <span>Gestion de usuarios y soporte</span>
             <strong>Controla accesos, alertas y seguimiento en un solo lugar.</strong>
           </div>
           <div class="audit-filters admin-filters">
@@ -446,7 +460,7 @@
                 Rol
                 <select id="adminUserRole">
                   <option value="PEAJE">Peaje</option>
-                  <option value="AUDITORIA">Auditoría</option>
+                  <option value="AUDITORIA">Auditoria</option>
                   <option value="ADMIN">Administrador / Soporte</option>
                 </select>
               </label>
@@ -461,8 +475,8 @@
             <span id="adminUserCount">0</span>
           </div>
           <div class="summary-card">
-            <strong>Acción rápida</strong>
-            <span id="adminQuickAction">Gestión online</span>
+            <strong>Accion rapida</strong>
+            <span id="adminQuickAction">Gestion online</span>
           </div>
         </div>
 
@@ -480,7 +494,7 @@
         <div class="admin-panel-card">
           <div class="admin-panel-header">
             <span>Alerta a peaje</span>
-            <strong>Envía una notificación al peaje y copia a auditoría.</strong>
+            <strong>Envia una notificacion al peaje y copia a auditoria.</strong>
           </div>
           <div class="admin-alert-fields">
             <label>
@@ -493,10 +507,10 @@
             </label>
             <label>
               Mensaje de alerta
-              <textarea id="adminAlertMessage" rows="4" placeholder="Ingrese la información de la actualización o corrección a enviar al peaje y copia a auditoría"></textarea>
+              <textarea id="adminAlertMessage" rows="4" placeholder="Ingrese la informacion de la actualizacion o correccion a enviar al peaje y copia a auditoria"></textarea>
             </label>
             <label>
-              Adjuntar imágenes
+              Adjuntar imagenes
               <input id="adminAlertImages" type="file" accept="image/*" multiple>
             </label>
             <button id="adminSendAlert" class="primary-button" type="button">Enviar alerta</button>
@@ -507,7 +521,7 @@
         <div class="admin-panel-card">
           <div class="admin-panel-header">
             <span>Registro de alertas</span>
-            <strong>Historial de envíos y seguimiento.</strong>
+            <strong>Historial de envios y seguimiento.</strong>
           </div>
           <div id="adminAlertsList" class="admin-alerts-list"></div>
         </div>
@@ -536,7 +550,7 @@
       </div>
       <div class="loading-copy">
         <strong>Procesando planilla</strong>
-        <p>Estamos guardando la información en la base online.</p>
+        <p>Estamos guardando la informacion en la base online.</p>
       </div>
       <div class="loading-progress" aria-hidden="true">
         <span></span>
@@ -544,37 +558,45 @@
     </section>
   </div>
 
-  <!-- NUEVO: modal de confirmación para "Cerrar sesión". Reutiliza el
+  <!-- NUEVO: modal de confirmacion para "Cerrar sesion". Reutiliza el
        mismo look de .loading-overlay / .loading-modal para que combine
        con el resto del sistema. -->
   <div id="logoutConfirmOverlay" class="loading-overlay is-hidden" aria-hidden="true">
     <section class="loading-modal" role="alertdialog" aria-modal="true" aria-live="polite"
-      aria-label="Confirmar cierre de sesión">
+      aria-label="Confirmar cierre de sesion">
       <div class="loading-logo-wrap">
         <img src="assets/logo-zima.png" alt="Logo ZIMA">
       </div>
       <div class="loading-copy">
-        <strong>¿Cerrar sesión?</strong>
-        <p>Se cerrará su sesión actual. Verifique que haya guardado los cambios pendientes.</p>
+        <strong>Cerrar sesion?</strong>
+        <p>Se cerrara su sesion actual. Verifique que haya guardado los cambios pendientes.</p>
       </div>
       <div class="logout-confirm-actions">
         <button id="logoutCancelButton" class="secondary-button" type="button">Cancelar</button>
-        <button id="logoutConfirmButton" class="danger-button" type="button">Sí, cerrar sesión</button>
+        <button id="logoutConfirmButton" class="danger-button" type="button">Si, cerrar sesion</button>
       </div>
     </section>
   </div>
 
   <div id="changePasswordOverlay" class="loading-overlay is-hidden" aria-hidden="true">
     <section class="loading-modal" role="alertdialog" aria-modal="true" aria-live="polite"
-      aria-label="Cambiar contraseña de usuario">
+      aria-label="Cambiar contrasena de usuario">
       <div class="loading-logo-wrap">
         <img src="assets/logo-zima.png" alt="Logo ZIMA">
       </div>
       <div class="loading-copy">
         <strong id="changePasswordTitle">Nueva clave</strong>
-        <p>Ingrese la nueva contraseña para este usuario y confirme el cambio.</p>
+        <p>Ingrese la nueva contrasena para este usuario y confirme el cambio.</p>
+        <div id="changePasswordCodeGroup" class="password-code-group" hidden>
+          <p class="password-code-copy">Enviaremos un codigo de verificacion al correo registrado del peaje.</p>
+          <button id="sendPasswordCodeButton" class="secondary-button" type="button">Enviar codigo</button>
+          <label style="display:block; margin-top:12px;">
+            Codigo de verificacion
+            <input id="changePasswordCodeInput" type="text" inputmode="numeric" maxlength="6" style="width:100%; margin-top:6px; padding:10px; border-radius:8px; border:1px solid #cbd8e5;" autocomplete="one-time-code">
+          </label>
+        </div>
         <label style="display:block; margin-top:12px;">
-          Contraseña nueva
+          Contrasena nueva
           <input id="changePasswordInput" type="password" style="width:100%; margin-top:6px; padding:10px; border-radius:8px; border:1px solid #cbd8e5;" autocomplete="new-password">
         </label>
         <div id="changePasswordStatus" class="status-message" aria-live="polite" style="margin-top:8px; min-height:1.2em; color:#2c3e50;"></div>
@@ -593,7 +615,7 @@
       </div>
       <div class="loading-copy">
         <strong id="welcomeModalTitle">Bienvenido/a a ZIMA</strong>
-        <p>Has iniciado sesión exitosamente. Ya puedes crear, limpiar e imprimir tu planilla.</p>
+        <p>Has iniciado sesion exitosamente. Por seguridad, recuerda cambiar tu contrasena cada mes.</p>
       </div>
       <div class="logout-confirm-actions">
         <button id="welcomeModalClose" class="primary-button" type="button">Continuar</button>
@@ -603,9 +625,9 @@
 
   <script src="app.js"></script>
 
-  <!-- NUEVO: script pequeño y autocontenido, no toca app.js.
+  <!-- NUEVO: script pequeno y autocontenido, no toca app.js.
        1) Llena el mensaje de bienvenida cuando el panel se hace visible.
-       2) Intercepta el clic en "Cerrar sesión" para pedir confirmación
+       2) Intercepta el clic en "Cerrar sesion" para pedir confirmacion
           antes de dejar pasar el clic real hacia el listener de app.js. -->
   <script>
     (function () {
@@ -615,7 +637,7 @@
 
       function greetingByHour() {
         var h = new Date().getHours();
-        if (h >= 5 && h < 12) return 'Buenos días';
+        if (h >= 5 && h < 12) return 'Buenos dias';
         if (h >= 12 && h < 19) return 'Buenas tardes';
         return 'Buenas noches';
       }
@@ -623,14 +645,14 @@
       function renderWelcome() {
         var peajeEl = document.getElementById('sessionPeaje');
         var peajeText = peajeEl && peajeEl.textContent.trim() && peajeEl.textContent.trim() !== 'Registro actual'
-          ? ' — ' + peajeEl.textContent.trim()
+          ? ' - ' + peajeEl.textContent.trim()
           : '';
         welcomeEl.textContent = greetingByHour() + ', bienvenido/a a Planillas' + peajeText + '.';
       }
 
       renderWelcome();
 
-      // El nombre del peaje lo llena app.js después del login, así que
+      // El nombre del peaje lo llena app.js despues del login, asi que
       // se vuelve a calcular el mensaje cada vez que el panel deja de
       // estar oculto (clase .is-hidden).
       var observer = new MutationObserver(function (mutations) {
@@ -662,14 +684,14 @@
         overlay.setAttribute('aria-hidden', 'true');
       }
 
-      // Este handler se asigna vía la propiedad onclick (más temprano en
-      // el ciclo de carga que el addEventListener que agrega app.js), así
-      // que se ejecuta primero y puede bloquear el cierre de sesión real
+      // Este handler se asigna via la propiedad onclick (mas temprano en
+      // el ciclo de carga que el addEventListener que agrega app.js), asi
+      // que se ejecuta primero y puede bloquear el cierre de sesion real
       // hasta que el usuario confirme.
       logoutButton.onclick = function (event) {
         if (logoutConfirmed) {
-          // El usuario ya confirmó: dejamos pasar el clic para que
-          // el listener original de app.js haga el cierre de sesión.
+          // El usuario ya confirmo: dejamos pasar el clic para que
+          // el listener original de app.js haga el cierre de sesion.
           logoutConfirmed = false;
           return true;
         }
@@ -694,3 +716,5 @@
   </script>
 </body>
 </html>
+
+

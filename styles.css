@@ -4749,3 +4749,158 @@ textarea:focus {
     width: 100%;
   }
 }
+
+@media screen {
+  .new-record-button {
+    min-width: 132px;
+  }
+
+  .paper {
+    border-color: #cad8e4;
+  }
+
+  .paper > .grid.two {
+    background: #eef4f8;
+  }
+
+  .paper label.auto-field {
+    background: #f3f7fa;
+  }
+
+  .paper label.auto-field input,
+  .paper label.auto-field select,
+  .auto-filled-field {
+    border-color: #d4dee8;
+    background: #eef3f7;
+    color: #3d5064;
+    font-weight: 800;
+  }
+
+  .paper label.priority-field,
+  .document-code.priority-field,
+  .priority-money-row {
+    position: relative;
+    background: #fffdf7;
+  }
+
+  .paper label.priority-field::before,
+  .document-code.priority-field::before {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    content: "";
+    background: #d9913d;
+  }
+
+  .paper label.priority-field input,
+  .document-code.priority-field input,
+  .priority-money-row input[name="efectivo"] {
+    border-color: #d9913d;
+    background: #fffaf0;
+    color: #102135;
+    font-weight: 900;
+    box-shadow: 0 0 0 3px rgba(217, 145, 61, 0.12);
+  }
+
+  .priority-money-row strong {
+    display: grid;
+    align-items: center;
+    color: #102135;
+    background: #fff6e7;
+    font-size: 14px;
+  }
+
+  .total-row output {
+    font-size: 18px;
+  }
+
+  .welcome-message {
+    display: inline-flex;
+    max-width: 100%;
+    margin-top: 8px;
+    padding: 8px 10px;
+    border: 1px solid #d8e3ee;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #25435b;
+    line-height: 1.35;
+  }
+
+  .record-query {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.5fr) minmax(140px, 0.8fr) minmax(140px, 0.8fr) auto auto;
+    gap: 12px;
+    align-items: end;
+    margin-bottom: 10px;
+    padding: 14px;
+    border: 1px solid #d8e3ee;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  .record-query label {
+    gap: 6px;
+    color: #34465c;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+
+  .record-query button {
+    min-height: 42px;
+    white-space: nowrap;
+  }
+
+  .records-query-status {
+    min-height: 20px;
+    margin: 0 0 12px;
+    color: #5c6b7c;
+    font-size: 13px;
+    font-weight: 700;
+  }
+}
+
+@media screen and (max-width: 860px) {
+  .new-record-button {
+    width: 100%;
+  }
+
+  .paper label.priority-field::before,
+  .document-code.priority-field::before {
+    width: 3px;
+  }
+
+  .priority-money-row strong {
+    min-height: 44px;
+  }
+
+  .record-query {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media print {
+  .paper label.auto-field,
+  .paper label.priority-field,
+  .document-code.priority-field,
+  .priority-money-row,
+  .priority-money-row strong {
+    background: #fff;
+  }
+
+  .paper label.priority-field::before,
+  .document-code.priority-field::before {
+    display: none;
+  }
+
+  .paper label.auto-field input,
+  .paper label.auto-field select,
+  .auto-filled-field,
+  .paper label.priority-field input,
+  .document-code.priority-field input,
+  .priority-money-row input[name="efectivo"] {
+    border-color: #000;
+    background: #fff;
+    box-shadow: none;
+  }
+}

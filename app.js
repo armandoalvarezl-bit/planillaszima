@@ -1,5 +1,24 @@
 const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmfUJNDN0JtbQneLrcd1gpWDe83QI6PUH_YKEfexxhUKSg7dz7N7BAyzK7y3tQK26yVg/exec';
 const SESSION_KEY = 'transbankSession';
+const PEAJE_DEFAULTS = {
+  'PEAJE ZARAGOZA': {
+    centro: 'ZIMA SEGURIDAD',
+    moneda: 'COP',
+    lugarEntrega: 'CENTRO EFECTIVO',
+    responsableRecibe: 'TransBanck',
+    ciudad: 'ZARAGOZA',
+    lugarRecibo: 'PEAJE ZARAGOZA'
+  },
+  'PEAJE FRAGUA': {
+    centro: 'ZIMA SEGURIDAD',
+    moneda: 'COP',
+    lugarEntrega: 'CENTRO EFECTIVO',
+    responsableRecibe: 'TransBanck',
+    ciudad: 'FRAGUA',
+    lugarRecibo: 'PEAJE FRAGUA'
+  }
+};
+const AUTO_FILLED_FIELDS = ['centro', 'moneda', 'lugarEntrega', 'responsableRecibe', 'ciudad', 'lugarRecibo'];
 
 // Elementos del DOM - se inicializaran en DOMContentLoaded
 let form;
@@ -9,6 +28,12 @@ let currentStatus;
 let recordCount;
 let recordsList;
 let recordTemplate;
+let recordsSearch;
+let recordsDateFrom;
+let recordsDateTo;
+let recordsShowAll;
+let recordsClearQuery;
+let recordsQueryStatus;
 let onlineStatus;
 let appShell;
 let sessionPeaje;
@@ -55,6 +80,9 @@ let adminQuickAction;
 let adminPasswordOverlay;
 let adminPasswordTitle;
 let adminPasswordInput;
+let changePasswordCodeGroup;
+let changePasswordCodeInput;
+let sendPasswordCodeButton;
 let adminPasswordCancel;
 let adminPasswordSave;
 let adminPasswordTarget;
@@ -82,7 +110,10 @@ let configuredScriptUrl = DEFAULT_SCRIPT_URL;
 let currentUser = null;
 let shouldClearAfterPrint = false;
 let autoSaveTimer = null;
+let recordsShowAllMode = false;
+let passwordChangeNeedsCode = false;
 const AUTO_SAVE_DELAY_MS = 2000;
+const RECENT_RECORD_LIMIT = 10;
 
 const currency = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -267,6 +298,51 @@ function setRecords(records) {
   }
 }
 
+function getSelectedPeaje() {
+  return String(form?.elements.peaje?.value || currentUser?.peaje || 'PEAJE ZARAGOZA').trim().toUpperCase();
+}
+
+function getPeajeDefaults(peaje = getSelectedPeaje()) {
+  const key = String(peaje || '').trim().toUpperCase();
+  return PEAJE_DEFAULTS[key] || {
+    centro: 'ZIMA SEGURIDAD',
+    moneda: 'COP',
+    lugarEntrega: 'CENTRO EFECTIVO',
+    responsableRecibe: 'TransBanck',
+    ciudad: key.replace(/^PEAJE\s+/, '') || '',
+    lugarRecibo: key || ''
+  };
+}
+
+function setAutoFilledFieldsLocked(locked = true) {
+  if (!form) return;
+
+  AUTO_FILLED_FIELDS.forEach((name) => {
+    const field = form.elements[name];
+    if (!field) return;
+
+    if (field.tagName === 'SELECT') {
+      field.disabled = locked;
+      return;
+    }
+
+    field.readOnly = locked;
+    field.classList.toggle('auto-filled-field', locked);
+  });
+}
+
+function applyPeajeDefaults({ onlyBlank = false } = {}) {
+  if (!form) return;
+
+  const defaults = getPeajeDefaults();
+  Object.entries(defaults).forEach(([name, value]) => {
+    const field = form.elements[name];
+    if (!field) return;
+    if (onlyBlank && String(field.value || '').trim()) return;
+    field.value = value;
+  });
+}
+
 function isAuditUser() {
   return Boolean(
     currentUser?.isAuditoria ||
@@ -300,6 +376,7 @@ function scheduleAutoSave() {
 }
 
 function formData() {
+  applyPeajeDefaults({ onlyBlank: true });
   const data = Object.fromEntries(new FormData(form).entries());
   data.efectivo = onlyDigits(data.efectivo);
   data.valorTula = onlyDigits(data.valorTula);
@@ -309,6 +386,7 @@ function formData() {
   if (currentUser) {
     data.peaje = isAuditUser() ? (data.peaje || currentUser.peaje) : currentUser.peaje;
   }
+  Object.assign(data, getPeajeDefaults(data.peaje));
   data.consecutivo = data.codigoSello || data.consecutivo || '';
   return data;
 }
@@ -388,6 +466,8 @@ function fillForm(record) {
 
     field.value = value ?? '';
   });
+
+  applyPeajeDefaults({ onlyBlank: true });
 
   const codigoSelloValue = record.codigoSello || '';
   const consecutivoField = form.elements.consecutivo;
@@ -599,6 +679,7 @@ function clearForm() {
   form.reset();
   form.elements.fecha.value = today();
   form.elements.peaje.value = isAuditUser() ? 'PEAJE ZARAGOZA' : (currentUser?.peaje || 'PEAJE ZARAGOZA');
+  applyPeajeDefaults();
   activeRecordId = null;
   recalculate();
   currentStatus.textContent = 'Sin guardar';
@@ -866,6 +947,7 @@ async function startSession(user) {
   sessionPeaje.textContent = currentUser.nombre;
   const canAuditPanel = isAuditUser() || isAdminUser();
   form.elements.peaje.disabled = !canAuditPanel;
+  setAutoFilledFieldsLocked(true);
   
   if (canAuditPanel && auditViewButton) {
     auditViewButton.style.display = 'block';
@@ -907,6 +989,54 @@ function isAdminUser() {
   return role === 'ADMIN' || peaje.includes('ADMIN') || nombre.includes('ADMIN') || peaje.includes('SOPORTE') || nombre.includes('SOPORTE');
 }
 
+function getSortedRecords(records) {
+  return [...records].sort((a, b) => {
+    const dateCompare = recordDateKey(b.fecha).localeCompare(recordDateKey(a.fecha));
+    if (dateCompare) return dateCompare;
+    return String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || ''));
+  });
+}
+
+function hasRecordsQuery() {
+  return Boolean(
+    recordsShowAllMode ||
+    String(recordsSearch?.value || '').trim() ||
+    recordsDateFrom?.value ||
+    recordsDateTo?.value
+  );
+}
+
+function getRecordsForList() {
+  const query = String(recordsSearch?.value || '').trim().toUpperCase();
+  const dateFrom = recordsDateFrom?.value || '';
+  const dateTo = recordsDateTo?.value || '';
+  const sorted = getSortedRecords(getRecords());
+
+  if (!hasRecordsQuery()) {
+    return sorted.slice(0, RECENT_RECORD_LIMIT);
+  }
+
+  if (recordsShowAllMode) {
+    return sorted;
+  }
+
+  return sorted.filter((record) => {
+    const recordDate = recordDateKey(record.fecha);
+    const text = [
+      record.codigoSello,
+      record.consecutivo,
+      record.peaje,
+      record.centro,
+      record.responsableRecibe,
+      record.ciudad
+    ].join(' ').toUpperCase();
+    const matchText = !query || text.includes(query);
+    const matchDateFrom = !dateFrom || recordDate >= dateFrom;
+    const matchDateTo = !dateTo || recordDate <= dateTo;
+    return matchText && matchDateFrom && matchDateTo;
+  });
+}
+
 function renderRecords() {
   // Si recordsList no esta inicializado, intentar buscarlo ahora
   if (!recordsList) {
@@ -924,14 +1054,29 @@ function renderRecords() {
     return;
   }
 
-  const records = getRecords();
+  const totalRecords = getRecords().length;
+  const records = getRecordsForList();
   recordCount.textContent = records.length;
   recordsList.replaceChildren();
+
+  if (recordsQueryStatus) {
+    recordsQueryStatus.textContent = hasRecordsQuery()
+      ? `Consulta aplicada: ${records.length} de ${totalRecords} registros.`
+      : `Mostrando los ${Math.min(RECENT_RECORD_LIMIT, totalRecords)} registros mas recientes. Usa la consulta para ver anteriores.`;
+  }
+
+  if (!totalRecords) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = 'No hay registros guardados todavia.';
+    recordsList.append(empty);
+    return;
+  }
 
   if (!records.length) {
     const empty = document.createElement('div');
     empty.className = 'empty-state';
-    empty.textContent = 'No hay registros guardados todavia.';
+    empty.textContent = 'No se encontraron registros con esa consulta.';
     recordsList.append(empty);
     return;
   }
@@ -1793,6 +1938,34 @@ async function changePasswordOnline(targetPeaje, passwordValue) {
   }
 }
 
+async function requestPasswordCodeOnline(targetPeaje) {
+  const payload = await requestJsonp(getScriptUrl(), {
+    action: 'passwordcode',
+    peaje: currentUser.peaje,
+    password: currentUser.password,
+    targetPeaje
+  });
+  if (!payload || !payload.ok) {
+    throw new Error(payload && payload.error ? payload.error : 'No se pudo enviar el codigo de verificacion');
+  }
+  return payload;
+}
+
+async function changeOwnPasswordWithCodeOnline(targetPeaje, passwordValue, verificationCode) {
+  const payload = await requestPostJson(getScriptUrl(), {
+    action: 'changepassword',
+    peaje: currentUser.peaje,
+    password: currentUser.password,
+    targetPeaje,
+    passwordValue,
+    verificationCode
+  });
+  if (!payload || !payload.ok) {
+    throw new Error(payload && payload.error ? payload.error : 'No se pudo cambiar la clave');
+  }
+  return payload.user;
+}
+
 async function deleteUserOnline(targetPeaje) {
   const payload = await requestPostJson(getScriptUrl(), {
     action: 'deleteuser',
@@ -1804,19 +1977,27 @@ async function deleteUserOnline(targetPeaje) {
   return payload.user;
 }
 
-function openChangePasswordModal(peaje, nombre) {
+function openChangePasswordModal(peaje, nombre, options = {}) {
   if (!adminPasswordOverlay || !adminPasswordTitle || !adminPasswordInput) return;
   adminPasswordTarget = peaje;
+  passwordChangeNeedsCode = Boolean(options.requireCode);
   adminPasswordTitle.textContent = `Nueva clave para ${nombre}`;
   adminPasswordInput.value = '';
+  if (adminPasswordStatus) adminPasswordStatus.textContent = '';
+  if (changePasswordCodeInput) changePasswordCodeInput.value = '';
+  if (changePasswordCodeGroup) changePasswordCodeGroup.hidden = !passwordChangeNeedsCode;
+  if (sendPasswordCodeButton) sendPasswordCodeButton.hidden = !passwordChangeNeedsCode;
   adminPasswordOverlay.classList.remove('is-hidden');
   adminPasswordOverlay.setAttribute('aria-hidden', 'false');
-  adminPasswordInput.focus();
+  if (passwordChangeNeedsCode && sendPasswordCodeButton) sendPasswordCodeButton.focus();
+  else adminPasswordInput.focus();
 }
 
 function closeChangePasswordModal() {
   if (!adminPasswordOverlay) return;
   adminPasswordTarget = null;
+  passwordChangeNeedsCode = false;
+  if (adminPasswordStatus) adminPasswordStatus.textContent = '';
   adminPasswordOverlay.classList.add('is-hidden');
   adminPasswordOverlay.setAttribute('aria-hidden', 'true');
 }
@@ -2062,6 +2243,12 @@ document.addEventListener('DOMContentLoaded', function() {
   recordCount = document.querySelector('#recordCount');
   recordsList = document.querySelector('#recordsList');
   recordTemplate = document.querySelector('#recordTemplate');
+  recordsSearch = document.querySelector('#recordsSearch');
+  recordsDateFrom = document.querySelector('#recordsDateFrom');
+  recordsDateTo = document.querySelector('#recordsDateTo');
+  recordsShowAll = document.querySelector('#recordsShowAll');
+  recordsClearQuery = document.querySelector('#recordsClearQuery');
+  recordsQueryStatus = document.querySelector('#recordsQueryStatus');
   onlineStatus = document.querySelector('#onlineStatus');
   appShell = document.querySelector('.app-shell');
   sessionPeaje = document.querySelector('#sessionPeaje');
@@ -2111,6 +2298,9 @@ document.addEventListener('DOMContentLoaded', function() {
   adminPasswordOverlay = document.querySelector('#changePasswordOverlay');
   adminPasswordTitle = document.querySelector('#changePasswordTitle');
   adminPasswordInput = document.querySelector('#changePasswordInput');
+  changePasswordCodeGroup = document.querySelector('#changePasswordCodeGroup');
+  changePasswordCodeInput = document.querySelector('#changePasswordCodeInput');
+  sendPasswordCodeButton = document.querySelector('#sendPasswordCodeButton');
   adminPasswordCancel = document.querySelector('#changePasswordCancel');
   adminPasswordSave = document.querySelector('#changePasswordSave');
   adminPasswordStatus = document.querySelector('#changePasswordStatus');
@@ -2194,6 +2384,37 @@ document.addEventListener('DOMContentLoaded', function() {
   
   const exportCsvBtn = document.querySelector('#exportCsv');
   if (exportCsvBtn) exportCsvBtn.addEventListener('click', exportCsv);
+
+  if (recordsSearch) recordsSearch.addEventListener('input', () => {
+    recordsShowAllMode = false;
+    renderRecords();
+  });
+  if (recordsDateFrom) recordsDateFrom.addEventListener('change', () => {
+    recordsShowAllMode = false;
+    renderRecords();
+  });
+  if (recordsDateTo) recordsDateTo.addEventListener('change', () => {
+    recordsShowAllMode = false;
+    renderRecords();
+  });
+  if (recordsShowAll) {
+    recordsShowAll.addEventListener('click', () => {
+      recordsShowAllMode = true;
+      if (recordsSearch) recordsSearch.value = '';
+      if (recordsDateFrom) recordsDateFrom.value = '';
+      if (recordsDateTo) recordsDateTo.value = '';
+      renderRecords();
+    });
+  }
+  if (recordsClearQuery) {
+    recordsClearQuery.addEventListener('click', () => {
+      recordsShowAllMode = false;
+      if (recordsSearch) recordsSearch.value = '';
+      if (recordsDateFrom) recordsDateFrom.value = '';
+      if (recordsDateTo) recordsDateTo.value = '';
+      renderRecords();
+    });
+  }
   
   const syncOnlineBtn = document.querySelector('#syncOnline');
   if (syncOnlineBtn) syncOnlineBtn.addEventListener('click', loadOnlineRecords);
@@ -2205,6 +2426,13 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   syncCodigoSelloConsecutivo();
+
+  if (form?.elements.peaje) {
+    form.elements.peaje.addEventListener('change', () => {
+      applyPeajeDefaults();
+      recalculate();
+    });
+  }
 
   if (auditFilterApply) auditFilterApply.addEventListener('click', applyAuditFilters);
   if (auditFilterClear) auditFilterClear.addEventListener('click', () => {
@@ -2257,10 +2485,39 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
   if (adminPasswordCancel) adminPasswordCancel.addEventListener('click', closeChangePasswordModal);
+  const selfChangePasswordButton = document.querySelector('#selfChangePasswordButton');
+  if (selfChangePasswordButton) {
+    selfChangePasswordButton.addEventListener('click', () => {
+      if (!currentUser) return;
+      openChangePasswordModal(currentUser.peaje, currentUser.nombre || currentUser.peaje, { requireCode: !isAdminUser() });
+    });
+  }
+  if (sendPasswordCodeButton) {
+    sendPasswordCodeButton.addEventListener('click', async () => {
+      if (!adminPasswordTarget) return;
+      try {
+        sendPasswordCodeButton.disabled = true;
+        if (adminPasswordStatus) adminPasswordStatus.textContent = 'Enviando codigo de verificacion...';
+        await requestPasswordCodeOnline(adminPasswordTarget);
+        if (adminPasswordStatus) adminPasswordStatus.textContent = 'Codigo enviado al correo registrado del peaje. Revise la bandeja de entrada.';
+        if (changePasswordCodeInput) changePasswordCodeInput.focus();
+      } catch (error) {
+        if (adminPasswordStatus) adminPasswordStatus.textContent = `No fue posible enviar el codigo: ${error.message}`;
+      } finally {
+        sendPasswordCodeButton.disabled = false;
+      }
+    });
+  }
   if (adminPasswordSave) adminPasswordSave.addEventListener('click', async () => {
     const nextPassword = (adminPasswordInput?.value || '').trim();
     if (!nextPassword || !adminPasswordTarget) {
       if (adminPasswordStatus) adminPasswordStatus.textContent = 'Ingrese una nueva contraseña para continuar.';
+      return;
+    }
+    const verificationCode = (changePasswordCodeInput?.value || '').trim();
+    if (passwordChangeNeedsCode && !verificationCode) {
+      if (adminPasswordStatus) adminPasswordStatus.textContent = 'Ingrese el codigo enviado al correo antes de continuar.';
+      if (changePasswordCodeInput) changePasswordCodeInput.focus();
       return;
     }
 
@@ -2270,7 +2527,11 @@ document.addEventListener('DOMContentLoaded', function() {
       adminPasswordCancel.disabled = true;
       if (adminPasswordStatus) adminPasswordStatus.textContent = 'Cambiando contraseña...';
 
-      await changePasswordOnline(adminPasswordTarget, nextPassword);
+      if (passwordChangeNeedsCode) {
+        await changeOwnPasswordWithCodeOnline(adminPasswordTarget, nextPassword, verificationCode);
+      } else {
+        await changePasswordOnline(adminPasswordTarget, nextPassword);
+      }
       if (currentUser?.peaje === adminPasswordTarget) {
         currentUser.password = nextPassword;
         saveSession(currentUser, nextPassword);
