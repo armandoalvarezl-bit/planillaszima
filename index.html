@@ -32,21 +32,6 @@
     .logout-confirm-actions button {
       flex: 1 1 0;
     }
-    .dashboard-summary{
-    width:100%;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    padding:20px;
-}
-
-.dashboard-banner{
-    display:block;
-    width:100%;
-    max-width:1400px;
-    height:auto;
-    border-radius:8px;
-}
   </style>
 </head>
 <body>
@@ -87,8 +72,8 @@
       <div class="status-panel">
         <span id="sessionPeaje">Registro actual</span>
         <strong id="currentStatus">Sin guardar</strong>
+        <button id="selfChangePasswordButton" class="self-password-button" type="button" hidden>Cambiar clave</button>
       </div>
-
 
       <button id="logoutButton" class="logout-button" type="button">Cerrar sesion</button>
 
@@ -136,21 +121,19 @@
       <section id="homeView" class="view active" aria-label="Inicio del sistema">
         <section class="home-dashboard">
           <div class="dashboard-header">
-            <div>
+            <div class="dashboard-title-group">
               <p class="eyebrow">Sistema de gestion de planillas</p>
-              <h2></h2>
-              <!-- NUEVO: mensaje de bienvenida, se llena por script al final del body -->
               <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
             </div>
-            <img src="assets/logo-zima.png" alt="Logo ZIMA Seguridad Ltda" class="dashboard-logo">
-            <div class="toolbar-actions">
+            <div class="dashboard-actions">
+              <img src="assets/logo-zima.png" alt="Logo ZIMA Seguridad Ltda" class="dashboard-logo">
               <button id="dashboardRefresh" class="secondary-button" type="button">Actualizar</button>
               <button id="homeNewRecord" class="primary-button" type="button">Nueva planilla</button>
             </div>
           </div>
-           <div class="dashboard-summary">
-              <img src="assets/home-planillas-zima.png" alt="Banner ZIMA" class="dashboard-banner">
-            </div>
+          <div class="dashboard-summary">
+            <img src="assets/home-planillas-zima.png" alt="Banner ZIMA" class="dashboard-banner">
+          </div>
           <div class="dashboard-grid" aria-label="Resumen de registros">
             <article class="dashboard-card">
               <span>Total registros</span>
@@ -586,7 +569,7 @@
       </div>
       <div class="loading-copy">
         <strong id="changePasswordTitle">Nueva clave</strong>
-        <p>Ingrese la nueva contrasena para este usuario y confirme el cambio.</p>
+        <p>Ingrese la nueva contrasena y confirme el cambio.</p>
         <div id="changePasswordCodeGroup" class="password-code-group" hidden>
           <p class="password-code-copy">Enviaremos un codigo de verificacion al correo registrado del peaje.</p>
           <button id="sendPasswordCodeButton" class="secondary-button" type="button">Enviar codigo</button>

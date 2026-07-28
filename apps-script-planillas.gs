@@ -1,12 +1,14 @@
 const SHEET_NAME = 'BASE DE DATOS PLANILLAS';
 const USERS_SHEET_NAME = 'USUARIOS PLANILLAS';
 const ALERTS_SHEET_NAME = 'ALERTAS PLANILLAS';
+const PASSWORD_EVENTS_SHEET_NAME = 'CAMBIOS CLAVE';
 const SPREADSHEET_NAME = 'BASE DE DATOS PLANILLAS';
 const SPREADSHEET_ID_PROPERTY = 'PLANILLAS_SPREADSHEET_ID';
 const SPREADSHEET_ID = '';
 
 const USER_HEADERS = ['peaje', 'nombre', 'password', 'activo', 'rol'];
 const ALERT_HEADERS = ['id', 'createdAt', 'sentAt', 'sentBy', 'targetPeaje', 'message', 'attachmentNames', 'recipients'];
+const PASSWORD_EVENT_HEADERS = ['id', 'changedAt', 'actorPeaje', 'actorNombre', 'actorRol', 'targetPeaje', 'targetNombre', 'changeType', 'recipients'];
 const HEADERS = [
   'id',
   'createdAt',
@@ -176,6 +178,18 @@ function getAlertsSheet_() {
   return sheet;
 }
 
+function getPasswordEventsSheet_() {
+  const spreadsheet = getSpreadsheet_();
+  let sheet = spreadsheet.getSheetByName(PASSWORD_EVENTS_SHEET_NAME);
+
+  if (!sheet) {
+    sheet = spreadsheet.insertSheet(PASSWORD_EVENTS_SHEET_NAME);
+  }
+
+  ensurePasswordEventHeaders_(sheet);
+  return sheet;
+}
+
 function getUsersSheet_() {
   const spreadsheet = getSpreadsheet_();
   let sheet = spreadsheet.getSheetByName(USERS_SHEET_NAME);
@@ -244,6 +258,17 @@ function ensureAlertHeaders_(sheet) {
     sheet.getRange(1, 1, 1, ALERT_HEADERS.length).setValues([ALERT_HEADERS]);
     sheet.setFrozenRows(1);
     sheet.autoResizeColumns(1, ALERT_HEADERS.length);
+  }
+}
+
+function ensurePasswordEventHeaders_(sheet) {
+  const current = sheet.getRange(1, 1, 1, PASSWORD_EVENT_HEADERS.length).getValues()[0];
+  const needsHeaders = PASSWORD_EVENT_HEADERS.some((header, index) => current[index] !== header);
+
+  if (needsHeaders) {
+    sheet.getRange(1, 1, 1, PASSWORD_EVENT_HEADERS.length).setValues([PASSWORD_EVENT_HEADERS]);
+    sheet.setFrozenRows(1);
+    sheet.autoResizeColumns(1, PASSWORD_EVENT_HEADERS.length);
   }
 }
 
@@ -408,10 +433,38 @@ function changePassword_(sheet, targetPeaje, newPassword, user) {
     throw new Error('No existe el usuario indicado.');
   }
 
+  const targetValues = sheet.getRange(existingRow, 1, 1, USER_HEADERS.length).getValues()[0];
+  const targetUser = {
+    peaje: String(targetValues[0] || normalizedTarget),
+    nombre: String(targetValues[1] || targetValues[0] || normalizedTarget),
+    rol: String(targetValues[4] || 'PEAJE')
+  };
+
   Logger.log('changePassword_ changing password for %s at row %s (newLength=%s)', normalizedTarget, existingRow, String((passwordValue || '').length));
   sheet.getRange(existingRow, 3, 1, 1).setValue(passwordValue);
+  const changeEvent = {
+    id: Utilities.getUuid(),
+    changedAt: new Date().toISOString(),
+    actorPeaje: user.peaje || normalizedUserPeaje,
+    actorNombre: user.nombre || user.peaje || normalizedUserPeaje,
+    actorRol: inferRole_(user),
+    targetPeaje: targetUser.peaje,
+    targetNombre: targetUser.nombre,
+    changeType: normalizeText_(targetUser.peaje) === normalizedUserPeaje ? 'PROPIA' : 'ADMIN',
+    recipients: getNotificationRecipients_(targetUser.peaje)
+  };
+  let notificationSent = false;
+  let notificationError = '';
+  try {
+    savePasswordChangeLog_(changeEvent);
+    sendPasswordChangeEmail_(changeEvent);
+    notificationSent = true;
+  } catch (error) {
+    notificationError = String(error && error.message ? error.message : error);
+    Logger.log('No se pudo registrar/notificar cambio de clave para %s: %s', normalizedTarget, notificationError);
+  }
   Logger.log('changePassword_ saved password for %s', normalizedTarget);
-  return { peaje: normalizedTarget, passwordChanged: true };
+  return { peaje: normalizedTarget, passwordChanged: true, notificationSent, notificationError };
 }
 
 function disableUser_(sheet, targetPeaje, user) {
@@ -545,7 +598,7 @@ function getNotificationRecipients_(peaje) {
   return recipients.filter((email, index, list) => email && list.indexOf(email) === index);
 }
 
-function sendEmailToRecipients_(recipients, subject, body, attachments) {
+function sendEmailToRecipients_(recipients, subject, body, attachments, htmlBody) {
   const uniqueRecipients = (recipients || []).filter((email, index, list) => email && list.indexOf(email) === index);
   if (!uniqueRecipients.length) {
     Logger.log('No hay destinatarios para el correo: %s', subject);
@@ -556,8 +609,101 @@ function sendEmailToRecipients_(recipients, subject, body, attachments) {
     to: uniqueRecipients.join(','),
     subject,
     body,
-    attachments: attachments || []
+    attachments: attachments || [],
+    htmlBody: htmlBody || undefined
   });
+}
+
+function escapeHtml_(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function savePasswordChangeLog_(event) {
+  const sheet = getPasswordEventsSheet_();
+  sheet.appendRow([
+    event.id,
+    event.changedAt,
+    event.actorPeaje,
+    event.actorNombre,
+    event.actorRol,
+    event.targetPeaje,
+    event.targetNombre,
+    event.changeType,
+    (event.recipients || []).join(', ')
+  ]);
+}
+
+function sendPasswordChangeEmail_(event) {
+  const recipients = event.recipients || [];
+  if (!recipients.length) {
+    Logger.log('No hay destinatarios para cambio de clave: %s', event.targetPeaje);
+    return;
+  }
+
+  const isSelfChange = event.changeType === 'PROPIA';
+  const subject = `Cambio de clave registrado - ${event.targetPeaje}`;
+  const changedAtText = new Date(event.changedAt).toLocaleString('es-CO');
+  const body = [
+    'Se registro un cambio de clave en el sistema de planillas ZIMA.',
+    '',
+    `Usuario afectado: ${event.targetNombre} (${event.targetPeaje})`,
+    `Realizado por: ${event.actorNombre} (${event.actorPeaje})`,
+    `Tipo de cambio: ${isSelfChange ? 'Cambio realizado por el mismo usuario' : 'Cambio realizado por administrador/soporte'}`,
+    `Fecha y hora: ${changedAtText}`,
+    '',
+    'Por seguridad, este correo no incluye la clave nueva.',
+    'Si usted no reconoce este cambio, comuniquese de inmediato con soporte o auditoria.'
+  ].join('\n');
+
+  const htmlBody = `
+    <div style="margin:0;padding:0;background:#eef4f8;font-family:Arial,Helvetica,sans-serif;color:#172536;">
+      <div style="max-width:640px;margin:0 auto;padding:28px 16px;">
+        <div style="overflow:hidden;border-radius:14px;background:#ffffff;border:1px solid #d8e4ec;box-shadow:0 18px 46px rgba(20,35,51,0.12);">
+          <div style="padding:24px 28px;background:#102d3a;color:#ffffff;">
+            <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#f0b35f;">ZIMA Seguridad</div>
+            <div style="margin-top:8px;font-size:24px;font-weight:800;line-height:1.2;">Cambio de clave registrado</div>
+            <div style="margin-top:8px;font-size:14px;color:#c7d6df;">Sistema de planillas y control Transbank</div>
+          </div>
+          <div style="padding:26px 28px;">
+            <p style="margin:0 0 18px;font-size:15px;line-height:1.55;color:#31465a;">
+              Se registro un cambio de clave. Esta notificacion queda como constancia para seguimiento y control interno.
+            </p>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:separate;border-spacing:0 10px;">
+              <tr>
+                <td style="width:160px;padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-right:0;border-radius:10px 0 0 10px;color:#607284;font-size:12px;font-weight:800;text-transform:uppercase;">Usuario</td>
+                <td style="padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-left:0;border-radius:0 10px 10px 0;color:#172536;font-size:14px;font-weight:700;">${escapeHtml_(event.targetNombre)} (${escapeHtml_(event.targetPeaje)})</td>
+              </tr>
+              <tr>
+                <td style="width:160px;padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-right:0;border-radius:10px 0 0 10px;color:#607284;font-size:12px;font-weight:800;text-transform:uppercase;">Realizado por</td>
+                <td style="padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-left:0;border-radius:0 10px 10px 0;color:#172536;font-size:14px;font-weight:700;">${escapeHtml_(event.actorNombre)} (${escapeHtml_(event.actorPeaje)})</td>
+              </tr>
+              <tr>
+                <td style="width:160px;padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-right:0;border-radius:10px 0 0 10px;color:#607284;font-size:12px;font-weight:800;text-transform:uppercase;">Tipo</td>
+                <td style="padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-left:0;border-radius:0 10px 10px 0;color:#172536;font-size:14px;font-weight:700;">${isSelfChange ? 'Cambio propio' : 'Administrador / soporte'}</td>
+              </tr>
+              <tr>
+                <td style="width:160px;padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-right:0;border-radius:10px 0 0 10px;color:#607284;font-size:12px;font-weight:800;text-transform:uppercase;">Fecha</td>
+                <td style="padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-left:0;border-radius:0 10px 10px 0;color:#172536;font-size:14px;font-weight:700;">${escapeHtml_(changedAtText)}</td>
+              </tr>
+            </table>
+            <div style="margin-top:20px;padding:16px 18px;border-left:4px solid #f0b35f;background:#fff8ed;border-radius:10px;color:#5c4020;font-size:14px;line-height:1.5;">
+              Por seguridad, este correo no incluye la clave nueva. Si usted no reconoce este cambio, comuniquese de inmediato con soporte o auditoria.
+            </div>
+          </div>
+          <div style="padding:16px 28px;background:#f5f8fb;border-top:1px solid #dce7ee;color:#6b7c8d;font-size:12px;line-height:1.45;">
+            Notificacion automatica del sistema de planillas ZIMA. ID de evento: ${escapeHtml_(event.id)}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  sendEmailToRecipients_(recipients, subject, body, null, htmlBody);
 }
 
 function parseAttachments_(attachments) {

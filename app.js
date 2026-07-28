@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmfUJNDN0JtbQneLrcd1gpWDe83QI6PUH_YKEfexxhUKSg7dz7N7BAyzK7y3tQK26yVg/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby8JCAZugCUwBPm3Xo3pQVBmAo3iclJsauNGWPRIQxMV7qybeOwZO0d2JVYusORkYCLOA/exec';
 const SESSION_KEY = 'transbankSession';
 const PEAJE_DEFAULTS = {
   'PEAJE ZARAGOZA': {
@@ -110,10 +110,13 @@ let configuredScriptUrl = DEFAULT_SCRIPT_URL;
 let currentUser = null;
 let shouldClearAfterPrint = false;
 let autoSaveTimer = null;
+let inactivityTimer = null;
 let recordsShowAllMode = false;
 let passwordChangeNeedsCode = false;
 const AUTO_SAVE_DELAY_MS = 2000;
 const RECENT_RECORD_LIMIT = 10;
+const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
+const ACTIVITY_EVENTS = ['click', 'input', 'keydown', 'mousemove', 'mousedown', 'touchstart', 'scroll'];
 
 const currency = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -941,8 +944,28 @@ function getStoredSession() {
   }
 }
 
+function resetInactivityTimer() {
+  if (inactivityTimer) {
+    window.clearTimeout(inactivityTimer);
+    inactivityTimer = null;
+  }
+
+  if (!currentUser) return;
+
+  inactivityTimer = window.setTimeout(() => {
+    clearSession();
+  }, INACTIVITY_TIMEOUT_MS);
+}
+
+function registerInactivityWatcher() {
+  ACTIVITY_EVENTS.forEach((eventName) => {
+    window.addEventListener(eventName, resetInactivityTimer, { passive: true });
+  });
+}
+
 async function startSession(user) {
   currentUser = user;
+  resetInactivityTimer();
   appShell.classList.remove('is-hidden');
   sessionPeaje.textContent = currentUser.nombre;
   const canAuditPanel = isAuditUser() || isAdminUser();
@@ -959,6 +982,10 @@ async function startSession(user) {
   if (isAdminUser() && alertsViewButton) {
     alertsViewButton.style.display = 'block';
   }
+  const selfChangePasswordButton = document.querySelector('#selfChangePasswordButton');
+  if (selfChangePasswordButton) {
+    selfChangePasswordButton.hidden = isAdminUser();
+  }
   
   if (canAuditPanel && dashboardButton) {
     dashboardButton.style.display = 'block';
@@ -973,6 +1000,10 @@ async function startSession(user) {
 }
 
 function clearSession() {
+  if (inactivityTimer) {
+    window.clearTimeout(inactivityTimer);
+    inactivityTimer = null;
+  }
   currentUser = null;
   recordsCache = [];
   activeRecordId = null;
@@ -2235,6 +2266,8 @@ function renderTopCenters(records) {
 
 // Agregar event listeners cuando el DOM esta completamente listo
 document.addEventListener('DOMContentLoaded', function() {
+  registerInactivityWatcher();
+
   // Inicializar referencias a elementos del DOM
   form = document.querySelector('#moneyForm');
   totalEntregado = document.querySelector('#totalEntregado');
@@ -2489,7 +2522,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (selfChangePasswordButton) {
     selfChangePasswordButton.addEventListener('click', () => {
       if (!currentUser) return;
-      openChangePasswordModal(currentUser.peaje, currentUser.nombre || currentUser.peaje, { requireCode: !isAdminUser() });
+      openChangePasswordModal(currentUser.peaje, currentUser.nombre || currentUser.peaje);
     });
   }
   if (sendPasswordCodeButton) {
@@ -2527,16 +2560,18 @@ document.addEventListener('DOMContentLoaded', function() {
       adminPasswordCancel.disabled = true;
       if (adminPasswordStatus) adminPasswordStatus.textContent = 'Cambiando contraseña...';
 
-      if (passwordChangeNeedsCode) {
-        await changeOwnPasswordWithCodeOnline(adminPasswordTarget, nextPassword, verificationCode);
-      } else {
-        await changePasswordOnline(adminPasswordTarget, nextPassword);
-      }
+      const passwordResult = await changePasswordOnline(adminPasswordTarget, nextPassword);
       if (currentUser?.peaje === adminPasswordTarget) {
-        currentUser.password = nextPassword;
-        saveSession(currentUser, nextPassword);
+        closeChangePasswordModal();
+        if (adminPasswordInput) adminPasswordInput.value = '';
+        clearSession();
+        return;
       }
-      if (adminPasswordStatus) adminPasswordStatus.textContent = 'Contraseña actualizada correctamente.';
+      if (adminPasswordStatus) {
+        adminPasswordStatus.textContent = passwordResult?.notificationError
+          ? `Contraseña actualizada. No se pudo enviar la notificacion: ${passwordResult.notificationError}`
+          : 'Contraseña actualizada correctamente. Notificacion enviada por correo.';
+      }
       closeChangePasswordModal();
       if (adminPasswordInput) adminPasswordInput.value = '';
       await loadAdminUsers();
