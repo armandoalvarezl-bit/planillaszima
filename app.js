@@ -2165,7 +2165,91 @@ function updateDashboard() {
 
   renderPeajeSummary(records);
   renderDailyChart(records);
+  renderLatestRecordSummary(records);
+  renderRecentActivity(records);
   renderTopCenters(records);
+}
+
+function getRecordsByRecentDate(records) {
+  return [...records].sort((a, b) => {
+    const dateA = recordDateKey(a.fecha) || '';
+    const dateB = recordDateKey(b.fecha) || '';
+    if (dateA !== dateB) return dateB.localeCompare(dateA);
+    return String(b.updatedAt || b.createdAt || b.id || '').localeCompare(String(a.updatedAt || a.createdAt || a.id || ''));
+  });
+}
+
+function appendSummaryRow(container, label, value) {
+  const row = document.createElement('div');
+  const labelEl = document.createElement('span');
+  const valueEl = document.createElement('strong');
+  labelEl.textContent = label;
+  valueEl.textContent = value;
+  row.append(labelEl, valueEl);
+  container.append(row);
+}
+
+function renderLatestRecordSummary(records) {
+  const container = document.querySelector('#latestRecordSummary');
+  if (!container) return;
+
+  container.replaceChildren();
+  const latest = getRecordsByRecentDate(records)[0];
+
+  if (!latest) {
+    const empty = document.createElement('p');
+    empty.className = 'dashboard-empty';
+    empty.textContent = 'Sin planillas registradas.';
+    container.append(empty);
+    return;
+  }
+
+  appendSummaryRow(container, 'Fecha', formatDate(latest.fecha));
+  appendSummaryRow(container, 'Hora', latest.updatedAt ? formatDateTime(latest.updatedAt).split(',').at(-1).trim() : '-');
+  appendSummaryRow(container, 'Operador', latest.operador || latest.responsableRecibe || currentUser?.nombre || '-');
+  appendSummaryRow(container, 'Peaje', String(latest.peaje || '-').replace(/^PEAJE\s+/i, ''));
+  appendSummaryRow(container, 'Valor entregado', formatMoney(latest.total || latest.efectivo || 0));
+
+  const button = document.createElement('button');
+  button.className = 'secondary-button latest-detail-button';
+  button.type = 'button';
+  button.textContent = 'Ver detalle';
+  button.addEventListener('click', () => switchView('records'));
+  container.append(button);
+}
+
+function renderRecentActivity(records) {
+  const container = document.querySelector('#recentActivityList');
+  if (!container) return;
+
+  container.replaceChildren();
+  const recent = getRecordsByRecentDate(records).slice(0, 5);
+
+  if (!recent.length) {
+    const empty = document.createElement('p');
+    empty.className = 'dashboard-empty';
+    empty.textContent = 'Sin actividad reciente.';
+    container.append(empty);
+    return;
+  }
+
+  recent.forEach((record, index) => {
+    const item = document.createElement('div');
+    item.className = 'recent-activity-item';
+
+    const icon = document.createElement('span');
+    icon.className = 'activity-icon';
+    icon.textContent = index === 0 ? '+' : '✓';
+
+    const title = document.createElement('strong');
+    title.textContent = index === 0 ? 'Nueva planilla creada' : 'Registro actualizado';
+
+    const time = document.createElement('span');
+    time.textContent = record.updatedAt ? formatDateTime(record.updatedAt).split(',').at(-1).trim() : formatDate(record.fecha);
+
+    item.append(icon, title, time);
+    container.append(item);
+  });
 }
 
 function renderPeajeSummary(records) {

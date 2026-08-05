@@ -593,8 +593,7 @@ function getNotificationRecipients_(peaje) {
   const peajeEmail = getPeajeEmail_(peaje);
   if (peajeEmail) recipients.push(peajeEmail);
   if (SUPPORT_EMAIL) recipients.push(SUPPORT_EMAIL);
-  if (AUDITORA_EMAIL) recipients.push(AUDITORA_EMAIL);
-
+  // if (AUDITORA_EMAIL) recipients.push(AUDITORA_EMAIL);
   return recipients.filter((email, index, list) => email && list.indexOf(email) === index);
 }
 

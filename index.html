@@ -119,11 +119,19 @@
       </section>
       <div id="onlineStatus" class="online-status"></div>
       <section id="homeView" class="view active" aria-label="Inicio del sistema">
+        <div class="home-notice-bar">
+          <span>Consulta completada. Se encontraron <strong id="homeOnlineCount">0</strong> registros online.</span>
+        </div>
         <section class="home-dashboard">
           <div class="dashboard-header">
             <div class="dashboard-title-group">
-              <p class="eyebrow">Sistema de gestion de planillas</p>
+              <p class="eyebrow">Sistema de gestión de planillas</p>
               <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
+            </div>
+            <div class="dashboard-status-strip">
+              <span>Última actualización: <strong id="homeLastUpdate">Hace 2 minutos</strong></span>
+              <span class="badge">3 alertas activas</span>
+              <span>Administrador · Rol: Supervisor</span>
             </div>
             <div class="dashboard-actions">
               <img src="assets/logo-zima.png" alt="Logo ZIMA Seguridad Ltda" class="dashboard-logo">
@@ -157,15 +165,54 @@
             </article>
           </div>
 
-          <section class="dashboard-section">
-            <h3>Actividad diaria</h3>
-            <div id="dashDailyChart" class="daily-chart"></div>
-          </section>
+          <div class="dashboard-main-grid">
+            <section class="dashboard-section dashboard-chart-panel">
+              <div class="section-head">
+                <h3>Actividad diaria</h3>
+                <div class="range-tabs" aria-label="Rango de actividad">
+                  <span class="active">7 Dias</span>
+                  <span>15 Dias</span>
+                  <span>30 Dias</span>
+                </div>
+              </div>
+              <div id="dashDailyChart" class="daily-chart"></div>
+            </section>
 
-          <section class="dashboard-section">
-            <h3>Resumen por peaje</h3>
-            <div id="peajeSummary" class="peaje-summary"></div>
-          </section>
+            <section class="dashboard-section dashboard-last-panel">
+              <h3>Ultima planilla</h3>
+              <div id="latestRecordSummary" class="latest-record-summary"></div>
+            </section>
+
+            <section class="dashboard-section dashboard-recent-panel">
+              <h3>Actividad reciente</h3>
+              <div id="recentActivityList" class="recent-activity-list"></div>
+              <button id="homeRecords" class="secondary-button activity-link" type="button">Ver toda la actividad</button>
+            </section>
+          </div>
+
+          <div class="dashboard-bottom-grid">
+            <section class="dashboard-section">
+              <h3>Resumen por peaje</h3>
+              <div id="peajeSummary" class="peaje-summary"></div>
+            </section>
+
+            <section class="dashboard-section system-status-panel">
+              <h3>Estado del sistema</h3>
+              <div class="system-status-grid">
+                <span>Base de datos <strong>Operativo</strong></span>
+                <span>Backup <strong>Operativo</strong></span>
+                <span>Servidor <strong>Operativo</strong></span>
+                <span>Internet <strong>Operativo</strong></span>
+                <span>Impresora <strong>Operativo</strong></span>
+              </div>
+              <p class="backup-note">Ultima copia de seguridad, Hoy, 07:00 AM</p>
+            </section>
+          </div>
+
+          <footer class="dashboard-footer">
+            <span>Gestion segura y eficiente de cada entrega de efectivo</span>
+            <strong>ZIMA Seguridad Ltda. - Todos los derechos reservados</strong>
+          </footer>
         </section>
       </section>
 
@@ -209,6 +256,14 @@
                 <select name="moneda">
                   <option value="COP">COP - Peso colombiano</option>
                   <option value="USD">USD - Dolar</option>
+                </select>
+              </label>
+              <label class="auto-field">
+                Tipo de operación
+                <select id="tipoOperacion" name="tipoOperacion">
+                  <option value="RECAUDO" selected>Recaudo normal</option>
+                  <option value="RECAMBIO">Recambio</option>
+                  <option value="AJUSTE">Ajuste</option>
                 </select>
               </label>
               <label class="auto-field">
@@ -256,6 +311,16 @@
               </div>
             </div>
 
+            <section id="recambioSection" class="is-hidden">
+              <div class="section-title">Recambios / Ajustes</div>
+              <div class="grid one">
+                <label class="wide-label">
+                  Detalle recambio / ajuste
+                  <textarea name="detalleRecambioAjuste" rows="3" placeholder="Describa si es recambio o ajuste y los detalles"></textarea>
+                </label>
+              </div>
+            </section>
+
             <div class="section-title">Declaracion de valores</div>
             <div class="grid two declarations">
               <label>
@@ -276,6 +341,11 @@
             <label class="wide-label">
               Observaciones generales
               <textarea name="observacionesGenerales" rows="3" placeholder="Notas adicionales"></textarea>
+            </label>
+
+            <label class="wide-label">
+              Detalle recambio / ajuste
+              <textarea name="detalleRecambioAjuste" rows="2" placeholder="Describa si es recambio o ajuste y los detalles"></textarea>
             </label>
 
             <div class="section-title">Firmas</div>
@@ -608,93 +678,170 @@
 
   <script src="app.js"></script>
 
-  <!-- NUEVO: script pequeno y autocontenido, no toca app.js.
-       1) Llena el mensaje de bienvenida cuando el panel se hace visible.
-       2) Intercepta el clic en "Cerrar sesion" para pedir confirmacion
-          antes de dejar pasar el clic real hacia el listener de app.js. -->
   <script>
     (function () {
-      var shell = document.querySelector('.app-shell');
-      var welcomeEl = document.getElementById('welcomeMessage');
-      if (!shell || !welcomeEl) return;
+      const OFFLINE_QUEUE_KEY = 'zima_offline_queue';
+      const statusElement = document.getElementById('onlineStatus');
+      let offlineAlertShown = false;
 
-      function greetingByHour() {
-        var h = new Date().getHours();
-        if (h >= 5 && h < 12) return 'Buenos dias';
-        if (h >= 12 && h < 19) return 'Buenas tardes';
-        return 'Buenas noches';
-      }
-
-      function renderWelcome() {
-        var peajeEl = document.getElementById('sessionPeaje');
-        var peajeText = peajeEl && peajeEl.textContent.trim() && peajeEl.textContent.trim() !== 'Registro actual'
-          ? ' - ' + peajeEl.textContent.trim()
-          : '';
-        welcomeEl.textContent = greetingByHour() + ', bienvenido/a a Planillas' + peajeText + '.';
-      }
-
-      renderWelcome();
-
-      // El nombre del peaje lo llena app.js despues del login, asi que
-      // se vuelve a calcular el mensaje cada vez que el panel deja de
-      // estar oculto (clase .is-hidden).
-      var observer = new MutationObserver(function (mutations) {
-        mutations.forEach(function (mutation) {
-          if (mutation.attributeName === 'class' && !shell.classList.contains('is-hidden')) {
-            renderWelcome();
-          }
-        });
-      });
-      observer.observe(shell, { attributes: true });
-    })();
-
-    (function () {
-      var logoutButton = document.getElementById('logoutButton');
-      var overlay = document.getElementById('logoutConfirmOverlay');
-      var cancelButton = document.getElementById('logoutCancelButton');
-      var confirmButton = document.getElementById('logoutConfirmButton');
-      if (!logoutButton || !overlay || !cancelButton || !confirmButton) return;
-
-      var logoutConfirmed = false;
-
-      function showConfirm() {
-        overlay.classList.remove('is-hidden');
-        overlay.setAttribute('aria-hidden', 'false');
-      }
-
-      function hideConfirm() {
-        overlay.classList.add('is-hidden');
-        overlay.setAttribute('aria-hidden', 'true');
-      }
-
-      // Este handler se asigna via la propiedad onclick (mas temprano en
-      // el ciclo de carga que el addEventListener que agrega app.js), asi
-      // que se ejecuta primero y puede bloquear el cierre de sesion real
-      // hasta que el usuario confirme.
-      logoutButton.onclick = function (event) {
-        if (logoutConfirmed) {
-          // El usuario ya confirmo: dejamos pasar el clic para que
-          // el listener original de app.js haga el cierre de sesion.
-          logoutConfirmed = false;
-          return true;
+      function getOfflineQueue() {
+        try {
+          return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+        } catch (error) {
+          return [];
         }
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        showConfirm();
-        return false;
-      };
+      }
 
-      cancelButton.addEventListener('click', hideConfirm);
+      function setOfflineQueue(queue) {
+        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue || []));
+      }
 
-      confirmButton.addEventListener('click', function () {
-        hideConfirm();
-        logoutConfirmed = true;
-        logoutButton.click();
-      });
+      function updateOnlineStatus() {
+        const online = navigator.onLine;
+        const queue = getOfflineQueue();
+        const pending = queue.length;
 
-      overlay.addEventListener('click', function (event) {
-        if (event.target === overlay) hideConfirm();
-      });
+        if (statusElement) {
+          statusElement.textContent = online
+            ? `Conectado. ${pending > 0 ? `${pending} acción(es) pendientes se sincronizarán.` : 'Sincronización al día.'}`
+            : `Sin conexión. ${pending} acción(es) serán sincronizadas al reconectarse.`;
+          statusElement.className = online ? 'online-status online' : 'online-status offline';
+        }
+
+        if (!online && !offlineAlertShown) {
+          offlineAlertShown = true;
+          window.alert('Se detectó que no hay conexión a internet. Los cambios se guardarán localmente y se sincronizarán cuando regrese la conexión.');
+        }
+
+        if (online && pending > 0) {
+          window.alert('Se recuperó la conexión. Sincronizando cambios pendientes...');
+        }
+      }
+
+      function serializeHeaders(headers) {
+        const result = {};
+        const source = headers instanceof Headers ? headers : headers || {};
+        if (typeof source.forEach === 'function') {
+          source.forEach((value, key) => { result[key] = value; });
+        } else if (typeof source === 'object') {
+          Object.keys(source).forEach((key) => { result[key.toLowerCase()] = source[key]; });
+        }
+        return result;
+      }
+
+      function canQueueRequest(init) {
+        const method = String((init && init.method) || 'GET').toUpperCase();
+        return method !== 'GET';
+      }
+
+      function queueRequest(url, init = {}) {
+        if (!canQueueRequest(init)) return;
+        const body = init.body;
+        let bodyText = '';
+
+        if (typeof body === 'string') {
+          bodyText = body;
+        } else if (body && typeof body === 'object' && !(body instanceof FormData) && !(body instanceof Blob) && !(body instanceof ArrayBuffer)) {
+          try {
+            bodyText = JSON.stringify(body);
+          } catch (error) {
+            bodyText = '';
+          }
+        } else if (body != null) {
+          return;
+        }
+
+        const queue = getOfflineQueue();
+        queue.push({
+          url: String(url),
+          method: String((init.method || 'POST')).toUpperCase(),
+          headers: serializeHeaders(init.headers),
+          body: bodyText,
+          timestamp: Date.now()
+        });
+        setOfflineQueue(queue);
+        updateOnlineStatus();
+      }
+
+      function restoreRequestInit(item) {
+        const init = {
+          method: item.method,
+          headers: item.headers || {}
+        };
+        if (item.body != null && item.body !== '') {
+          init.body = item.body;
+        }
+        return init;
+      }
+
+      function processOfflineQueue() {
+        if (!navigator.onLine) return;
+        const queue = getOfflineQueue();
+        if (!queue.length) {
+          updateOnlineStatus();
+          return;
+        }
+
+        const originalFetch = window._originalFetch || window.fetch;
+        const remaining = [];
+
+        const promises = queue.map((item) => {
+          const init = restoreRequestInit(item);
+          return originalFetch(item.url, init)
+            .then((response) => {
+              if (!response.ok) {
+                remaining.push(item);
+              }
+            })
+            .catch(() => {
+              remaining.push(item);
+            });
+        });
+
+        Promise.all(promises).then(() => {
+          setOfflineQueue(remaining);
+          updateOnlineStatus();
+        });
+      }
+
+      function wrapFetch() {
+        if (!window.fetch || window._fetchOfflineWrapped) return;
+        window._originalFetch = window.fetch.bind(window);
+        window.fetch = function (input, init = {}) {
+          if (!navigator.onLine && canQueueRequest(init)) {
+            queueRequest(input, init);
+            return Promise.reject(new Error('offline'));
+          }
+
+          return window._originalFetch(input, init).catch((error) => {
+            if (!navigator.onLine || error.message === 'Failed to fetch') {
+              queueRequest(input, init);
+              updateOnlineStatus();
+            }
+            throw error;
+          });
+        };
+        window._fetchOfflineWrapped = true;
+      }
+
+      function handleOnline() {
+        offlineAlertShown = false;
+        updateOnlineStatus();
+        processOfflineQueue();
+      }
+
+      function handleOffline() {
+        updateOnlineStatus();
+      }
+
+      wrapFetch();
+      updateOnlineStatus();
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      if (navigator.onLine) {
+        setTimeout(processOfflineQueue, 800);
+      }
     })();
   </script>
 </body>
