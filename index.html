@@ -32,6 +32,64 @@
     .logout-confirm-actions button {
       flex: 1 1 0;
     }
+    /* Offline modal styles (elegant) */
+    #offlineModalOverlay.loading-overlay {
+      background: rgba(8, 20, 28, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    #offlineModalOverlay .loading-modal {
+      max-width: 760px;
+      width: 100%;
+      background: linear-gradient(180deg,#ffffff,#f7fbfc);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 18px 60px rgba(6,22,34,0.28);
+      text-align: center;
+      color: #0f2b36;
+    }
+
+    #offlineModalOverlay .offline-graphic {
+      width: 220px;
+      height: 160px;
+      margin: 2px auto 6px;
+      display: block;
+    }
+
+    #offlineModalOverlay .offline-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #0b3b2e;
+      margin-top: 8px;
+    }
+
+    #offlineModalOverlay .offline-subtitle {
+      font-size: 14px;
+      color: #4b6b72;
+      margin-top: 8px;
+    }
+
+    #offlineModalOverlay .offline-note {
+      margin-top: 16px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    #offlineModalOverlay .offline-action {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    #offlineModalOverlay .primary-button {
+      min-width: 180px;
+    }
   </style>
 </head>
 <body>
@@ -676,172 +734,361 @@
     </section>
   </div>
 
+  <!-- OFFLINE: modal elegante que aparece cuando no hay conexion -->
+  <div id="offlineModalOverlay" class="loading-overlay is-hidden" aria-hidden="true">
+    <section class="loading-modal" role="alertdialog" aria-modal="true" aria-live="polite" aria-label="Sin conexión">
+      <div class="offline-graphic" aria-hidden="true">
+        <!-- Prefer a real image in assets/offline-banner.png. If it's missing,
+             the inline SVG fallback will be shown. -->
+        <img src="assets/offline-banner.svg" alt="Sin conexión" class="offline-graphic" style="width:260px;height:auto;display:block;margin:6px auto;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+        <svg viewBox="0 0 640 480" width="220" height="160" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet" style="display:none;">
+          <defs>
+            <linearGradient id="g" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#eafaf1"/>
+              <stop offset="1" stop-color="#ffffff"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="640" height="480" fill="none" />
+          <g transform="translate(80,20)">
+            <circle cx="240" cy="120" r="88" fill="#e6fbf0" stroke="#c9efd9" stroke-width="2"/>
+            <path d="M30 220c40-70 130-90 200-90s160 20 200 90" fill="#f3faf9" stroke="#dff3ee"/>
+            <rect x="120" y="180" width="280" height="120" rx="12" fill="#ffffff" stroke="#e6f2ef"/>
+            <path d="M160 220h200" stroke="#8fd6a6" stroke-width="8" stroke-linecap="round"/>
+            <circle cx="420" cy="60" r="10" fill="#ff6b6b"/>
+            <line x1="410" y1="50" x2="440" y2="80" stroke="#ff6b6b" stroke-width="6" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+      <div class="loading-copy">
+        <strong class="offline-title">SIN CONEXIÓN</strong>
+        <p class="offline-subtitle">Solo se trabajará LOCALMENTE. Los datos y operaciones se guardan de forma segura en este equipo.</p>
+        <div class="offline-note">
+          <div style="width:28px;height:28px;border-radius:50%;background:#0b9b6b;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">↻</div>
+          <div style="text-align:left;">
+            <strong style="display:block;color:#0b9b6b">Cuando se restablezca la conexión se enviará lo generado</strong>
+            <small style="color:#607a80">El sistema sincronizará automáticamente la información pendiente con el servidor.</small>
+          </div>
+        </div>
+        <div class="offline-action">
+          <button id="offlineContinue" class="primary-button">Continuar en modo local</button>
+          <button id="offlineRetry" class="secondary-button">Reintentar conexión</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <script src="app.js"></script>
 
   <script>
     (function () {
+      const OFFLINE_USERS_KEY = 'zima_offline_users_encrypted';
       const OFFLINE_QUEUE_KEY = 'zima_offline_queue';
-      const statusElement = document.getElementById('onlineStatus');
-      let offlineAlertShown = false;
+      const BLOCKED_EMAILS = ['c.recaudo3@zimaseguridad.com.co', 'beatriz@zimaseguridad.com.co'];
+      const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmfUJNDN0JtbQneLrcd1gpWDe83QI6PUH_YKEfexxhUKSg7dz7N7BAyzK7y3tQK26yVg/exec';
+      const statusElement = document.getElementById('onlineStatus') || createStatusElement();
 
-      function getOfflineQueue() {
+      function createStatusElement() {
+        const el = document.createElement('div');
+        el.id = 'onlineStatus';
+        el.className = 'online-status offline';
+        el.style.cssText = 'position:fixed;top:12px;right:12px;z-index:9999;padding:10px 14px;border-radius:10px;background:rgba(16,45,58,.92);color:#ffffff;font-size:13px;font-weight:600;box-shadow:0 10px 25px rgba(0,0,0,.12);';
+        document.body.appendChild(el);
+        return el;
+      }
+
+      // Web Crypto + IndexedDB encrypted storage helpers
+      function normalizeKey(value) { return String(value || '').trim().toUpperCase(); }
+      const CRYPTO_DB = 'zima_meta';
+      const CRYPTO_STORE = 'kv';
+      const CRYPTO_KEY_NAME = 'masterKey';
+
+      function idbOpen() {
+        return new Promise((resolve, reject) => {
+          const req = indexedDB.open(CRYPTO_DB, 1);
+          req.onupgradeneeded = () => {
+            const db = req.result;
+            if (!db.objectStoreNames.contains(CRYPTO_STORE)) db.createObjectStore(CRYPTO_STORE);
+          };
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        });
+      }
+
+      function idbGet(key) {
+        return idbOpen().then(db => new Promise((resolve, reject) => {
+          const tx = db.transaction(CRYPTO_STORE, 'readonly');
+          const store = tx.objectStore(CRYPTO_STORE);
+          const req = store.get(key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        }));
+      }
+
+      function idbSet(key, value) {
+        return idbOpen().then(db => new Promise((resolve, reject) => {
+          const tx = db.transaction(CRYPTO_STORE, 'readwrite');
+          const store = tx.objectStore(CRYPTO_STORE);
+          const req = store.put(value, key);
+          req.onsuccess = () => resolve(req.result);
+          req.onerror = () => reject(req.error);
+        }));
+      }
+
+      let _masterCryptoKey = null;
+      async function ensureMasterKey() {
+        if (_masterCryptoKey) return _masterCryptoKey;
         try {
-          return JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+          const existing = await idbGet(CRYPTO_KEY_NAME);
+          if (existing) {
+            const raw = existing;
+            _masterCryptoKey = await crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, true, ['encrypt', 'decrypt']);
+            return _masterCryptoKey;
+          }
+        } catch (e) {}
+        const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
+        const exported = await crypto.subtle.exportKey('raw', key);
+        try { await idbSet(CRYPTO_KEY_NAME, exported); } catch (e) {}
+        _masterCryptoKey = key;
+        return _masterCryptoKey;
+      }
+
+      function bufToBase64(buf) {
+        const bytes = new Uint8Array(buf);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+        return btoa(binary);
+      }
+
+      function base64ToBuf(b64) {
+        const binary = atob(b64);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) bytes[i] = binary.charCodeAt(i);
+        return bytes.buffer;
+      }
+
+      async function encryptData(text) {
+        const key = await ensureMasterKey();
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const enc = new TextEncoder().encode(String(text));
+        const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, enc);
+        const ivArr = new Uint8Array(iv.buffer);
+        const cipherArr = new Uint8Array(cipher);
+        const out = new Uint8Array(ivArr.length + cipherArr.length);
+        out.set(ivArr, 0);
+        out.set(cipherArr, ivArr.length);
+        return bufToBase64(out.buffer);
+      }
+
+      async function decryptData(b64) {
+        try {
+          const buf = base64ToBuf(b64);
+          const arr = new Uint8Array(buf);
+          const iv = arr.slice(0, 12);
+          const data = arr.slice(12);
+          const key = await ensureMasterKey();
+          const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+          return new TextDecoder().decode(plain);
+        } catch (e) { return null; }
+      }
+
+      async function getStoredUsers() {
+        try {
+          const encrypted = localStorage.getItem(OFFLINE_USERS_KEY);
+          if (!encrypted) return {};
+          const json = await decryptData(encrypted);
+          if (json) return JSON.parse(json || '{}');
+          try { return JSON.parse(encrypted); } catch (e) { return {}; }
+        } catch (error) { return {}; }
+      }
+
+      async function saveStoredUsers(users) {
+        try {
+          const json = JSON.stringify(users || {});
+          const encrypted = await encryptData(json);
+          localStorage.setItem(OFFLINE_USERS_KEY, encrypted);
+        } catch (e) { localStorage.setItem(OFFLINE_USERS_KEY, JSON.stringify(users || {})); }
+      }
+
+      function encodePassword(value) { try { return window.btoa(unescape(encodeURIComponent(String(value || '')))); } catch (error) { return String(value || ''); } }
+
+      async function findStoredUser(peaje, password) {
+        const users = await getStoredUsers();
+        const key = normalizeKey(peaje);
+        const stored = users[key];
+        if (!stored || !stored.password) return null;
+        return stored.password === encodePassword(password) ? stored : null;
+      }
+
+      function parseUrlParams(url) {
+        try {
+          const params = {};
+          const searchParams = new URL(url, location.href).searchParams;
+          for (const [key, value] of searchParams.entries()) {
+            params[key] = value;
+          }
+          return params;
         } catch (error) {
-          return [];
+          return {};
         }
       }
 
-      function setOfflineQueue(queue) {
-        localStorage.setItem(OFFLINE_QUEUE_KEY, JSON.stringify(queue || []));
+      function parseBodyPayload(body) {
+        if (!body) return {};
+        if (typeof body === 'string') {
+          try {
+            return JSON.parse(body);
+          } catch (error) {}
+          const params = new URLSearchParams(body);
+          const result = {};
+          for (const [key, value] of params.entries()) {
+            result[key] = value;
+          }
+          return result;
+        }
+        if (body instanceof FormData) {
+          const result = {};
+          for (const pair of body.entries()) {
+            result[pair[0]] = pair[1];
+          }
+          return result;
+        }
+        if (typeof body === 'object') {
+          return body;
+        }
+        return {};
+      }
+
+      function getLoginRequestParams(url, init = {}) {
+        const params = Object.assign({}, parseUrlParams(url), parseBodyPayload(init.body));
+        return {
+          peaje: params.peaje || params.user || '',
+          password: params.password || params.pass || ''
+        };
+      }
+
+      function isLoginRequest(url, init = {}) {
+        const params = Object.assign({}, parseUrlParams(url), parseBodyPayload(init.body));
+        const action = String(params.action || params.mode || '').toLowerCase();
+        return action === 'login';
+      }
+
+      function createJsonResponse(payload) {
+        return Promise.resolve(new Response(JSON.stringify(payload), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        }));
       }
 
       function updateOnlineStatus() {
         const online = navigator.onLine;
-        const queue = getOfflineQueue();
-        const pending = queue.length;
+        const queue = JSON.parse(localStorage.getItem(OFFLINE_QUEUE_KEY) || '[]');
+        const pending = Array.isArray(queue) ? queue.length : 0;
 
-        if (statusElement) {
-          statusElement.textContent = online
-            ? `Conectado. ${pending > 0 ? `${pending} acción(es) pendientes se sincronizarán.` : 'Sincronización al día.'}`
-            : `Sin conexión. ${pending} acción(es) serán sincronizadas al reconectarse.`;
-          statusElement.className = online ? 'online-status online' : 'online-status offline';
-        }
+        statusElement.textContent = online
+          ? `Conexión activa. ${pending > 0 ? `${pending} cambios pendientes se sincronizarán automáticamente.` : 'Sincronización al día.'}`
+          : 'Conexión a internet no disponible. El sistema continuará operando en modo sin línea y guardará los cambios localmente hasta que se restablezca la conexión.';
 
-        if (!online && !offlineAlertShown) {
-          offlineAlertShown = true;
-          window.alert('Se detectó que no hay conexión a internet. Los cambios se guardarán localmente y se sincronizarán cuando regrese la conexión.');
-        }
-
-        if (online && pending > 0) {
-          window.alert('Se recuperó la conexión. Sincronizando cambios pendientes...');
-        }
-      }
-
-      function serializeHeaders(headers) {
-        const result = {};
-        const source = headers instanceof Headers ? headers : headers || {};
-        if (typeof source.forEach === 'function') {
-          source.forEach((value, key) => { result[key] = value; });
-        } else if (typeof source === 'object') {
-          Object.keys(source).forEach((key) => { result[key.toLowerCase()] = source[key]; });
-        }
-        return result;
-      }
-
-      function canQueueRequest(init) {
-        const method = String((init && init.method) || 'GET').toUpperCase();
-        return method !== 'GET';
-      }
-
-      function queueRequest(url, init = {}) {
-        if (!canQueueRequest(init)) return;
-        const body = init.body;
-        let bodyText = '';
-
-        if (typeof body === 'string') {
-          bodyText = body;
-        } else if (body && typeof body === 'object' && !(body instanceof FormData) && !(body instanceof Blob) && !(body instanceof ArrayBuffer)) {
-          try {
-            bodyText = JSON.stringify(body);
-          } catch (error) {
-            bodyText = '';
+        statusElement.className = online ? 'online-status online' : 'online-status offline';
+        // Show/hide the offline modal
+        try {
+          const offlineModal = document.getElementById('offlineModalOverlay');
+          if (offlineModal) {
+            if (!online) {
+              offlineModal.classList.remove('is-hidden');
+              offlineModal.setAttribute('aria-hidden', 'false');
+            } else {
+              offlineModal.classList.add('is-hidden');
+              offlineModal.setAttribute('aria-hidden', 'true');
+            }
           }
-        } else if (body != null) {
-          return;
-        }
-
-        const queue = getOfflineQueue();
-        queue.push({
-          url: String(url),
-          method: String((init.method || 'POST')).toUpperCase(),
-          headers: serializeHeaders(init.headers),
-          body: bodyText,
-          timestamp: Date.now()
-        });
-        setOfflineQueue(queue);
-        updateOnlineStatus();
+        } catch (e) { /* ignore */ }
       }
 
-      function restoreRequestInit(item) {
-        const init = {
-          method: item.method,
-          headers: item.headers || {}
+      async function cacheLoginUser(requestParams, payload) {
+        if (!payload || !payload.ok || !payload.user || !requestParams.peaje || !requestParams.password) return;
+        const users = await getStoredUsers();
+        users[normalizeKey(requestParams.peaje)] = {
+          peaje: requestParams.peaje,
+          nombre: payload.user.nombre || requestParams.peaje,
+          rol: payload.user.rol || payload.user.role || 'PEAJE',
+          password: encodePassword(requestParams.password)
         };
-        if (item.body != null && item.body !== '') {
-          init.body = item.body;
-        }
-        return init;
+        await saveStoredUsers(users);
       }
 
-      function processOfflineQueue() {
-        if (!navigator.onLine) return;
-        const queue = getOfflineQueue();
-        if (!queue.length) {
-          updateOnlineStatus();
-          return;
-        }
+      const originalFetch = window.fetch.bind(window);
 
-        const originalFetch = window._originalFetch || window.fetch;
-        const remaining = [];
+      window.fetch = function (input, init = {}) {
+        const url = typeof input === 'string' ? input : input.url;
+        const requestParams = getLoginRequestParams(url, init);
 
-        const promises = queue.map((item) => {
-          const init = restoreRequestInit(item);
-          return originalFetch(item.url, init)
-            .then((response) => {
-              if (!response.ok) {
-                remaining.push(item);
-              }
-            })
-            .catch(() => {
-              remaining.push(item);
+        if (!navigator.onLine && isLoginRequest(url, init)) {
+          return findStoredUser(requestParams.peaje, requestParams.password)
+            .then(cachedUser => {
+              if (cachedUser) return createJsonResponse({ ok: true, user: cachedUser });
+              return originalFetch(input, init).catch(err => {
+                return findStoredUser(requestParams.peaje, requestParams.password).then(cached2 => cached2 ? createJsonResponse({ ok: true, user: cached2 }) : Promise.reject(err));
+              });
             });
-        });
+        }
 
-        Promise.all(promises).then(() => {
-          setOfflineQueue(remaining);
-          updateOnlineStatus();
-        });
-      }
-
-      function wrapFetch() {
-        if (!window.fetch || window._fetchOfflineWrapped) return;
-        window._originalFetch = window.fetch.bind(window);
-        window.fetch = function (input, init = {}) {
-          if (!navigator.onLine && canQueueRequest(init)) {
-            queueRequest(input, init);
-            return Promise.reject(new Error('offline'));
-          }
-
-          return window._originalFetch(input, init).catch((error) => {
-            if (!navigator.onLine || error.message === 'Failed to fetch') {
-              queueRequest(input, init);
-              updateOnlineStatus();
+        return originalFetch(input, init)
+          .then((response) => {
+            if (isLoginRequest(url, init) && response.ok) {
+              response.clone().json().then((payload) => {
+                cacheLoginUser(requestParams, payload).catch(() => {});
+              }).catch(() => {});
+            }
+            return response;
+          })
+          .catch((error) => {
+            if (isLoginRequest(url, init)) {
+              return findStoredUser(requestParams.peaje, requestParams.password).then(cachedUser => {
+                if (cachedUser) return createJsonResponse({ ok: true, user: cachedUser });
+                throw error;
+              });
             }
             throw error;
           });
-        };
-        window._fetchOfflineWrapped = true;
-      }
+      };
 
-      function handleOnline() {
-        offlineAlertShown = false;
-        updateOnlineStatus();
-        processOfflineQueue();
-      }
-
-      function handleOffline() {
-        updateOnlineStatus();
-      }
-
-      wrapFetch();
+      window.addEventListener('online', updateOnlineStatus);
+      window.addEventListener('offline', updateOnlineStatus);
       updateOnlineStatus();
-      window.addEventListener('online', handleOnline);
-      window.addEventListener('offline', handleOffline);
 
-      if (navigator.onLine) {
-        setTimeout(processOfflineQueue, 800);
-      }
+      // Offline modal actions
+      (function attachOfflineHandlers() {
+        try {
+          const offlineContinue = document.getElementById('offlineContinue');
+          const offlineRetry = document.getElementById('offlineRetry');
+          const offlineModal = document.getElementById('offlineModalOverlay');
+          if (offlineContinue) {
+            offlineContinue.addEventListener('click', function () {
+              if (offlineModal) {
+                offlineModal.classList.add('is-hidden');
+                offlineModal.setAttribute('aria-hidden', 'true');
+              }
+            });
+          }
+          if (offlineRetry) {
+            offlineRetry.addEventListener('click', function () {
+              // Quick retry: attempt to reload resources / check connection
+              if (navigator.onLine) {
+                updateOnlineStatus();
+                return;
+              }
+              // Try a soft fetch to the known script URL to trigger JSONP reloads
+              try {
+                const img = new Image();
+                img.onload = function () { updateOnlineStatus(); };
+                img.onerror = function () { updateOnlineStatus(); };
+                img.src = DEFAULT_SCRIPT_URL + (DEFAULT_SCRIPT_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+              } catch (e) { updateOnlineStatus(); }
+            });
+          }
+        } catch (e) { /* ignore */ }
+      })();
     })();
   </script>
 </body>

@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby8JCAZugCUwBPm3Xo3pQVBmAo3iclJsauNGWPRIQxMV7qybeOwZO0d2JVYusORkYCLOA/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxKGnFpF2iARZegpPZE5TNTcnsZc35LDMWGhsWqC_8E_vEOCXtQL5ewk7pqzV_NqiK5nw/exec';
 const SESSION_KEY = 'transbankSession';
 const PEAJE_DEFAULTS = {
   'PEAJE ZARAGOZA': {
@@ -106,7 +106,7 @@ let auditFiltered = [];
 
 let activeRecordId = null;
 let recordsCache = [];
-let configuredScriptUrl = DEFAULT_SCRIPT_URL;
+let configuredScriptUrl = API_BASE_URL;
 let currentUser = null;
 let shouldClearAfterPrint = false;
 let autoSaveTimer = null;
@@ -117,6 +117,110 @@ const AUTO_SAVE_DELAY_MS = 2000;
 const RECENT_RECORD_LIMIT = 10;
 const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
 const ACTIVITY_EVENTS = ['click', 'input', 'keydown', 'mousemove', 'mousedown', 'touchstart', 'scroll'];
+const OFFLINE_RECORDS_KEY = 'zima_offline_records';
+
+function getOfflineRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(OFFLINE_RECORDS_KEY) || '[]');
+  } catch (error) {
+    console.warn('No se pudo leer registros offline:', error);
+    return [];
+  }
+}
+
+function getOfflineRecordsForCurrentUser() {
+  const offlineRecords = getOfflineRecords();
+  if (!currentUser) return [];
+  if (isAdminUser() || isAuditUser()) return offlineRecords;
+  return offlineRecords.filter((record) => String(record.peaje || '').trim() === String(currentUser.peaje || '').trim());
+}
+
+function saveOfflineRecords(records) {
+  try {
+    localStorage.setItem(OFFLINE_RECORDS_KEY, JSON.stringify(Array.isArray(records) ? records : []));
+  } catch (error) {
+    console.warn('No se pudo guardar registros offline:', error);
+  }
+}
+
+function addOrUpdateOfflineRecord(record, pendingSync = true) {
+  const records = getOfflineRecords();
+  const existingIndex = records.findIndex((item) => item.id === record.id);
+  const copy = {
+    ...record,
+    pendingSync: Boolean(pendingSync),
+    updatedAt: record.updatedAt || new Date().toISOString(),
+    createdAt: record.createdAt || new Date().toISOString()
+  };
+  if (existingIndex >= 0) {
+    records[existingIndex] = copy;
+  } else {
+    records.unshift(copy);
+  }
+  saveOfflineRecords(records);
+  return copy;
+}
+
+function removeOfflineRecord(recordId) {
+  const records = getOfflineRecords().filter((item) => item.id !== recordId);
+  saveOfflineRecords(records);
+}
+
+function setOfflineRecordSynced(recordId) {
+  const records = getOfflineRecords();
+  const index = records.findIndex((item) => item.id === recordId);
+  if (index >= 0) {
+    records[index].pendingSync = false;
+    saveOfflineRecords(records);
+  }
+}
+
+function mergeRecords(onlineRecords, localRecords) {
+  const merged = [...onlineRecords];
+  const onlineIds = new Set(onlineRecords.map((record) => record.id));
+  localRecords.forEach((record) => {
+    if (!onlineIds.has(record.id)) {
+      merged.push(record);
+    }
+  });
+  return merged;
+}
+
+function loadLocalRecords() {
+  const offlineRecords = getOfflineRecordsForCurrentUser();
+  if (offlineRecords.length) {
+    setRecords(offlineRecords);
+    setOnlineStatus(`Se cargaron ${offlineRecords.filter((r) => r.pendingSync).length} registro(s) guardados localmente.`);
+  }
+}
+
+async function syncPendingRecords() {
+  if (!currentUser || !navigator.onLine) return;
+
+  const pendingRecords = getOfflineRecordsForCurrentUser().filter((record) => record.pendingSync);
+  if (!pendingRecords.length) return;
+
+  setOnlineStatus(`Sincronizando ${pendingRecords.length} planilla(s) pendientes...`);
+  for (const record of pendingRecords) {
+    try {
+      const recordToSend = { ...record };
+      delete recordToSend.pendingSync;
+      const saved = await saveRecordOnline(recordToSend, true);
+      setOfflineRecordSynced(record.id);
+      const current = getRecords();
+      const index = current.findIndex((item) => item.id === saved.id);
+      if (index >= 0) {
+        current[index] = saved;
+      } else {
+        current.unshift(saved);
+      }
+      setRecords(current);
+    } catch (error) {
+      console.warn('No se pudo sincronizar planilla offline:', record.id, error);
+    }
+  }
+  setOnlineStatus('Sincronización offline completada.');
+}
 
 const currency = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -725,9 +829,18 @@ async function saveRecord(options = {}) {
   currentStatus.textContent = activeRecordId ? 'Actualizando...' : 'Guardando...';
 
   try {
-    const saved = await saveRecordOnline(record, true);
+    let saved = null;
+    if (navigator.onLine) {
+      saved = await saveRecordOnline(record, true);
+      setOfflineRecordSynced(record.id);
+    } else {
+      saved = addOrUpdateOfflineRecord(record, true);
+      setOnlineStatus('Sin conexion. La planilla se guardo localmente y se sincronizara cuando vuelva internet.');
+    }
+
     const records = getRecords();
     const index = records.findIndex((item) => item.id === saved.id);
+    const didSaveOffline = Boolean(!navigator.onLine || saved.pendingSync);
 
     if (index >= 0) records[index] = saved;
     else records.unshift(saved);
@@ -739,7 +852,7 @@ async function saveRecord(options = {}) {
 
     hideLoading();
 
-    if (promptEmail) {
+    if (promptEmail && !didSaveOffline) {
       const sendCopy = await showConfirmationDialog({
         title: 'Enviar copia por correo',
         message: 'La planilla ya fue guardada. Desea enviar una copia en PDF por correo?',
@@ -786,8 +899,11 @@ async function saveRecord(options = {}) {
     hideLoading();
     currentStatus.textContent = 'Error de guardado';
     updateSaveButtonLabel();
-    setOnlineStatus(`No se pudo guardar la planilla online. Verifique conexión y vuelva a intentarlo. ${error.message}`);
-    return null;
+    const offlineSaved = addOrUpdateOfflineRecord(record, true);
+    setRecords([offlineSaved, ...getRecords().filter((item) => item.id !== offlineSaved.id)]);
+    currentStatus.textContent = 'Guardado localmente';
+    setOnlineStatus(`No se pudo guardar la planilla online. Se guardo localmente y se sincronizara cuando vuelva internet. ${error.message}`);
+    return offlineSaved;
   }
 }
 
@@ -982,6 +1098,7 @@ async function startSession(user) {
   if (isAdminUser() && alertsViewButton) {
     alertsViewButton.style.display = 'block';
   }
+  loadLocalRecords();
   const selfChangePasswordButton = document.querySelector('#selfChangePasswordButton');
   if (selfChangePasswordButton) {
     selfChangePasswordButton.hidden = isAdminUser();
@@ -996,6 +1113,9 @@ async function startSession(user) {
   updateDashboard();
   switchView('home');
   showWelcomeModal();
+  if (navigator.onLine) {
+    await syncPendingRecords();
+  }
   loadOnlineRecords();
 }
 
@@ -1360,7 +1480,8 @@ function loadOnlineRecords() {
       console.log('Total de fechas unicas:', Object.keys(fechasByDay).length);
       console.log('Total de registros:', onlineRecords.length);
       
-      setRecords(onlineRecords);
+          const merged = mergeRecords(onlineRecords, getOfflineRecordsForCurrentUser());
+      setRecords(merged);
       setOnlineStatus(`Consulta completada. Se encontraron ${onlineRecords.length} registros online.`);
       notifyMissingRecordsIfNeeded();
     })
@@ -1855,7 +1976,7 @@ function renderAdminUsers(users) {
   const filtered = (users || []).filter((user) => {
     const search = (adminUserSearch?.value || '').trim().toUpperCase();
     if (!search) return true;
-    return [user.peaje, user.nombre, user.rol].join(' ').toUpperCase().includes(search);
+    return [user.peaje, user.username, user.nombre, user.rol].join(' ').toUpperCase().includes(search);
   });
 
   if (!filtered.length) {
@@ -1867,32 +1988,52 @@ function renderAdminUsers(users) {
   }
 
   filtered.forEach((user) => {
+    const isInactive = String(user.activo || '').toUpperCase() === 'NO';
     const article = document.createElement('article');
     article.className = 'record-card admin-user-card';
-    const activeText = user.activo === 'NO' ? 'Inactivo' : 'Activo';
+    const activeText = isInactive ? 'Inactivo' : 'Activo';
     article.innerHTML = `
       <div class="record-content">
-        <strong class="record-title">${user.peaje || 'Sin peaje'}</strong>
-        <span class="record-meta">${user.nombre || 'Sin nombre'} · ${user.rol || 'PEAJE'} · ${activeText}</span>
+        <strong class="record-title">${user.username || user.peaje || 'Sin usuario'}</strong>
+        <span class="record-meta">
+          ${user.peaje ? `${user.peaje} · ` : ''}
+          ${user.nombre || 'Sin nombre'} · ${user.rol || 'PEAJE'} · ${activeText}
+        </span>
       </div>
       <div class="record-actions admin-actions">
         <button class="secondary-button reset-password" type="button">Cambiar clave</button>
-        <button class="secondary-button deactivate-user" type="button">Desactivar</button>
+        <button class="${isInactive ? 'primary-button reactivate-user' : 'secondary-button deactivate-user'}" type="button">
+          ${isInactive ? 'Reactivar' : 'Desactivar'}
+        </button>
       </div>
     `;
     article.querySelector('.reset-password').addEventListener('click', (event) => {
       event.preventDefault();
-      openChangePasswordModal(user.peaje, user.nombre || user.peaje);
+      openChangePasswordModal(user.username || user.peaje, user.nombre || user.peaje);
     });
-    article.querySelector('.deactivate-user').addEventListener('click', async () => {
-      try {
-        await deleteUserOnline(user.peaje);
-        setOnlineStatus(`Usuario ${user.peaje} desactivado.`);
-        await loadAdminUsers();
-      } catch (error) {
-        setOnlineStatus(`No fue posible desactivar el usuario: ${error.message}`);
-      }
-    });
+
+    if (isInactive) {
+      article.querySelector('.reactivate-user').addEventListener('click', async () => {
+        try {
+          await reactivateUserOnline(user);
+          setOnlineStatus(`Usuario ${user.username || user.peaje} reactivado correctamente.`);
+          await loadAdminUsers();
+        } catch (error) {
+          setOnlineStatus(`No fue posible reactivar el usuario: ${error.message}`);
+        }
+      });
+    } else {
+      article.querySelector('.deactivate-user').addEventListener('click', async () => {
+        try {
+          await deleteUserOnline(user.username || user.peaje);
+          setOnlineStatus(`Usuario ${user.username || user.peaje} desactivado.`);
+          await loadAdminUsers();
+        } catch (error) {
+          setOnlineStatus(`No fue posible desactivar el usuario: ${error.message}`);
+        }
+      });
+    }
+
     adminUsersList.append(article);
   });
 }
@@ -2542,6 +2683,16 @@ document.addEventListener('DOMContentLoaded', function() {
     dashboardRefresh.addEventListener('click', loadOnlineRecords);
   }
 
+  window.addEventListener('online', () => {
+    setOnlineStatus('Conexion restablecida. Intentando sincronizar registros pendientes...');
+    syncPendingRecords();
+    loadOnlineRecords();
+  });
+
+  window.addEventListener('offline', () => {
+    setOnlineStatus('Conexion perdida. Las planillas se guardaran localmente hasta reconexion.');
+  });
+
   syncCodigoSelloConsecutivo();
 
   if (form?.elements.peaje) {
@@ -2681,3 +2832,23 @@ document.addEventListener('DOMContentLoaded', function() {
     startSession(storedSession);
   }
 });
+
+async function reactivateUserOnline(user) {
+  const payload = await requestPostJson(getScriptUrl(), {
+    action: 'saveuser',
+    peaje: currentUser.peaje,
+    password: currentUser.password,
+    user: JSON.stringify({
+      peaje: user.peaje,
+      nombre: user.nombre || user.peaje,
+      activo: 'SI',
+      rol: user.rol || 'PEAJE'
+    })
+  });
+
+  if (!payload || !payload.ok) {
+    throw new Error(payload && payload.error ? payload.error : 'No se pudo reactivar el usuario');
+  }
+
+  return payload.user;
+}

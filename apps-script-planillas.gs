@@ -6,7 +6,7 @@ const SPREADSHEET_NAME = 'BASE DE DATOS PLANILLAS';
 const SPREADSHEET_ID_PROPERTY = 'PLANILLAS_SPREADSHEET_ID';
 const SPREADSHEET_ID = '';
 
-const USER_HEADERS = ['peaje', 'nombre', 'password', 'activo', 'rol'];
+const USER_HEADERS = ['peaje', 'username', 'nombre', 'password', 'activo', 'rol'];
 const ALERT_HEADERS = ['id', 'createdAt', 'sentAt', 'sentBy', 'targetPeaje', 'message', 'attachmentNames', 'recipients'];
 const PASSWORD_EVENT_HEADERS = ['id', 'changedAt', 'actorPeaje', 'actorNombre', 'actorRol', 'targetPeaje', 'targetNombre', 'changeType', 'recipients'];
 const HEADERS = [
@@ -40,12 +40,40 @@ const PEAJE_EMAILS = {
   'PEAJE FRAGUA': 'peajefragua@zimaseguridad.com.co',
   'PEAJE ZARAGOZA': 'peajezaragoza@zimaseguridad.com.co'
 };
-const SUPPORT_EMAIL = 'sistemaplanillaszima@gmail.com';
-const AUDITORA_EMAIL = 'c.recaudo3@zimaseguridad.com.co';
+const SUPPORT_EMAIL = '';
+const BLOCKED_NOTIFICATION_EMAILS = [
+  'c.recaudo3@zimaseguridad.com.co',
+  'beatriz@zimaseguridad.com.co'
+];
+
+function normalizeEmail_(email) {
+  return String(email || '').trim().toLowerCase();
+}
+
+function isAllowedNotificationEmail_(email) {
+  const normalized = normalizeEmail_(email);
+  return normalized && BLOCKED_NOTIFICATION_EMAILS.indexOf(normalized) === -1;
+}
+
+function filterAllowedNotificationEmails_(emails) {
+  if (!emails || !Array.isArray(emails)) return [];
+  return emails
+    .map((email) => normalizeEmail_(email))
+    .filter((email, index, list) => email && list.indexOf(email) === index && isAllowedNotificationEmail_(email));
+}
+
+function getNotificationRecipients_(peaje) {
+  const recipients = [];
+  const peajeEmail = getPeajeEmail_(peaje);
+  if (peajeEmail) recipients.push(peajeEmail);
+  if (SUPPORT_EMAIL) recipients.push(SUPPORT_EMAIL);
+  return filterAllowedNotificationEmails_(recipients);
+}
 
 function doGet(e) {
   const event = e || {};
   const params = event.parameter || {};
+  const loginId = params.peaje || params.username;
   const action = String((params.action || params.mode || 'list')).toLowerCase();
   const callback = params.callback;
 
@@ -57,39 +85,39 @@ function doGet(e) {
     if (action === 'ping') {
       payload = { ok: true, sheet: SHEET_NAME, rows: Math.max(sheet.getLastRow() - 1, 0) };
     } else if (action === 'login') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       payload = { ok: true, user: publicUser_(user) };
     } else if (action === 'save') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       const record = parseRecordFromGet_(event);
       const skipEmail = params.skipEmail;
       payload = { ok: true, record: saveRecord_(sheet, record, user, skipEmail) };
     } else if (action === 'notifymissing') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       payload = { ok: true, missing: notifyMissingPlanillas_(sheet, user, params) };
     } else if (action === 'sendalert') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       payload = { ok: true, alert: sendAlertToPeaje_(params.targetPeaje, params.message, user, parseAttachments_(params.attachments)) };
     } else if (action === 'alerts') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       payload = { ok: true, alerts: listAlerts_(user) };
     } else if (action === 'users') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       payload = { ok: true, users: listUsers_(usersSheet, user) };
     } else if (action === 'saveuser') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       payload = { ok: true, user: saveUser_(usersSheet, params, user) };
     } else if (action === 'changepassword') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
-      payload = { ok: true, user: changePassword_(usersSheet, params.targetPeaje || params.userPeaje, params.passwordValue || params.newPassword, user) };
+      const user = authenticateUser_(usersSheet, loginId, params.password);
+      payload = { ok: true, user: changePassword_(usersSheet, params.targetUser || params.targetPeaje || params.userPeaje, params.passwordValue || params.newPassword, user) };
     } else if (action === 'deleteuser') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
-      payload = { ok: true, user: disableUser_(usersSheet, params.targetPeaje || params.userPeaje, user) };
+      const user = authenticateUser_(usersSheet, loginId, params.password);
+      payload = { ok: true, user: disableUser_(usersSheet, params.targetUser || params.targetPeaje || params.userPeaje, user) };
     } else if (action === 'delete') {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       payload = { ok: true, deleted: deleteRecord_(sheet, params.id, user, params.reason) };
     } else {
-      const user = authenticateUser_(usersSheet, params.peaje, params.password);
+      const user = authenticateUser_(usersSheet, loginId, params.password);
       payload = { ok: true, records: readRecords_(sheet, user.peaje, user) };
     }
 
@@ -105,47 +133,47 @@ function doPost(e) {
     const record = body.record || body;
     const sheet = getDatabaseSheet_();
     const usersSheet = getUsersSheet_();
-
     const action = String(body.action || '').toLowerCase();
+    const loginId = body.peaje || body.username;
 
     if (action === 'emailcopy') {
-      const user = authenticateUser_(usersSheet, body.peaje, body.password);
+      const user = authenticateUser_(usersSheet, loginId, body.password);
       sendRecordCopyEmail_(record, body.pdfBase64);
       return jsonResponse_({ ok: true });
     }
 
     if (action === 'notifymissing') {
-      const user = authenticateUser_(usersSheet, body.peaje, body.password);
+      const user = authenticateUser_(usersSheet, loginId, body.password);
       const missing = notifyMissingPlanillas_(sheet, user, body);
       return jsonResponse_({ ok: true, missing });
     }
 
     if (action === 'users') {
-      const user = authenticateUser_(usersSheet, body.peaje, body.password);
+      const user = authenticateUser_(usersSheet, loginId, body.password);
       return jsonResponse_({ ok: true, users: listUsers_(usersSheet, user) });
     }
 
     if (action === 'saveuser') {
-      const user = authenticateUser_(usersSheet, body.peaje, body.password);
+      const user = authenticateUser_(usersSheet, loginId, body.password);
       return jsonResponse_({ ok: true, user: saveUser_(usersSheet, body.user || body, user) });
     }
 
     if (action === 'changepassword') {
-      const user = authenticateUser_(usersSheet, body.peaje, body.password);
-      return jsonResponse_({ ok: true, user: changePassword_(usersSheet, body.targetPeaje || body.userPeaje, body.passwordValue || body.newPassword, user) });
+      const user = authenticateUser_(usersSheet, loginId, body.password);
+      return jsonResponse_({ ok: true, user: changePassword_(usersSheet, body.targetUser || body.targetPeaje || body.userPeaje, body.passwordValue || body.newPassword, user) });
     }
 
     if (action === 'deleteuser') {
-      const user = authenticateUser_(usersSheet, body.peaje, body.password);
-      return jsonResponse_({ ok: true, user: disableUser_(usersSheet, body.targetPeaje || body.userPeaje, user) });
+      const user = authenticateUser_(usersSheet, loginId, body.password);
+      return jsonResponse_({ ok: true, user: disableUser_(usersSheet, body.targetUser || body.targetPeaje || body.userPeaje, user) });
     }
 
     if (action === 'sendalert') {
-      const user = authenticateUser_(usersSheet, body.peaje, body.password);
+      const user = authenticateUser_(usersSheet, loginId, body.password);
       return jsonResponse_({ ok: true, alert: sendAlertToPeaje_(body.targetPeaje, body.message, user, parseAttachments_(body.attachments)) });
     }
 
-    const user = authenticateUser_(usersSheet, body.peaje, body.password);
+    const user = authenticateUser_(usersSheet, loginId, body.password);
     const saved = saveRecord_(sheet, record, user, body.skipEmail);
 
     return jsonResponse_({ ok: true, record: saved });
@@ -283,11 +311,11 @@ function ensureUserHeaders_(sheet) {
   }
 }
 
-function authenticateUser_(sheet, peaje, password) {
-  const normalizedPeaje = normalizeText_(peaje);
+function authenticateUser_(sheet, loginId, password) {
+  const normalizedLogin = normalizeText_(loginId);
   const incomingPassword = String(password || '');
 
-  if (!normalizedPeaje || !incomingPassword) {
+  if (!normalizedLogin || !incomingPassword) {
     throw new Error('Debe iniciar sesion.');
   }
 
@@ -301,13 +329,18 @@ function authenticateUser_(sheet, peaje, password) {
     const row = values[index];
     const user = {
       peaje: String(row[0] || ''),
-      nombre: String(row[1] || ''),
-      password: String(row[2] || ''),
-      activo: String(row[3] || ''),
-      rol: String(row[4] || '')
+      username: String(row[1] || ''),
+      nombre: String(row[2] || ''),
+      password: String(row[3] || ''),
+      activo: String(row[4] || ''),
+      rol: String(row[5] || '')
     };
 
-    if (normalizeText_(user.peaje) === normalizedPeaje && normalizeText_(user.activo) !== 'NO') {
+    const matchesLogin =
+      normalizeText_(user.peaje) === normalizedLogin ||
+      normalizeText_(user.username) === normalizedLogin;
+
+    if (matchesLogin && normalizeText_(user.activo) !== 'NO') {
       if (user.password !== incomingPassword) {
         throw new Error('Clave incorrecta.');
       }
@@ -316,44 +349,19 @@ function authenticateUser_(sheet, peaje, password) {
     }
   }
 
-  throw new Error('Usuario de peaje no encontrado.');
-}
-
-
-function isAuditUser_(user) {
-  const peaje = normalizeText_(user && user.peaje);
-  const nombre = normalizeText_(user && user.nombre);
-  const rol = normalizeText_(user && user.rol);
-  return peaje === 'AUDITORIA DE OPERACIONES' || nombre.includes('AUDITORIA') || rol === 'AUDITORIA';
-}
-
-function isAdminUser_(user) {
-  const peaje = normalizeText_(user && user.peaje);
-  const nombre = normalizeText_(user && user.nombre);
-  const rol = normalizeText_(user && user.rol);
-  return rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'SOPORTE' || peaje.includes('ADMIN') || nombre.includes('ADMIN') || peaje.includes('SOPORTE') || nombre.includes('SOPORTE');
-}
-
-function canAuditRecords_(user) {
-  return isAuditUser_(user) || isAdminUser_(user);
+  throw new Error('Usuario no encontrado.');
 }
 
 function publicUser_(user) {
   return {
     peaje: user.peaje,
+    username: user.username,
     nombre: user.nombre || user.peaje,
     isAuditoria: isAuditUser_(user),
     isAdmin: isAdminUser_(user),
     rol: inferRole_(user),
     role: inferRole_(user)
   };
-}
-
-function inferRole_(user) {
-  const rol = normalizeText_(user && user.rol);
-  if (rol === 'ADMIN' || rol === 'ADMINISTRADOR' || rol === 'SOPORTE') return 'ADMIN';
-  if (rol === 'AUDITORIA') return 'AUDITORIA';
-  return 'PEAJE';
 }
 
 function listUsers_(sheet, user) {
@@ -366,14 +374,15 @@ function listUsers_(sheet, user) {
 
   const values = sheet.getRange(2, 1, lastRow - 1, USER_HEADERS.length).getValues();
   return values
-    .filter((row) => row.some((cell) => cell !== ''))
+    .filter((row) => row.some((cell) => cell !== '))
     .map((row) => ({
       peaje: String(row[0] || ''),
-      nombre: String(row[1] || ''),
-      activo: String(row[3] || ''),
-      rol: String(row[4] || '')
+      username: String(row[1] || ''),
+      nombre: String(row[2] || ''),
+      activo: String(row[4] || ''),
+      rol: String(row[5] || '')
     }))
-    .filter((candidate) => candidate.peaje);
+    .filter((candidate) => candidate.peaje || candidate.username);
 }
 
 function saveUser_(sheet, incoming, user) {
@@ -381,21 +390,54 @@ function saveUser_(sheet, incoming, user) {
     throw new Error('Solo el administrador general puede gestionar usuarios.');
   }
 
-  const payload = incoming && incoming.user ? incoming.user : incoming;
-  const peaje = String(payload && payload.peaje ? payload.peaje : '').trim();
-  const nombre = String(payload && payload.nombre ? payload.nombre : '').trim();
-  const nuevoPassword = String(payload && payload.password ? payload.password : '').trim();
-  const activo = String(payload && payload.activo ? payload.activo : 'SI').trim().toUpperCase();
-  const rol = normalizeRole_(payload && payload.rol ? payload.rol : payload && payload.role ? payload.role : 'PEAJE');
+  const payload = getUserPayload_(incoming);
+  const peaje = String(
+    payload.peaje ||
+    payload.peajeName ||
+    payload.usuario ||
+    ''
+  ).trim();
+  const username = String(
+    payload.username ||
+    payload.userName ||
+    payload.uid ||
+    payload.usuario ||
+    payload.peaje ||
+    payload.user ||
+    ''
+  ).trim() || peaje;
+  const nombre = String(
+    payload.nombre ||
+    payload.name ||
+    payload.fullName ||
+    payload.usuarioNombre ||
+    payload.userName ||
+    ''
+  ).trim();
+  const nuevoPassword = String(
+    payload.password ||
+    payload.clave ||
+    payload.pass ||
+    ''
+  ).trim();
+  const activo = String(
+    payload.activo != null ? payload.activo : 'SI'
+  ).trim().toUpperCase();
+  const rol = normalizeRole_(
+    payload.rol ||
+    payload.role ||
+    payload.userRole ||
+    'PEAJE'
+  );
 
   if (!peaje || !nombre) {
     throw new Error('Debe indicar el peaje y el nombre del usuario.');
   }
 
-  const existingRow = findUserRowByPeaje_(sheet, peaje);
+  const existingRow = findUserRowByKey_(sheet, username) || findUserRowByKey_(sheet, peaje);
   const existingUser = existingRow ? readUserAtRow_(sheet, existingRow) : null;
   const passwordValue = nuevoPassword || String(existingUser && existingUser.password ? existingUser.password : '');
-  const values = [peaje, nombre, passwordValue, activo, rol];
+  const values = [peaje, username, nombre, passwordValue, activo, rol];
 
   if (existingRow) {
     sheet.getRange(existingRow, 1, 1, USER_HEADERS.length).setValues([values]);
@@ -403,31 +445,32 @@ function saveUser_(sheet, incoming, user) {
     sheet.appendRow(values);
   }
 
-  return { peaje, nombre, activo, rol };
+  return { peaje, username, nombre, activo, rol };
 }
 
-function changePassword_(sheet, targetPeaje, newPassword, user) {
-  // Allow admins, soporte users, or users changing their own password
+function changePassword_(sheet, targetKey, newPassword, user) {
   const normalizedUserPeaje = normalizeText_(user && user.peaje);
+  const normalizedUserName = normalizeText_(user && user.username);
+  const normalizedTarget = String(targetKey || normalizedUserPeaje || normalizedUserName || '').trim();
+  const passwordValue = String(newPassword || '').trim();
   const isSupport = normalizedUserPeaje && normalizedUserPeaje.includes('SOPORTE');
   const isAdminOrSupport = isAdminUser_(user) || isSupport;
+  const isSelfChange =
+    normalizeText_(normalizedTarget) === normalizedUserPeaje ||
+    normalizeText_(normalizedTarget) === normalizedUserName;
 
-  const normalizedTarget = String(targetPeaje || normalizedUserPeaje || '').trim();
-  const passwordValue = String(newPassword || '').trim();
-
-  Logger.log('changePassword_ request by=%s target=%s isAdminOrSupport=%s', normalizedUserPeaje, normalizedTarget, String(isAdminOrSupport));
+  Logger.log('changePassword_ request by=%s userName=%s target=%s isAdminOrSupport=%s', normalizedUserPeaje, normalizedUserName, normalizedTarget, String(isAdminOrSupport));
 
   if (!normalizedTarget || !passwordValue) {
     throw new Error('Debe indicar el usuario y la nueva clave.');
   }
 
-  // Only admin/support can change other users' passwords; others can change their own
-  if (!isAdminOrSupport && normalizeText_(normalizedTarget) !== normalizedUserPeaje) {
+  if (!isAdminOrSupport && !isSelfChange) {
     Logger.log('changePassword_ permission denied caller=%s target=%s', normalizedUserPeaje, normalizedTarget);
     throw new Error('No tiene permisos para cambiar la clave de otro usuario.');
   }
 
-  const existingRow = findUserRowByPeaje_(sheet, normalizedTarget);
+  const existingRow = findUserRowByKey_(sheet, normalizedTarget);
   if (!existingRow) {
     Logger.log('changePassword_ user not found target=%s', normalizedTarget);
     throw new Error('No existe el usuario indicado.');
@@ -435,13 +478,14 @@ function changePassword_(sheet, targetPeaje, newPassword, user) {
 
   const targetValues = sheet.getRange(existingRow, 1, 1, USER_HEADERS.length).getValues()[0];
   const targetUser = {
-    peaje: String(targetValues[0] || normalizedTarget),
-    nombre: String(targetValues[1] || targetValues[0] || normalizedTarget),
-    rol: String(targetValues[4] || 'PEAJE')
+    peaje: String(targetValues[0] || ''),
+    username: String(targetValues[1] || ''),
+    nombre: String(targetValues[2] || targetValues[0] || normalizedTarget),
+    rol: String(targetValues[5] || 'PEAJE')
   };
 
   Logger.log('changePassword_ changing password for %s at row %s (newLength=%s)', normalizedTarget, existingRow, String((passwordValue || '').length));
-  sheet.getRange(existingRow, 3, 1, 1).setValue(passwordValue);
+  sheet.getRange(existingRow, 4, 1, 1).setValue(passwordValue);
   const changeEvent = {
     id: Utilities.getUuid(),
     changedAt: new Date().toISOString(),
@@ -450,7 +494,8 @@ function changePassword_(sheet, targetPeaje, newPassword, user) {
     actorRol: inferRole_(user),
     targetPeaje: targetUser.peaje,
     targetNombre: targetUser.nombre,
-    changeType: normalizeText_(targetUser.peaje) === normalizedUserPeaje ? 'PROPIA' : 'ADMIN',
+    targetUsername: targetUser.username,
+    changeType: isSelfChange ? 'PROPIA' : 'ADMIN',
     recipients: getNotificationRecipients_(targetUser.peaje)
   };
   let notificationSent = false;
@@ -464,26 +509,61 @@ function changePassword_(sheet, targetPeaje, newPassword, user) {
     Logger.log('No se pudo registrar/notificar cambio de clave para %s: %s', normalizedTarget, notificationError);
   }
   Logger.log('changePassword_ saved password for %s', normalizedTarget);
-  return { peaje: normalizedTarget, passwordChanged: true, notificationSent, notificationError };
+  return { peaje: targetUser.peaje, username: targetUser.username, passwordChanged: true, notificationSent, notificationError };
 }
 
-function disableUser_(sheet, targetPeaje, user) {
+function disableUser_(sheet, targetKey, user) {
   if (!isAdminUser_(user)) {
     throw new Error('Solo el administrador general puede desactivar usuarios.');
   }
 
-  const normalizedTarget = String(targetPeaje || '').trim();
+  const normalizedTarget = String(targetKey || '').trim();
   if (!normalizedTarget) {
     throw new Error('Debe indicar el usuario.');
   }
 
-  const existingRow = findUserRowByPeaje_(sheet, normalizedTarget);
+  const existingRow = findUserRowByKey_(sheet, normalizedTarget);
   if (!existingRow) {
     throw new Error('No existe el usuario indicado.');
   }
 
-  sheet.getRange(existingRow, 4, 1, 1).setValue('NO');
-  return { peaje: normalizedTarget, activo: 'NO' };
+  sheet.getRange(existingRow, 5, 1, 1).setValue('NO');
+  const targetValues = sheet.getRange(existingRow, 1, 1, USER_HEADERS.length).getValues()[0];
+  return {
+    peaje: String(targetValues[0] || ''),
+    username: String(targetValues[1] || ''),
+    activo: 'NO'
+  };
+}
+
+function findUserRowByKey_(sheet, key) {
+  const lastRow = sheet.getLastRow();
+  if (!key || lastRow < 2) return null;
+
+  const normalizedKey = normalizeText_(key);
+  const values = sheet.getRange(2, 1, lastRow - 1, 2).getValues();
+
+  for (let index = 0; index < values.length; index += 1) {
+    const rowPeaje = normalizeText_(values[index][0]);
+    const rowUsername = normalizeText_(values[index][1]);
+    if (rowPeaje === normalizedKey || rowUsername === normalizedKey) {
+      return index + 2;
+    }
+  }
+
+  return null;
+}
+
+function readUserAtRow_(sheet, rowNumber) {
+  const values = sheet.getRange(rowNumber, 1, 1, USER_HEADERS.length).getValues()[0];
+  return {
+    peaje: String(values[0] || ''),
+    username: String(values[1] || ''),
+    nombre: String(values[2] || ''),
+    password: String(values[3] || ''),
+    activo: String(values[4] || ''),
+    rol: String(values[5] || '')
+  };
 }
 
 function normalizeRole_(role) {
@@ -507,21 +587,6 @@ function findUserRowByPeaje_(sheet, peaje) {
   return null;
 }
 
-function readUserAtRow_(sheet, rowNumber) {
-  const values = sheet.getRange(rowNumber, 1, 1, USER_HEADERS.length).getValues()[0];
-  return {
-    peaje: String(values[0] || ''),
-    nombre: String(values[1] || ''),
-    password: String(values[2] || ''),
-    activo: String(values[3] || ''),
-    rol: String(values[4] || '')
-  };
-}
-
-function normalizeText_(value) {
-  return String(value || '').trim().toUpperCase();
-}
-
 function readRecords_(sheet, peaje, user) {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
@@ -531,7 +596,7 @@ function readRecords_(sheet, peaje, user) {
   const values = sheet.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
 
   return values
-    .filter((row) => row.some((cell) => cell !== ''))
+    .filter((row) => row.some((cell) => cell !== '))
     .map((row) => {
       const record = {};
       HEADERS.forEach((header, index) => {
@@ -588,190 +653,7 @@ function getPeajeEmail_(peaje) {
   return PEAJE_EMAILS[normalizeText_(peaje)] || null;
 }
 
-function getNotificationRecipients_(peaje) {
-  const recipients = [];
-  const peajeEmail = getPeajeEmail_(peaje);
-  if (peajeEmail) recipients.push(peajeEmail);
-  if (SUPPORT_EMAIL) recipients.push(SUPPORT_EMAIL);
-  // if (AUDITORA_EMAIL) recipients.push(AUDITORA_EMAIL);
-  return recipients.filter((email, index, list) => email && list.indexOf(email) === index);
-}
-
-function sendEmailToRecipients_(recipients, subject, body, attachments, htmlBody) {
-  const uniqueRecipients = (recipients || []).filter((email, index, list) => email && list.indexOf(email) === index);
-  if (!uniqueRecipients.length) {
-    Logger.log('No hay destinatarios para el correo: %s', subject);
-    return;
-  }
-
-  MailApp.sendEmail({
-    to: uniqueRecipients.join(','),
-    subject,
-    body,
-    attachments: attachments || [],
-    htmlBody: htmlBody || undefined
-  });
-}
-
-function escapeHtml_(value) {
-  return String(value == null ? '' : value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function savePasswordChangeLog_(event) {
-  const sheet = getPasswordEventsSheet_();
-  sheet.appendRow([
-    event.id,
-    event.changedAt,
-    event.actorPeaje,
-    event.actorNombre,
-    event.actorRol,
-    event.targetPeaje,
-    event.targetNombre,
-    event.changeType,
-    (event.recipients || []).join(', ')
-  ]);
-}
-
-function sendPasswordChangeEmail_(event) {
-  const recipients = event.recipients || [];
-  if (!recipients.length) {
-    Logger.log('No hay destinatarios para cambio de clave: %s', event.targetPeaje);
-    return;
-  }
-
-  const isSelfChange = event.changeType === 'PROPIA';
-  const subject = `Cambio de clave registrado - ${event.targetPeaje}`;
-  const changedAtText = new Date(event.changedAt).toLocaleString('es-CO');
-  const body = [
-    'Se registro un cambio de clave en el sistema de planillas ZIMA.',
-    '',
-    `Usuario afectado: ${event.targetNombre} (${event.targetPeaje})`,
-    `Realizado por: ${event.actorNombre} (${event.actorPeaje})`,
-    `Tipo de cambio: ${isSelfChange ? 'Cambio realizado por el mismo usuario' : 'Cambio realizado por administrador/soporte'}`,
-    `Fecha y hora: ${changedAtText}`,
-    '',
-    'Por seguridad, este correo no incluye la clave nueva.',
-    'Si usted no reconoce este cambio, comuniquese de inmediato con soporte o auditoria.'
-  ].join('\n');
-
-  const htmlBody = `
-    <div style="margin:0;padding:0;background:#eef4f8;font-family:Arial,Helvetica,sans-serif;color:#172536;">
-      <div style="max-width:640px;margin:0 auto;padding:28px 16px;">
-        <div style="overflow:hidden;border-radius:14px;background:#ffffff;border:1px solid #d8e4ec;box-shadow:0 18px 46px rgba(20,35,51,0.12);">
-          <div style="padding:24px 28px;background:#102d3a;color:#ffffff;">
-            <div style="font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#f0b35f;">ZIMA Seguridad</div>
-            <div style="margin-top:8px;font-size:24px;font-weight:800;line-height:1.2;">Cambio de clave registrado</div>
-            <div style="margin-top:8px;font-size:14px;color:#c7d6df;">Sistema de planillas y control Transbank</div>
-          </div>
-          <div style="padding:26px 28px;">
-            <p style="margin:0 0 18px;font-size:15px;line-height:1.55;color:#31465a;">
-              Se registro un cambio de clave. Esta notificacion queda como constancia para seguimiento y control interno.
-            </p>
-            <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:separate;border-spacing:0 10px;">
-              <tr>
-                <td style="width:160px;padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-right:0;border-radius:10px 0 0 10px;color:#607284;font-size:12px;font-weight:800;text-transform:uppercase;">Usuario</td>
-                <td style="padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-left:0;border-radius:0 10px 10px 0;color:#172536;font-size:14px;font-weight:700;">${escapeHtml_(event.targetNombre)} (${escapeHtml_(event.targetPeaje)})</td>
-              </tr>
-              <tr>
-                <td style="width:160px;padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-right:0;border-radius:10px 0 0 10px;color:#607284;font-size:12px;font-weight:800;text-transform:uppercase;">Realizado por</td>
-                <td style="padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-left:0;border-radius:0 10px 10px 0;color:#172536;font-size:14px;font-weight:700;">${escapeHtml_(event.actorNombre)} (${escapeHtml_(event.actorPeaje)})</td>
-              </tr>
-              <tr>
-                <td style="width:160px;padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-right:0;border-radius:10px 0 0 10px;color:#607284;font-size:12px;font-weight:800;text-transform:uppercase;">Tipo</td>
-                <td style="padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-left:0;border-radius:0 10px 10px 0;color:#172536;font-size:14px;font-weight:700;">${isSelfChange ? 'Cambio propio' : 'Administrador / soporte'}</td>
-              </tr>
-              <tr>
-                <td style="width:160px;padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-right:0;border-radius:10px 0 0 10px;color:#607284;font-size:12px;font-weight:800;text-transform:uppercase;">Fecha</td>
-                <td style="padding:12px 14px;background:#f5f8fb;border:1px solid #dce7ee;border-left:0;border-radius:0 10px 10px 0;color:#172536;font-size:14px;font-weight:700;">${escapeHtml_(changedAtText)}</td>
-              </tr>
-            </table>
-            <div style="margin-top:20px;padding:16px 18px;border-left:4px solid #f0b35f;background:#fff8ed;border-radius:10px;color:#5c4020;font-size:14px;line-height:1.5;">
-              Por seguridad, este correo no incluye la clave nueva. Si usted no reconoce este cambio, comuniquese de inmediato con soporte o auditoria.
-            </div>
-          </div>
-          <div style="padding:16px 28px;background:#f5f8fb;border-top:1px solid #dce7ee;color:#6b7c8d;font-size:12px;line-height:1.45;">
-            Notificacion automatica del sistema de planillas ZIMA. ID de evento: ${escapeHtml_(event.id)}
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  sendEmailToRecipients_(recipients, subject, body, null, htmlBody);
-}
-
-function parseAttachments_(attachments) {
-  if (!attachments) return [];
-  if (typeof attachments === 'string') {
-    try {
-      attachments = JSON.parse(attachments);
-    } catch (error) {
-      return [];
-    }
-  }
-
-  if (!Array.isArray(attachments)) return [];
-
-  return attachments
-    .map((item) => {
-      if (!item || !item.name || !item.data) return null;
-      try {
-        const decoded = Utilities.base64Decode(String(item.data || '').replace(/^data:[^;]+;base64,/, ''));
-        return Utilities.newBlob(decoded, String(item.mimeType || 'application/octet-stream'), String(item.name));
-      } catch (error) {
-        Logger.log('No se pudo crear blob de adjunto: %s', error.message || error);
-        return null;
-      }
-    })
-    .filter(Boolean);
-}
-
-function saveAlertLog_(alert) {
-  const sheet = getAlertsSheet_();
-  const rowValues = [
-    alert.id || '',
-    alert.createdAt || '',
-    alert.sentAt || '',
-    alert.sentBy || '',
-    alert.targetPeaje || '',
-    alert.message || '',
-    (alert.attachmentNames || []).join('|'),
-    Array.isArray(alert.recipients) ? alert.recipients.join(', ') : String(alert.recipients || '')
-  ];
-  sheet.appendRow(rowValues);
-}
-
-function listAlerts_(user) {
-  if (!isAdminUser_(user)) {
-    throw new Error('Solo el administrador general puede ver el historial de alertas.');
-  }
-
-  const sheet = getAlertsSheet_();
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return [];
-
-  const values = sheet.getRange(2, 1, lastRow - 1, ALERT_HEADERS.length).getValues();
-  return values
-    .filter((row) => row.some((cell) => cell !== ''))
-    .map((row) => ({
-      id: row[0],
-      createdAt: row[1],
-      sentAt: row[2],
-      sentBy: row[3],
-      targetPeaje: row[4],
-      message: row[5],
-      attachmentNames: row[6],
-      recipients: row[7]
-    }))
-    .reverse();
-}
-
-function sendRecordCopyEmail_(record, pdfBase64) {
+function sendRecordCopyEmail_(record) {
   const recipients = getNotificationRecipients_(record.peaje);
   if (!recipients.length) {
     Logger.log('No se encontró correo para el peaje: %s', record.peaje);
@@ -779,8 +661,8 @@ function sendRecordCopyEmail_(record, pdfBase64) {
   }
 
   let pdf;
-  if (pdfBase64) {
-    const cleanBase64 = String(pdfBase64 || '').replace(/^data:application\/pdf;base64,/, '');
+  if (record.pdfBase64) {
+    const cleanBase64 = String(record.pdfBase64 || '').replace(/^data:application\/pdf;base64,/, '');
     const documentName = `Planilla_${record.peaje || 'SinPeaje'}_${record.codigoSello || 'SinCodigo'}_${record.fecha || dateKey_(new Date())}.pdf`;
     pdf = Utilities.newBlob(Utilities.base64Decode(cleanBase64), MimeType.PDF, documentName);
   } else {
@@ -1272,3 +1154,36 @@ function jsonResponse_(payload, callback) {
 
   return output.setMimeType(callback ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.JSON);
 }
+
+function parseJsonString_(value) {
+  if (typeof value !== 'string') return value;
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return value;
+  }
+}
+
+function getUserPayload_(incoming) {
+  if (!incoming) return {};
+  let payload = incoming.user != null ? incoming.user : incoming;
+  payload = parseJsonString_(payload);
+
+  if (payload && typeof payload === 'object' && payload.user != null && typeof payload.user === 'string') {
+    payload = parseJsonString_(payload.user);
+  }
+
+  return payload || {};
+}
+
+requestApi('saveuser', {
+  peaje: adminPeaje,
+  password: adminPassword,
+  user: {
+    peaje: 'PEAJE NUEVO',
+    nombre: 'Nombre del usuario',
+    password: 'clave123',
+    activo: 'SI',
+    rol: 'PEAJE'
+  }
+});
