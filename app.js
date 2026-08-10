@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxKGnFpF2iARZegpPZE5TNTcnsZc35LDMWGhsWqC_8E_vEOCXtQL5ewk7pqzV_NqiK5nw/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwIzkDqI3wQgOoYL17TG_5Zg1JE_TV4tTWw8EJ2twZJq0mp0PoFXrQHQ3qZMg3701LwDg/exec';
 const SESSION_KEY = 'transbankSession';
 const PEAJE_DEFAULTS = {
   'PEAJE ZARAGOZA': {
@@ -1445,8 +1445,13 @@ async function deleteRecordOnline(id, reason) {
   }
 }
 
-function loadOnlineRecords() {
+async function loadOnlineRecords() {
   if (!currentUser) return;
+  if (!navigator.onLine) {
+    setOnlineStatus('No hay conexión de red. Cargando registros guardados localmente.');
+    loadLocalRecords();
+    return;
+  }
 
   const url = getScriptUrl();
   if (!url) {
@@ -1456,38 +1461,41 @@ function loadOnlineRecords() {
 
   setOnlineStatus('Consultando registros en la base online...');
 
-  requestJsonp(url, {
+  const params = {
     action: 'list',
     peaje: currentUser.peaje,
     password: currentUser.password
-  })
-    .then((payload) => {
+  };
+
+  const timeouts = [8000, 15000, 30000];
+  let lastError = null;
+  for (let attempt = 0; attempt < timeouts.length; attempt++) {
+    try {
+      const payload = await requestJsonp(url, params, timeouts[attempt]);
       if (!payload || !payload.ok) {
-        setOnlineStatus(payload && payload.error ? payload.error : 'No fue posible consultar los registros online.');
-        return;
+        lastError = new Error(payload && payload.error ? payload.error : 'Respuesta invalida del servicio online');
+        // intentar siguiente
+        await new Promise((r) => setTimeout(r, 700));
+        continue;
       }
 
       const onlineRecords = Array.isArray(payload.records) ? payload.records : [];
-      
-      // Debug: log todas las fechas recibidas
-      const fechasByDay = {};
-      onlineRecords.forEach(r => {
-        const dayKey = recordDateKey(r.fecha);
-        if (!fechasByDay[dayKey]) fechasByDay[dayKey] = [];
-        fechasByDay[dayKey].push(r.id || 'sin-id');
-      });
-      console.log('Registros cargados por dia:', fechasByDay);
-      console.log('Total de fechas unicas:', Object.keys(fechasByDay).length);
-      console.log('Total de registros:', onlineRecords.length);
-      
-          const merged = mergeRecords(onlineRecords, getOfflineRecordsForCurrentUser());
+      const merged = mergeRecords(onlineRecords, getOfflineRecordsForCurrentUser());
       setRecords(merged);
       setOnlineStatus(`Consulta completada. Se encontraron ${onlineRecords.length} registros online.`);
       notifyMissingRecordsIfNeeded();
-    })
-    .catch((error) => {
-      setOnlineStatus(`No fue posible conectar con la base online. Intente nuevamente cuando la conexión esté disponible. Detalle: ${error.message}`);
-    });
+      return;
+    } catch (error) {
+      console.warn(`Intento ${attempt + 1} fallo:`, error);
+      lastError = error;
+      // esperar un poco antes del siguiente intento
+      await new Promise((r) => setTimeout(r, 800 + attempt * 500));
+    }
+  }
+
+  // Si llegamos aqui, todos los intentos fallaron
+  loadLocalRecords();
+  setOnlineStatus(`No fue posible conectar con la base online. Se cargaron registros locales si existen. Detalle: ${lastError && lastError.message ? lastError.message : 'Sin respuesta'}`);
 }
 
 function notifyMissingRecordsIfNeeded() {
@@ -1558,9 +1566,45 @@ function requestJsonp(url, params, timeoutMs = 20000) {
       resolve(payload);
     };
 
-    script.onerror = () => {
+    script.onerror = async () => {
       cleanup();
-      reject(new Error('No se pudo cargar Apps Script'));
+      const src = `${url}${separator}${query.toString()}`;
+      console.warn('JSONP script error for', src);
+      // Intentar diagnostico con fetch para obtener mas detalle si es posible
+      try {
+        const resp = await fetch(src, { method: 'GET' });
+        const text = await resp.text();
+        console.warn('Fetch diagnostic response:', resp.status, text.slice(0, 300));
+
+        // Intentar extraer payload JSONP dentro del body si existe
+        const marker = `${callbackName}(`;
+        const idx = text.indexOf(marker);
+        if (idx !== -1) {
+          try {
+            const start = text.indexOf('(', idx);
+            const end = text.lastIndexOf(')');
+            const jsonText = text.substring(start + 1, end);
+            const payload = JSON.parse(jsonText);
+            console.info('Parsed JSONP payload from fetched body, using fallback.');
+            resolve(payload);
+            return;
+          } catch (pex) {
+            console.warn('Fallback parse failed:', pex);
+          }
+        }
+
+        // Mostrar diagnostico corto en la UI si existe
+        const box = document.querySelector('#jsErrorBox') || document.querySelector('#onlineStatus');
+        const msg = `No se pudo cargar Apps Script (status: ${resp.status}). URL: ${src}`;
+        if (box) {
+          const short = text.replace(/\s+/g, ' ').slice(0, 400);
+          box.textContent = `${msg} Respuesta: ${short}`;
+        }
+
+        reject(new Error(msg));
+      } catch (ferr) {
+        reject(new Error(`No se pudo cargar Apps Script. URL: ${src}. Detalle fetch: ${ferr && ferr.message ? ferr.message : String(ferr)}`));
+      }
     };
 
     timeoutId = window.setTimeout(() => {

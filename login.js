@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmfUJNDN0JtbQneLrcd1gpWDe83QI6PUH_YKEfexxhUKSg7dz7N7BAyzK7y3tQK26yVg/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIzkDqI3wQgOoYL17TG_5Zg1JE_TV4tTWw8EJ2twZJq0mp0PoFXrQHQ3qZMg3701LwDg/exec';
 const SESSION_KEY = 'transbankSession';
 
 const JSONP_TIMEOUT = 8000; // ms
@@ -277,6 +277,7 @@ function requestJsonp(url, params) {
     const query = new URLSearchParams({ ...params, callback: callbackName });
     let timeoutId = null;
 
+    const src = `${url}${separator}${query.toString()}`;
     window[callbackName] = (payload) => {
       if (timeoutId) clearTimeout(timeoutId);
       delete window[callbackName];
@@ -288,10 +289,43 @@ function requestJsonp(url, params) {
       if (timeoutId) clearTimeout(timeoutId);
       delete window[callbackName];
       script.remove();
-      reject(new Error('No se pudo cargar Apps Script'));
+      const src = `${srcBase}${separator}${query.toString()}`;
+      console.warn('JSONP load error for', src);
+      (async () => {
+        try {
+          const resp = await fetch(src, { method: 'GET' });
+          const text = await resp.text();
+          console.warn('Fetch diagnostic response', resp.status, text.slice(0,300));
+
+          const marker = `${callbackName}(`;
+          const idx = text.indexOf(marker);
+          if (idx !== -1) {
+            try {
+              const start = text.indexOf('(', idx);
+              const end = text.lastIndexOf(')');
+              const jsonText = text.substring(start + 1, end);
+              const payload = JSON.parse(jsonText);
+              resolve(payload);
+              return;
+            } catch (pex) {
+              console.warn('Fallback parse failed:', pex);
+            }
+          }
+
+          const box = document.querySelector('#jsErrorBox') || document.querySelector('#loginStatus');
+          const msg = `No se pudo cargar Apps Script (status: ${resp.status}). URL: ${src}`;
+          if (box) {
+            const short = text.replace(/\s+/g, ' ').slice(0, 400);
+            box.textContent = `${msg} Respuesta: ${short}`;
+          }
+
+          reject(new Error(`No se pudo cargar Apps Script (status: ${resp.status}). URL: ${src}`));
+        } catch (fe) {
+          reject(new Error(`No se pudo cargar Apps Script. URL: ${src}. Detalle fetch: ${fe && fe.message ? fe.message : String(fe)}`));
+        }
+      })();
     };
 
-    const src = `${url}${separator}${query.toString()}`;
     console.debug('requestJsonp -> src', src);
     script.src = src;
     document.body.append(script);

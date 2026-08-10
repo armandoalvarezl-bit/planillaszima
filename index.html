@@ -93,6 +93,11 @@
   </style>
 </head>
 <body>
+  <div id="guestNotice" style="display:none;padding:18px;background:#fff8e6;border:1px solid #f0d8a8;border-radius:8px;margin:12px;box-shadow:0 6px 18px rgba(18,38,46,0.06);">
+    <strong>Acceso requerido</strong>
+    <div style="margin-top:6px;color:#254047">Parece que no hay una sesión activa. <a href="login.html">Ir a la pantalla de ingreso</a> o iniciar sesión para ver la aplicación.</div>
+  </div>
+
   <div class="app-shell is-hidden">
     <aside class="sidebar">
       <div class="brand">
@@ -780,11 +785,49 @@
   <script src="app.js"></script>
 
   <script>
+    // Debug helper: mostrar errores críticos en pantalla para diagnosticar "pantalla en blanco"
+    (function(){
+      const box = document.createElement('div');
+      box.id = 'jsErrorBox';
+      box.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;padding:12px;background:#fff1f0;border:1px solid #f5c6cb;color:#7a1214;border-radius:8px;display:none;font-size:13px;max-height:40vh;overflow:auto;';
+      document.body.appendChild(box);
+      window.addEventListener('error', (e) => {
+        box.style.display = 'block';
+        box.textContent = `Error: ${e.message} at ${e.filename}:${e.lineno}:${e.colno}`;
+        console.error('Captured page error', e.error || e.message);
+      });
+      window.addEventListener('unhandledrejection', (e) => {
+        box.style.display = 'block';
+        const msg = e.reason && e.reason.message ? e.reason.message : String(e.reason);
+        box.textContent = `Unhandled rejection: ${msg}`;
+        console.error('Captured rejection', e.reason || e);
+      });
+    })();
+  </script>
+
+  <script>
+    // Si la aplicacion esta oculta (sin sesion) mostrar un aviso amigable
+    (function(){
+      try {
+        const app = document.querySelector('.app-shell');
+        const guest = document.getElementById('guestNotice');
+        if (!app || !guest) return;
+        // esperar al DOM para permitir que app.js haga su redireccion si aplica
+        window.addEventListener('DOMContentLoaded', () => {
+          setTimeout(() => {
+            if (app.classList.contains('is-hidden')) {
+              guest.style.display = 'block';
+            }
+          }, 120);
+        });
+      } catch (e) { console.warn(e); }
+    })();
+
     (function () {
       const OFFLINE_USERS_KEY = 'zima_offline_users_encrypted';
       const OFFLINE_QUEUE_KEY = 'zima_offline_queue';
       const BLOCKED_EMAILS = ['c.recaudo3@zimaseguridad.com.co', 'beatriz@zimaseguridad.com.co'];
-      const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmfUJNDN0JtbQneLrcd1gpWDe83QI6PUH_YKEfexxhUKSg7dz7N7BAyzK7y3tQK26yVg/exec';
+      const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwsSe7jzQdpe4MSQKeCWwwbRQELrPbQuN55sYi5CozLEfEQue7QutqKtNrL98wurt4dQ/exec';
       const statusElement = document.getElementById('onlineStatus') || createStatusElement();
 
       function createStatusElement() {
