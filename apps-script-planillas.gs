@@ -7,6 +7,13 @@ const SPREADSHEET_ID_PROPERTY = 'PLANILLAS_SPREADSHEET_ID';
 const SPREADSHEET_ID = '';
 
 const USER_HEADERS = ['peaje', 'username', 'nombre', 'password', 'activo', 'rol'];
+const DEFAULT_USERS = [
+  ['PEAJE ZARAGOZA', 'PEAJE ZARAGOZA', 'Peaje Zaragoza', 'zaragoza123', 'SI', 'PEAJE'],
+  ['PEAJE FRAGUA', 'PEAJE FRAGUA', 'Peaje Fragua', 'fragua123', 'SI', 'PEAJE'],
+  ['AUDITORIA DE OPERACIONES', 'AUDITORIA DE OPERACIONES', 'Auditoria de Operaciones', 'auditoria123', 'SI', 'AUDITORIA'],
+  ['ADMINISTRADOR GENERAL', 'ADMINISTRADOR GENERAL', 'Administrador General', 'admin123', 'SI', 'ADMIN'],
+  ['SOPORTE SISTEMA', 'SOPORTE SISTEMA', 'Soporte Sistema', 'soporte123', 'SI', 'ADMIN']
+];
 const ALERT_HEADERS = ['id', 'createdAt', 'sentAt', 'sentBy', 'targetPeaje', 'message', 'attachmentNames', 'recipients'];
 const PASSWORD_EVENT_HEADERS = ['id', 'changedAt', 'actorPeaje', 'actorNombre', 'actorRol', 'targetPeaje', 'targetNombre', 'changeType', 'recipients'];
 const HEADERS = [
@@ -67,7 +74,9 @@ function getNotificationRecipients_(peaje) {
   const peajeEmail = getPeajeEmail_(peaje);
   if (peajeEmail) recipients.push(peajeEmail);
   if (SUPPORT_EMAIL) recipients.push(SUPPORT_EMAIL);
-  return filterAllowedNotificationEmails_(recipients);
+  const allowedRecipients = filterAllowedNotificationEmails_(recipients);
+  Logger.log('getNotificationRecipients_ peaje=%s rawRecipients=%s allowedRecipients=%s', peaje, JSON.stringify(recipients), JSON.stringify(allowedRecipients));
+  return allowedRecipients;
 }
 
 function doGet(e) {
@@ -140,6 +149,15 @@ function doPost(e) {
       const user = authenticateUser_(usersSheet, loginId, body.password);
       sendRecordCopyEmail_(record, body.pdfBase64);
       return jsonResponse_({ ok: true });
+    }
+
+    if (action === 'ping') {
+      return jsonResponse_({ ok: true, sheet: SHEET_NAME, rows: Math.max(sheet.getLastRow() - 1, 0) });
+    }
+
+    if (action === 'list') {
+      const user = authenticateUser_(usersSheet, loginId, body.password);
+      return jsonResponse_({ ok: true, records: readRecords_(sheet, user.peaje, user) });
     }
 
     if (action === 'notifymissing') {
@@ -227,6 +245,8 @@ function getUsersSheet_() {
   }
 
   ensureUserHeaders_(sheet);
+  repairShiftedLegacyUsers_(sheet);
+  seedDefaultUsers_(sheet);
   return sheet;
 }
 
@@ -302,7 +322,16 @@ function ensurePasswordEventHeaders_(sheet) {
 
 function ensureUserHeaders_(sheet) {
   const current = sheet.getRange(1, 1, 1, USER_HEADERS.length).getValues()[0];
+  const hasLegacyHeaders =
+    normalizeText_(current[0]) === 'PEAJE' &&
+    normalizeText_(current[1]) === 'NOMBRE' &&
+    normalizeText_(current[2]) === 'PASSWORD' &&
+    normalizeText_(current[3]) === 'ACTIVO';
   const needsHeaders = USER_HEADERS.some((header, index) => current[index] !== header);
+
+  if (hasLegacyHeaders) {
+    migrateLegacyUsers_(sheet);
+  }
 
   if (needsHeaders) {
     sheet.getRange(1, 1, 1, USER_HEADERS.length).setValues([USER_HEADERS]);
@@ -313,7 +342,7 @@ function ensureUserHeaders_(sheet) {
 
 function authenticateUser_(sheet, loginId, password) {
   const normalizedLogin = normalizeText_(loginId);
-  const incomingPassword = String(password || '');
+  const incomingPassword = String(password || '').trim();
 
   if (!normalizedLogin || !incomingPassword) {
     throw new Error('Debe iniciar sesion.');
@@ -331,7 +360,7 @@ function authenticateUser_(sheet, loginId, password) {
       peaje: String(row[0] || ''),
       username: String(row[1] || ''),
       nombre: String(row[2] || ''),
-      password: String(row[3] || ''),
+      password: String(row[3] || '').trim(),
       activo: String(row[4] || ''),
       rol: String(row[5] || '')
     };
@@ -350,6 +379,64 @@ function authenticateUser_(sheet, loginId, password) {
   }
 
   throw new Error('Usuario no encontrado.');
+}
+
+function seedDefaultUsers_(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow >= 2) return;
+
+  sheet.getRange(2, 1, DEFAULT_USERS.length, USER_HEADERS.length).setValues(DEFAULT_USERS);
+}
+
+function migrateLegacyUsers_(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  const legacyValues = sheet.getRange(2, 1, lastRow - 1, 4).getValues();
+  const migratedValues = legacyValues
+    .filter((row) => row.some((cell) => cell !== ''))
+    .map((row) => {
+      const peaje = String(row[0] || '').trim();
+      const nombre = String(row[1] || peaje).trim();
+      const password = String(row[2] || '').trim();
+      const activo = String(row[3] || 'SI').trim() || 'SI';
+      return [peaje, peaje, nombre, password, activo, 'PEAJE'];
+    });
+
+  if (migratedValues.length) {
+    sheet.getRange(2, 1, migratedValues.length, USER_HEADERS.length).setValues(migratedValues);
+  }
+}
+
+function repairShiftedLegacyUsers_(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return;
+
+  const values = sheet.getRange(2, 1, lastRow - 1, USER_HEADERS.length).getValues();
+  let changed = false;
+  const repairedValues = values.map((row) => {
+    const legacyActive = normalizeText_(row[3]);
+    const looksShiftedLegacy =
+      row[0] &&
+      row[1] &&
+      row[2] &&
+      (legacyActive === 'SI' || legacyActive === 'NO') &&
+      !String(row[4] || '').trim() &&
+      !String(row[5] || '').trim();
+
+    if (!looksShiftedLegacy) return row;
+
+    changed = true;
+    const peaje = String(row[0] || '').trim();
+    const nombre = String(row[1] || peaje).trim();
+    const password = String(row[2] || '').trim();
+    const activo = String(row[3] || 'SI').trim() || 'SI';
+    return [peaje, peaje, nombre, password, activo, 'PEAJE'];
+  });
+
+  if (changed) {
+    sheet.getRange(2, 1, repairedValues.length, USER_HEADERS.length).setValues(repairedValues);
+  }
 }
 
 function publicUser_(user) {
@@ -374,7 +461,7 @@ function listUsers_(sheet, user) {
 
   const values = sheet.getRange(2, 1, lastRow - 1, USER_HEADERS.length).getValues();
   return values
-    .filter((row) => row.some((cell) => cell !== '))
+    .filter((row) => row.some((cell) => cell !== ''))
     .map((row) => ({
       peaje: String(row[0] || ''),
       username: String(row[1] || ''),
@@ -566,6 +653,57 @@ function readUserAtRow_(sheet, rowNumber) {
   };
 }
 
+function normalizeText_(value) {
+  return String(value || '')
+    .trim()
+    .toUpperCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function isSupportUser_(user) {
+  const text = [
+    user && user.peaje,
+    user && user.username,
+    user && user.nombre,
+    user && user.rol
+  ].map(normalizeText_).join(' ');
+
+  return text.includes('SOPORTE');
+}
+
+function isAdminUser_(user) {
+  const role = normalizeRole_(user && user.rol);
+  const text = [
+    user && user.peaje,
+    user && user.username,
+    user && user.nombre
+  ].map(normalizeText_).join(' ');
+
+  return role === 'ADMIN' || text.includes('ADMIN') || isSupportUser_(user);
+}
+
+function isAuditUser_(user) {
+  const role = normalizeRole_(user && user.rol);
+  const text = [
+    user && user.peaje,
+    user && user.username,
+    user && user.nombre
+  ].map(normalizeText_).join(' ');
+
+  return role === 'AUDITORIA' || text.includes('AUDITORIA');
+}
+
+function canAuditRecords_(user) {
+  return isAuditUser_(user) || isAdminUser_(user) || isSupportUser_(user);
+}
+
+function inferRole_(user) {
+  if (isAdminUser_(user)) return 'ADMIN';
+  if (isAuditUser_(user)) return 'AUDITORIA';
+  return normalizeRole_(user && user.rol);
+}
+
 function normalizeRole_(role) {
   const normalized = normalizeText_(role);
   if (normalized === 'ADMIN' || normalized === 'ADMINISTRADOR' || normalized === 'SOPORTE' || normalized === 'ADMINISTRADOR GENERAL') return 'ADMIN';
@@ -596,7 +734,7 @@ function readRecords_(sheet, peaje, user) {
   const values = sheet.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
 
   return values
-    .filter((row) => row.some((cell) => cell !== '))
+    .filter((row) => row.some((cell) => cell !== ''))
     .map((row) => {
       const record = {};
       HEADERS.forEach((header, index) => {
@@ -653,6 +791,33 @@ function getPeajeEmail_(peaje) {
   return PEAJE_EMAILS[normalizeText_(peaje)] || null;
 }
 
+function sendEmailToRecipients_(recipients, subject, body, attachments = []) {
+  const normalizedRecipients = filterAllowedNotificationEmails_(Array.isArray(recipients) ? recipients : [recipients]);
+  if (!normalizedRecipients.length) {
+    Logger.log('sendEmailToRecipients_ no destinatarios válidos para subject=%s recipients=%s', subject, JSON.stringify(recipients));
+    return;
+  }
+
+  const mailOptions = {
+    to: normalizedRecipients.join(','),
+    subject: String(subject || 'Sin asunto'),
+    body: String(body || ''),
+    htmlBody: String(body || '').replace(/\n/g, '<br>')
+  };
+
+  if (Array.isArray(attachments) && attachments.length) {
+    mailOptions.attachments = attachments.filter(Boolean);
+  }
+
+  try {
+    MailApp.sendEmail(mailOptions);
+    Logger.log('sendEmailToRecipients_ enviado a %s subject=%s', normalizedRecipients.join(','), subject);
+  } catch (error) {
+    Logger.log('sendEmailToRecipients_ error al enviar correo: %s', String(error && error.message ? error.message : error));
+    throw error;
+  }
+}
+
 function sendRecordCopyEmail_(record) {
   const recipients = getNotificationRecipients_(record.peaje);
   if (!recipients.length) {
@@ -691,6 +856,13 @@ function sendCancellationEmail_(record, reason, user) {
   if (!recipients.length) {
     Logger.log('No se encontró correo para notificar anulación del peaje: %s', record.peaje);
     return;
+  }
+
+  // Log exact recipients for audit/debugging
+  try {
+    Logger.log('sendCancellationEmail_ called recordId=%s peaje=%s recipients=%s', record.id || '', record.peaje || '', (recipients || []).join(','));
+  } catch (logErr) {
+    Logger.log('sendCancellationEmail_ logger failed: %s', String(logErr && logErr.message ? logErr.message : logErr));
   }
 
   const subject = `Anulación Planilla Transbank - ${record.peaje || 'Sin Peaje'} ${record.codigoSello || ''}`.trim();
@@ -1054,7 +1226,11 @@ function deleteRecord_(sheet, id, user, reason) {
   const existingRecord = getRecordAtRow_(sheet, existingRow);
   const cancellationReason = String(reason || '').trim();
 
-  if (cancellationReason.length < 6) {
+  Logger.log('deleteRecord_ called userPeaje=%s userName=%s id=%s recordPeaje=%s reasonLen=%s',
+    user && user.peaje, user && user.username, id, existingRecord && existingRecord.peaje, cancellationReason.length);
+
+  // Allow short reasons (at least 1 character) to avoid blocking UI; keep server-side check minimal.
+  if (cancellationReason.length < 1) {
     throw new Error('Debe indicar una razón de anulación.');
   }
 
@@ -1062,7 +1238,11 @@ function deleteRecord_(sheet, id, user, reason) {
     throw new Error('No tiene permiso para eliminar registros de otro peaje.');
   }
 
-  sendCancellationEmail_(existingRecord, cancellationReason, user);
+  try {
+    sendCancellationEmail_(existingRecord, cancellationReason, user);
+  } catch (emailErr) {
+    Logger.log('deleteRecord_ sendCancellationEmail_ failed: %s', String(emailErr && emailErr.message ? emailErr.message : emailErr));
+  }
   sheet.deleteRow(existingRow);
   return true;
 }
@@ -1175,15 +1355,3 @@ function getUserPayload_(incoming) {
 
   return payload || {};
 }
-
-requestApi('saveuser', {
-  peaje: adminPeaje,
-  password: adminPassword,
-  user: {
-    peaje: 'PEAJE NUEVO',
-    nombre: 'Nombre del usuario',
-    password: 'clave123',
-    activo: 'SI',
-    rol: 'PEAJE'
-  }
-});

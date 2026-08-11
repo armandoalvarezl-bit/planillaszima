@@ -91,7 +91,45 @@
       min-width: 180px;
     }
   </style>
-</head>
+
+<style id="zima-home-target-design">
+:root{--zima-navy:#062f3d;--zima-teal:#087f70;--zima-green:#087f62;--zima-gold:#c98a18;--zima-line:#e2eaed;--zima-soft:#f7fafb;}
+.home-notice-bar{display:flex!important;align-items:center!important;gap:10px!important;min-height:44px!important;margin:0 0 14px!important;padding:10px 18px!important;border:1px solid #dce7ea!important;border-radius:11px!important;background:#fff!important;box-shadow:0 3px 12px rgba(10,42,53,.05)!important;color:#50656f!important;font-size:13px!important}
+.home-notice-bar strong{color:var(--zima-green)!important}.sync-dot{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:#168565;color:#fff;font-weight:900}.sync-separator{margin:0 9px;color:#b1bdc1}
+.home-dashboard{padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important}.dashboard-header{display:grid!important;grid-template-columns:1fr auto!important;gap:16px!important;align-items:center!important;padding:20px 28px 18px!important;border:1px solid var(--zima-line)!important;border-radius:12px!important;background:#fff!important;box-shadow:0 4px 16px rgba(10,42,53,.04)!important}.dashboard-eyebrow{margin:0 0 5px!important;color:#0a6868!important;font-size:16px!important;font-weight:900!important;letter-spacing:.03em!important}.dashboard-title-group h3{margin:0!important;color:#143449!important;font-size:14px!important;font-weight:600!important}.dashboard-location{margin-top:12px;color:#4e6470;font-size:12px}.dashboard-actions{display:flex!important;justify-content:flex-end!important}.dashboard-refresh{min-height:48px!important;padding:0 22px!important;background:#fff!important;color:#173747!important;border:1px solid #d7e2e6!important;box-shadow:none!important}.dashboard-status-cards{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:12px!important;margin-top:12px!important}.status-card{min-height:102px!important;display:flex!important;align-items:center!important;gap:13px!important;padding:15px!important;border:1px solid #e0e9ec!important;border-radius:11px!important;background:#fff!important;box-shadow:0 3px 12px rgba(10,42,53,.035)!important}.status-icon{flex:0 0 50px;width:50px;height:50px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#073e4b;color:#fff;font-size:26px;font-weight:700}.status-card span{display:block;color:#64747c;font-size:10px;font-weight:800}.status-card strong{display:block;margin-top:5px;color:#112f42;font-size:21px;line-height:1.1}.status-card small{display:block;margin-top:4px;color:#64757d;font-size:11px}.alert-status-card{background:#fffaf1!important;border-color:#f2e2c8!important}.alert-status-card .status-icon{background:#c98a18}.alert-status-card span,.alert-status-card strong{color:#9a650e}.dashboard-content-grid{display:grid!important;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)!important;gap:12px!important;margin-top:12px!important}.dashboard-section{padding:20px!important;border:1px solid var(--zima-line)!important;border-radius:11px!important;background:#fff!important;box-shadow:0 3px 12px rgba(10,42,53,.035)!important}.section-head{display:flex!important;align-items:center!important;justify-content:space-between!important;margin-bottom:18px!important}.section-head h3{margin:0!important;color:#123d4b!important;font-size:14px!important;font-weight:900!important}.section-head>span{font-size:11px;color:#153e4c;font-weight:800}.operation-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.operation-stats article{display:flex;gap:10px;align-items:center}.operation-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#e3f5ed;color:#118260;font-size:21px;font-weight:900}.operation-stats span{display:block;color:#64757d;font-size:10px;font-weight:800}.operation-stats strong{display:block;color:#102f40;font-size:21px;margin-top:3px}.operation-stats small{font-size:11px;color:#61757e}.operation-progress{height:8px;margin-top:22px;border-radius:10px;background:#e9efee;overflow:hidden}.operation-progress span{display:block;width:86%;height:100%;border-radius:10px;background:#13856b}.operation-footer{display:flex;justify-content:space-between;margin-top:9px;color:#62747c;font-size:11px}.operation-footer strong{color:#118260}.quick-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.quick-action{min-height:118px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:4px!important;padding:10px!important;border-radius:10px!important;cursor:pointer!important}.quick-action b{font-size:30px;line-height:1}.quick-action strong{font-size:11px;color:#153544}.quick-action small{font-size:10px;color:#60747d}.quick-green{background:#effaf4!important;border:1px solid #d8f0e2!important}.quick-green b{color:#15925f}.quick-blue{background:#f1f8fe!important;border:1px solid #dcecf9!important}.quick-blue b{color:#0787d3}.quick-gold{background:#fff9ec!important;border:1px solid #f2e6c9!important}.quick-gold b{color:#c48713}.target-bottom-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr)!important;gap:12px!important;margin-top:12px!important}.alert-list{display:flex;flex-direction:column}.alert-row{display:grid;grid-template-columns:25px 1fr auto;align-items:center;gap:9px;padding:11px 0;border-bottom:1px solid #e9eef0}.alert-row:last-child{border-bottom:0}.alert-row>b{width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:#fff3d8;color:#bc7c09;font-size:12px}.alert-row strong{display:block;color:#244454;font-size:11px}.alert-row small{display:block;color:#778991;font-size:10px;margin-top:3px}.alert-row em{padding:5px 9px;border-radius:10px;background:#fff3d7;color:#b57605;font-size:10px;font-style:normal;font-weight:800}.alert-row em.high{background:#ffe8e7;color:#cf4c49}.activity-table-head{display:grid;grid-template-columns:1.1fr .8fr .8fr 1.2fr;gap:8px;padding:0 10px 8px;color:#64757d;font-size:9px;font-weight:900}.recent-activity-list{min-height:145px}.recent-activity-list>*{border-top:1px solid #e9eef0}.dashboard-bottom-grid .system-status-panel,.dashboard-bottom-grid .dashboard-section:has(#peajeSummary){display:none!important}.legacy-dashboard-data{display:none!important}.dashboard-footer{display:flex!important;justify-content:space-between!important;margin-top:14px!important;padding:14px 16px!important;border-top:0!important;color:#687a82!important;font-size:11px!important}.dashboard-footer strong{color:#52666f!important}.is-hidden{display:none!important}
+@media(max-width:1200px){.dashboard-status-cards{grid-template-columns:repeat(3,1fr)!important}.dashboard-content-grid,.target-bottom-grid{grid-template-columns:1fr!important}}
+@media(max-width:800px){.dashboard-header{grid-template-columns:1fr!important}.dashboard-status-cards{grid-template-columns:1fr 1fr!important}.operation-stats,.quick-actions{grid-template-columns:1fr!important}.dashboard-footer{flex-direction:column!important}}
+</style>
+
+<style id="zima-global-target-polish">
+/* Barra superior: en Home se presenta como en el diseño de referencia. */
+body:has(#homeView.active) #clearFormButton{display:none!important}
+body:has(#homeView.active) #formToolbarActions{gap:10px!important}
+body:has(#homeView.active) #newRecord{background:#078263!important;color:#fff!important;border-color:#078263!important}
+body:has(#homeView.active) #saveRecord{background:#087f70!important;color:#fff!important;border-color:#087f70!important}
+body:has(#homeView.active) #printRecord{background:#fff!important;color:#173747!important;border-color:#cbd8dd!important}
+.sidebar{width:216px!important;background:linear-gradient(180deg,#063746 0%,#032d3a 100%)!important}
+.brand{padding:22px 18px!important}.brand-mark{background:transparent!important}.brand-mark img{object-fit:contain!important}.brand h1{letter-spacing:-.03em!important}.nav{gap:7px!important}.nav-button{position:relative!important;padding-left:42px!important;border-radius:8px!important;display:flex!important;align-items:center!important}.nav-button::before{content:none!important}.nav-button .nav-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:#dcebed;display:flex;align-items:center;justify-content:center}.nav-button .nav-icon svg{width:18px;height:18px}.nav-button.active .nav-icon{color:#fff}.nav-button.active{background:#087f70!important}.status-panel{margin-top:auto!important;border-color:rgba(255,255,255,.13)!important}.logout-button{margin-top:14px!important}
+.icon-svg{display:inline-block;vertical-align:middle;flex:0 0 auto}
+.status-icon,.operation-icon{font-size:0!important}
+.status-icon .icon-svg{width:24px;height:24px}
+.operation-icon .icon-svg{width:21px;height:21px}
+.quick-action b{display:flex;align-items:center;justify-content:center;font-size:0!important}
+.quick-action b .icon-svg{width:29px;height:29px}
+.section-head h3{display:flex!important;align-items:center!important;gap:7px!important}
+.section-head h3 .icon-svg{width:17px;height:17px}
+.alert-row>b{font-size:0!important}
+.alert-row>b .icon-svg{width:13px;height:13px}
+.dashboard-location .icon-svg{width:14px;height:14px;color:#0a7f70}
+.dashboard-refresh .icon-svg{width:17px;height:17px}
+.sync-dot .icon-svg{width:13px;height:13px}
+.logout-button{display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:7px!important}
+.close-button,.icon-button{display:inline-flex!important;align-items:center!important;justify-content:center!important}
+
+.workspace{background:#f8fafb!important}.toolbar{border-bottom:0!important;background:transparent!important;padding-bottom:13px!important}.toolbar .eyebrow{color:#a76500!important;font-weight:900!important;letter-spacing:.06em!important}.toolbar h2{color:#142f45!important;font-size:28px!important;letter-spacing:-.025em!important}.toolbar-actions button{min-height:44px!important;border-radius:8px!important;font-weight:800!important}
+@media(max-width:900px){.sidebar{width:190px!important}.toolbar h2{font-size:23px!important}}
+</style>
+\n<style id="zima-home-complete-patch">\n/* ================================================================\n   ZIMA HOME — CORRECCIÓN FINAL DE ESTILOS\n   Esta capa solo corrige presentación. No cambia la lógica JS.\n   ================================================================ */\n.home-dashboard{width:100%;max-width:none;}\n.dashboard-header{min-height:128px;}\n.dashboard-title-group{min-width:0;}\n.dashboard-title-group h3{line-height:1.35;}\n.dashboard-location{display:flex;align-items:center;gap:5px;}\n.dashboard-status-cards{width:100%;}\n.status-card{overflow:hidden;}\n.status-card>div:last-child{min-width:0;}\n.status-card strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n.status-icon{font-family:Arial,sans-serif;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);}\n\n/* Resumen: proporciones de la referencia */\n.dashboard-content-grid{align-items:stretch;}\n.operation-section,.quick-actions-section{min-height:224px;}\n.operation-stats{align-items:center;}\n.operation-stats article{min-width:0;}\n.operation-stats article>div:last-child{min-width:0;}\n.operation-stats strong{white-space:nowrap;}\n\n/* Acciones rápidas: 4 tarjetas */\n.quick-actions{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;}\n.quick-action{min-width:0!important;min-height:124px!important;border-radius:11px!important;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease!important;}\n.quick-action:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(10,42,53,.08);}\n.quick-action b{font-family:Arial,sans-serif;font-size:31px!important;font-weight:400!important;margin-bottom:7px;}\n.quick-action strong{font-size:12px!important;white-space:nowrap;}\n.quick-action small{font-size:10px!important;}\n.quick-purple{background:#f6f1ff!important;border:1px solid #e6dcfa!important;}\n.quick-purple b{color:#5630c9!important;}\n\n/* Alertas */\n.alerts-section,.activity-section{min-height:258px;}\n.alert-list{margin-top:0;}\n.alert-row{min-height:55px;}\n.alert-row>div{min-width:0;}\n.alert-row strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}\n\n/* Actividad: apariencia de tabla de la referencia */\n.activity-table-head{border:1px solid #e3eaed;border-bottom:0;border-radius:9px 9px 0 0;background:#fbfcfd;padding-top:10px;}\n.recent-activity-list{border:1px solid #e3eaed;border-radius:0 0 9px 9px;overflow:hidden;background:#fff;}\n.recent-activity-list>*{padding:10px;border-top:1px solid #e8edef;}\n.recent-activity-list>*:first-child{border-top:0;}\n\n/* Evita que contenido dinámico rompa el layout */\n.recent-activity-list table{width:100%;border-collapse:collapse;}\n.recent-activity-list td{padding:8px 10px;border-bottom:1px solid #e8edef;font-size:11px;color:#405966;}\n.recent-activity-list tr:last-child td{border-bottom:0;}\n\n/* Pie */\n.dashboard-footer{background:transparent!important;}\n\n/* Pantallas intermedias */\n@media(max-width:1250px){\n  .dashboard-status-cards{grid-template-columns:repeat(3,minmax(0,1fr))!important;}\n  .dashboard-content-grid{grid-template-columns:1fr!important;}\n  .quick-actions{grid-template-columns:repeat(4,minmax(0,1fr))!important;}\n}\n@media(max-width:900px){\n  .dashboard-status-cards{grid-template-columns:repeat(2,minmax(0,1fr))!important;}\n  .quick-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;}\n  .target-bottom-grid{grid-template-columns:1fr!important;}\n}\n@media(max-width:600px){\n  .dashboard-header{padding:16px!important;}\n  .dashboard-status-cards{grid-template-columns:1fr!important;}\n  .quick-actions{grid-template-columns:1fr!important;}\n  .operation-stats{grid-template-columns:1fr!important;}\n  .activity-table-head{display:none;}\n}\n</style>\n</head>
 <body>
   <div id="guestNotice" style="display:none;padding:18px;background:#fff8e6;border:1px solid #f0d8a8;border-radius:8px;margin:12px;box-shadow:0 6px 18px rgba(18,38,46,0.06);">
     <strong>Acceso requerido</strong>
@@ -112,23 +150,23 @@
 
       <nav class="nav" aria-label="Vistas">
         <button class="nav-button active" data-view="home" type="button">
-          <span>Inicio</span>
+          <span class="nav-icon"><svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/><path d="M9.5 21v-6h5v6"/></svg></span><span>Inicio</span>
         </button>
         <button class="nav-button" data-view="form" type="button">
-          <span>Formulario</span>
+          <span class="nav-icon"><svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h4"/></svg></span><span>Formulario</span>
         </button>
         <button class="nav-button" data-view="records" type="button">
-          <span>Registros</span>
+          <span class="nav-icon"><svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span><span>Registros</span>
           <strong id="recordCount">0</strong>
         </button>
-        <button id="auditViewButton" class="nav-button" data-view="audit" type="button" style="display: none;">
-          <span>Auditoria</span>
+        <button id="auditViewButton" class="nav-button" data-view="audit" type="button">
+          <span class="nav-icon"><svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/><path d="M3 20h18"/></svg></span><span>Reportes</span>
         </button>
         <button id="adminViewButton" class="nav-button" data-view="admin" type="button" style="display: none;">
-          <span>Admin / Soporte</span>
+          <span class="nav-icon"><svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/><path d="M19 5v4M17 7h4"/></svg></span><span>Admin / Soporte</span>
         </button>
         <button id="alertsViewButton" class="nav-button" data-view="alerts" type="button" style="display: none;">
-          <span>Alertas</span>
+          <span class="nav-icon"><svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 19H3L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg></span><span>Alertas</span>
         </button>
       </nav>
 
@@ -138,14 +176,14 @@
         <button id="selfChangePasswordButton" class="self-password-button" type="button" hidden>Cambiar clave</button>
       </div>
 
-      <button id="logoutButton" class="logout-button" type="button">Cerrar sesion</button>
+      <button id="logoutButton" class="logout-button" type="button"><svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M21 19V5a2 2 0 0 0-2-2h-6"/></svg> <span>Cerrar sesion</span></button>
 
     </aside>
     <div id="pdfModal" class="pdf-modal is-hidden" aria-hidden="true">
       <div class="pdf-modal-content">
         <div class="pdf-modal-header">
           <h2>Vista previa PDF</h2>
-          <button id="closePdfModal" class="close-button" type="button" aria-label="Cerrar vista previa">x</button>
+          <button id="closePdfModal" class="close-button" type="button" aria-label="Cerrar vista previa"><svg class="icon-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
         </div>
         <div class="pdf-modal-body">
           <iframe id="pdfIframe" src="" frameborder="0"></iframe>
@@ -182,103 +220,122 @@
       </section>
       <div id="onlineStatus" class="online-status"></div>
       <section id="homeView" class="view active" aria-label="Inicio del sistema">
-        <div class="home-notice-bar">
-          <span>Consulta completada. Se encontraron <strong id="homeOnlineCount">0</strong> registros online.</span>
+        <div class="home-notice-bar" role="status" aria-live="polite">
+          <span class="sync-dot"><svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></span>
+          <span><strong>Sistema sincronizado</strong><b class="sync-separator">•</b><span id="homeOnlineCount">0</span> registros disponibles<b class="sync-separator">•</b>Actualizado hace 2 minutos</span>
         </div>
+
         <section class="home-dashboard">
           <div class="dashboard-header">
             <div class="dashboard-title-group">
-              <p class="eyebrow">Sistema de gestión de planillas</p>
+              <p class="dashboard-eyebrow">PANEL DE CONTROL</p>
+              <h3>Gestión y seguimiento de entregas de efectivo</h3>
               <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
-            </div>
-            <div class="dashboard-status-strip">
-              <span>Última actualización: <strong id="homeLastUpdate">Hace 2 minutos</strong></span>
-              <span class="badge">3 alertas activas</span>
-              <span>Administrador · Rol: Supervisor</span>
+              <div class="dashboard-location"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.8 4L21 14"/><path d="M21 19v-5h-5"/></svg> <span>Peaje Zaragoza &nbsp;•&nbsp; Sincronizado hace 2 minutos</span></div>
             </div>
             <div class="dashboard-actions">
-              <img src="assets/logo-zima.png" alt="Logo ZIMA Seguridad Ltda" class="dashboard-logo">
-              <button id="dashboardRefresh" class="secondary-button" type="button">Actualizar</button>
-              <button id="homeNewRecord" class="primary-button" type="button">Nueva planilla</button>
+              <button id="dashboardRefresh" class="secondary-button dashboard-refresh" type="button"><svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.8 4L21 14"/><path d="M21 19v-5h-5"/></svg> <span>Actualizar datos</span></button>
             </div>
           </div>
-          <div class="dashboard-summary">
-            <img src="assets/home-planillas-zima.png" alt="Banner ZIMA" class="dashboard-banner">
-          </div>
-          <div class="dashboard-grid" aria-label="Resumen de registros">
-            <article class="dashboard-card">
-              <span>Total registros</span>
-              <strong id="dashTotalRecords">0</strong>
-              <small id="dashTotalRecordsChange">+0 esta semana</small>
+
+          <div class="dashboard-status-cards">
+            <article class="status-card">
+              <div class="status-icon"><svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+              <div><span>HORA ACTUAL</span><strong id="homeCurrentTime">--:--:--</strong><small>Hora local</small></div>
             </article>
-            <article class="dashboard-card">
-              <span>Total entregado</span>
-              <strong id="dashTotalMoney">$ 0</strong>
-              <small id="dashTotalMoneyChange">+$ 0 esta semana</small>
+            <article class="status-card">
+              <div class="status-icon"><svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 9h18"/></svg></div>
+              <div><span>ÚLTIMO INGRESO</span><strong id="homeLastLogin">--/--/----</strong><small>--:-- a. m.</small></div>
             </article>
-            <article class="dashboard-card">
-              <span>Promedio por registro</span>
-              <strong id="dashAverageAmount">$ 0</strong>
-              <small><span id="dashMonthRecords">0</span> este mes</small>
+            <article class="status-card">
+              <div class="status-icon"><svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.8 4L21 14"/><path d="M21 19v-5h-5"/></svg></div>
+              <div><span>ÚLTIMA ACTUALIZACIÓN</span><strong id="homeLastUpdate">Hace 2 minutos</strong><small>Datos sincronizados</small></div>
             </article>
-            <article class="dashboard-card">
-              <span>Dinero este mes</span>
-              <strong id="dashMonthAmount">$ 0</strong>
-              <small>Resumen mensual</small>
+            <article class="status-card alert-status-card">
+              <div class="status-icon"><svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 19H3L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg></div>
+              <div><span>ALERTAS ACTIVAS</span><strong>3</strong><small>Ver detalles&nbsp; ›</small></div>
+            </article>
+            <article class="status-card">
+              <div class="status-icon"><svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></div>
+              <div><span>USUARIO ACTUAL</span><strong>Supervisor</strong><small>Administrador</small></div>
             </article>
           </div>
 
-          <div class="dashboard-main-grid">
-            <section class="dashboard-section dashboard-chart-panel">
+          <div class="dashboard-content-grid">
+            <section class="dashboard-section operation-section">
               <div class="section-head">
-                <h3>Actividad diaria</h3>
-                <div class="range-tabs" aria-label="Rango de actividad">
-                  <span class="active">7 Dias</span>
-                  <span>15 Dias</span>
-                  <span>30 Dias</span>
-                </div>
+                <h3><svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg> RESUMEN DE OPERACIÓN – HOY</h3>
               </div>
-              <div id="dashDailyChart" class="daily-chart"></div>
+              <div class="operation-stats">
+                <article>
+                  <div class="operation-icon"><svg class="icon-svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+                  <div><span>PLANILLAS REGISTRADAS</span><strong id="dashTotalRecords">0</strong><small id="dashTotalRecordsChange">+0 esta semana</small></div>
+                </article>
+                <article>
+                  <div class="operation-icon"><svg class="icon-svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 8.5c-.7-.6-1.7-1-3-1-1.7 0-3 .8-3 2s1.3 2 3 2 3 .8 3 2-1.3 2-3 2c-1.3 0-2.3-.4-3-1"/><path d="M12 6v2M12 16v2"/></svg></div>
+                  <div><span>VALOR ENTREGADO</span><strong id="dashTotalMoney">$ 0</strong><small id="dashTotalMoneyChange">+$ 0 esta semana</small></div>
+                </article>
+                <article>
+                  <div class="operation-icon"><svg class="icon-svg" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M15 8.5c-.7-.6-1.7-1-3-1-1.7 0-3 .8-3 2s1.3 2 3 2 3 .8 3 2-1.3 2-3 2c-1.3 0-2.3-.4-3-1"/><path d="M12 6v2M12 16v2"/></svg></div>
+                  <div><span>PROMEDIO POR REGISTRO</span><strong id="dashAverageAmount">$ 0</strong><small><span id="dashMonthRecords">0</span> este mes</small></div>
+                </article>
+              </div>
+              <div class="operation-progress"><span></span></div>
+              <div class="operation-footer"><span>Meta diaria: $30.000.000</span><strong>Operación activa</strong></div>
             </section>
 
-            <section class="dashboard-section dashboard-last-panel">
-              <h3>Ultima planilla</h3>
-              <div id="latestRecordSummary" class="latest-record-summary"></div>
-            </section>
-
-            <section class="dashboard-section dashboard-recent-panel">
-              <h3>Actividad reciente</h3>
-              <div id="recentActivityList" class="recent-activity-list"></div>
-              <button id="homeRecords" class="secondary-button activity-link" type="button">Ver toda la actividad</button>
+            <section class="dashboard-section quick-actions-section">
+              <div class="section-head"><h3><svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg> ACCIONES RÁPIDAS</h3></div>
+              <div class="quick-actions">
+                <button type="button" class="quick-action quick-green" onclick="document.getElementById('homeNewRecord').click()">
+                  <b><svg class="icon-svg" width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></b><strong>Nueva planilla</strong><small>Registrar entrega</small>
+                </button>
+                <button type="button" class="quick-action quick-blue" onclick="document.getElementById('homeRecords').click()">
+                  <b><svg class="icon-svg" width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="m16 16 4 4"/></svg></b><strong>Consultar registros</strong><small>Ver planillas</small>
+                </button>
+                <button id="homeReports" type="button" class="quick-action quick-gold">
+                  <b><svg class="icon-svg" width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></svg></b><strong>Imprimir reporte</strong><small>Ver reportes</small>
+                </button>
+                <button type="button" class="quick-action quick-purple" onclick="document.getElementById('exportCsv').click()">
+                  <b><svg class="icon-svg" width="29" height="29" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 21h16"/></svg></b><strong>Exportar datos</strong><small>Descargar Excel</small>
+                </button>
+              </div>
+              <button id="homeNewRecord" class="is-hidden" type="button" aria-hidden="true">Nueva planilla</button>
+              <button id="homeRecords" class="is-hidden" type="button" aria-hidden="true">Ver toda la actividad</button>
             </section>
           </div>
 
-          <div class="dashboard-bottom-grid">
-            <section class="dashboard-section">
-              <h3>Resumen por peaje</h3>
-              <div id="peajeSummary" class="peaje-summary"></div>
+          <div class="dashboard-bottom-grid target-bottom-grid">
+            <section class="dashboard-section alerts-section">
+              <div class="section-head"><h3><svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 19H3L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg> ALERTAS RECIENTES</h3><span>Ver todas&nbsp; ›</span></div>
+              <div class="alert-list">
+                <div class="alert-row"><b><svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 19H3L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg></b><div><strong>Planillas registradas</strong><small>Revisión de operación pendiente</small></div><em>Media</em></div>
+                <div class="alert-row"><b><svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 19H3L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg></b><div><strong>Validación de valores</strong><small>Verificar valores entregados</small></div><em class="high">Alta</em></div>
+                <div class="alert-row"><b><svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 21 19H3L12 3Z"/><path d="M12 9v4M12 16h.01"/></svg></b><div><strong>Planilla pendiente de entregar</strong><small>Seguimiento requerido</small></div><em>Media</em></div>
+              </div>
             </section>
 
-            <section class="dashboard-section system-status-panel">
-              <h3>Estado del sistema</h3>
-              <div class="system-status-grid">
-                <span>Base de datos <strong>Operativo</strong></span>
-                <span>Backup <strong>Operativo</strong></span>
-                <span>Servidor <strong>Operativo</strong></span>
-                <span>Internet <strong>Operativo</strong></span>
-                <span>Impresora <strong>Operativo</strong></span>
-              </div>
-              <p class="backup-note">Ultima copia de seguridad, Hoy, 07:00 AM</p>
+            <section class="dashboard-section activity-section">
+              <div class="section-head"><h3><svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> ACTIVIDAD RECIENTE</h3><span>Ver todas&nbsp; ›</span></div>
+              <div class="activity-table-head"><span>FECHA Y HORA</span><span>USUARIO</span><span>ACCIÓN</span><span>DETALLE</span></div>
+              <div id="recentActivityList" class="recent-activity-list"></div>
             </section>
+          </div>
+
+          <!-- Contenedores existentes conservados para que app.js mantenga toda su lógica. -->
+          <div class="legacy-dashboard-data" aria-hidden="true">
+            <div id="dashMonthAmount">$ 0</div>
+            <div id="dashDailyChart"></div>
+            <div id="latestRecordSummary"></div>
+            <div id="peajeSummary"></div>
           </div>
 
           <footer class="dashboard-footer">
-            <span>Gestion segura y eficiente de cada entrega de efectivo</span>
-            <strong>ZIMA Seguridad Ltda. - Todos los derechos reservados</strong>
+            <span>© 2026 ZIMA Seguridad Ltda. Todos los derechos reservados.</span>
+            <strong>Versión 1.0.0 &nbsp;•&nbsp; Peaje Zaragoza</strong>
           </footer>
         </section>
       </section>
-
       <section id="formView" class="view" aria-label="Formulario de entrega">
         <form id="moneyForm" class="form-layout">
           <section class="paper">
@@ -508,7 +565,7 @@
             </label>
           </div>
           <button id="auditFilterApply" class="secondary-button" type="button">Filtrar</button>
-          <button id="auditFilterClear" class="icon-button" type="button" title="Limpiar filtros">x</button>
+          <button id="auditFilterClear" class="icon-button" type="button" title="Limpiar filtros"><svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
         </div>
 
         <div class="audit-summary">
@@ -806,6 +863,52 @@
   </script>
 
   <script>
+    // Navegacion segura del acceso rapido 'Imprimir reporte'.
+    // No invoca el generador PDF de printRecord. Abre directamente Reportes/Auditoria.
+    (function () {
+      function openZimaReports() {
+        try {
+          const reportView = document.getElementById('auditView');
+          if (!reportView) {
+            console.error('No se encontro #auditView');
+            return;
+          }
+
+          document.querySelectorAll('.view').forEach(function (view) {
+            view.classList.remove('active');
+          });
+          reportView.classList.add('active');
+
+          document.querySelectorAll('.nav-button[data-view]').forEach(function (button) {
+            button.classList.remove('active');
+          });
+          const reportNav = document.querySelector('.nav-button[data-view="audit"]');
+          if (reportNav) reportNav.classList.add('active');
+
+          const title = document.getElementById('toolbarTitle');
+          const eyebrow = document.getElementById('toolbarEyebrow');
+          const toolbarActions = document.getElementById('formToolbarActions');
+          if (title) title.textContent = 'Reportes y auditoría';
+          if (eyebrow) eyebrow.textContent = 'Control y análisis';
+          if (toolbarActions) toolbarActions.style.display = 'none';
+
+          if (typeof window.scrollTo === 'function') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        } catch (error) {
+          console.error('No fue posible abrir Reportes:', error);
+        }
+      }
+
+      window.openZimaReports = openZimaReports;
+      document.addEventListener('DOMContentLoaded', function () {
+        const button = document.getElementById('homeReports');
+        if (button) button.addEventListener('click', openZimaReports);
+      });
+    })();
+  </script>
+
+  <script>
     // Si la aplicacion esta oculta (sin sesion) mostrar un aviso amigable
     (function(){
       try {
@@ -827,7 +930,7 @@
       const OFFLINE_USERS_KEY = 'zima_offline_users_encrypted';
       const OFFLINE_QUEUE_KEY = 'zima_offline_queue';
       const BLOCKED_EMAILS = ['c.recaudo3@zimaseguridad.com.co', 'beatriz@zimaseguridad.com.co'];
-      const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwsSe7jzQdpe4MSQKeCWwwbRQELrPbQuN55sYi5CozLEfEQue7QutqKtNrL98wurt4dQ/exec';
+      const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzCm3a-hwrEPAz_vYxHljDwFAftI2CI0mQa4omIK2qO5rxWYTec17zjDOG2Lxu1mB2nQ/exec';
       const statusElement = document.getElementById('onlineStatus') || createStatusElement();
 
       function createStatusElement() {
@@ -1136,5 +1239,3 @@
   </script>
 </body>
 </html>
-
-

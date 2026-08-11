@@ -1,4 +1,4 @@
-const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwIzkDqI3wQgOoYL17TG_5Zg1JE_TV4tTWw8EJ2twZJq0mp0PoFXrQHQ3qZMg3701LwDg/exec';
+const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxzCm3a-hwrEPAz_vYxHljDwFAftI2CI0mQa4omIK2qO5rxWYTec17zjDOG2Lxu1mB2nQ/exec';
 const SESSION_KEY = 'transbankSession';
 
 const JSONP_TIMEOUT = 8000; // ms
@@ -219,7 +219,8 @@ function getScriptUrl() {
 function saveSession(user, password) {
   sessionStorage.setItem(SESSION_KEY, JSON.stringify({
     ...user,
-    password
+    password,
+    loginAt: new Date().toISOString()
   }));
 }
 

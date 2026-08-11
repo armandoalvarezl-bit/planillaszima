@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbwIzkDqI3wQgOoYL17TG_5Zg1JE_TV4tTWw8EJ2twZJq0mp0PoFXrQHQ3qZMg3701LwDg/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxzCm3a-hwrEPAz_vYxHljDwFAftI2CI0mQa4omIK2qO5rxWYTec17zjDOG2Lxu1mB2nQ/exec';
 const SESSION_KEY = 'transbankSession';
 const PEAJE_DEFAULTS = {
   'PEAJE ZARAGOZA': {
@@ -98,9 +98,12 @@ let homeTotalRecords;
 let homeTotalAmount;
 let homeLastRecord;
 let homeWeekRecords;
+let homeCurrentTime;
+let homeLastLogin;
 let toolbarEyebrow;
 let toolbarTitle;
 let formToolbarActions;
+let currentTimeInterval = null;
 
 let auditFiltered = [];
 
@@ -259,6 +262,20 @@ function formatDateTime(dateString) {
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit'
+    });
+  } catch {
+    return String(dateString) || '-';
+  }
+}
+
+function formatTime(dateString) {
+  if (!dateString) return '-';
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('es-CO', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     });
   } catch {
     return String(dateString) || '-';
@@ -698,8 +715,8 @@ function showReasonDialog({ title, message, confirmText = 'Confirmar', cancelTex
     overlay.querySelector('.confirm-cancel').addEventListener('click', () => close(null));
     overlay.querySelector('.confirm-accept').addEventListener('click', () => {
       const reason = textarea.value.trim();
-      if (reason.length < 6) {
-        error.textContent = 'Ingrese una razon clara antes de anular.';
+      if (reason.length < 1) {
+        error.textContent = 'Ingrese una razon antes de anular.';
         textarea.focus();
         return;
       }
@@ -1003,7 +1020,7 @@ function switchView(viewName) {
 }
 
 function updateHome() {
-  if (!homeWelcome || !homePeaje || !homeTotalRecords || !homeTotalAmount || !homeLastRecord || !homeWeekRecords) {
+  if (!homeWelcome || !homePeaje || !homeTotalRecords || !homeTotalAmount || !homeLastRecord || !homeWeekRecords || !homeCurrentTime || !homeLastLogin) {
     return;
   }
 
@@ -1015,6 +1032,7 @@ function updateHome() {
   const latest = records[0];
   const weekRecords = records.filter((record) => recordDateKey(record.fecha) >= sevenDaysAgo).length;
   const totalAmount = records.reduce((sum, record) => sum + onlyDigits(record.total), 0);
+  const loginTime = currentUser?.loginAt || currentUser?.lastLogin || new Date().toISOString();
 
   homeWelcome.textContent = `Bienvenido, ${userName}`;
   homePeaje.textContent = `Sesion activa para ${peajeName}. Desde aqui puedes crear planillas, consultar registros y mantener el control diario.`;
@@ -1022,6 +1040,21 @@ function updateHome() {
   homeTotalAmount.textContent = formatMoney(totalAmount);
   homeLastRecord.textContent = latest ? formatDate(latest.fecha) : 'Sin datos';
   homeWeekRecords.textContent = weekRecords;
+  homeCurrentTime.textContent = formatTime(today_.toISOString());
+  homeLastLogin.textContent = formatDateTime(loginTime);
+}
+
+function updateCurrentTimeTicker() {
+  if (!homeCurrentTime) return;
+  if (currentTimeInterval) {
+    window.clearInterval(currentTimeInterval);
+  }
+  homeCurrentTime.textContent = formatTime(new Date().toISOString());
+  currentTimeInterval = window.setInterval(() => {
+    if (homeCurrentTime) {
+      homeCurrentTime.textContent = formatTime(new Date().toISOString());
+    }
+  }, 1000);
 }
 
 function updateToolbar(viewName) {
@@ -1113,6 +1146,7 @@ async function startSession(user) {
   updateDashboard();
   switchView('home');
   showWelcomeModal();
+  updateCurrentTimeTicker();
   if (navigator.onLine) {
     await syncPendingRecords();
   }
@@ -1120,6 +1154,10 @@ async function startSession(user) {
 }
 
 function clearSession() {
+  if (currentTimeInterval) {
+    window.clearInterval(currentTimeInterval);
+    currentTimeInterval = null;
+  }
   if (inactivityTimer) {
     window.clearTimeout(inactivityTimer);
     inactivityTimer = null;
@@ -2613,6 +2651,8 @@ document.addEventListener('DOMContentLoaded', function() {
   homeTotalAmount = document.querySelector('#homeTotalAmount');
   homeLastRecord = document.querySelector('#homeLastRecord');
   homeWeekRecords = document.querySelector('#homeWeekRecords');
+  homeCurrentTime = document.querySelector('#homeCurrentTime');
+  homeLastLogin = document.querySelector('#homeLastLogin');
   toolbarEyebrow = document.querySelector('#toolbarEyebrow');
   toolbarTitle = document.querySelector('#toolbarTitle');
   formToolbarActions = document.querySelector('#formToolbarActions');
