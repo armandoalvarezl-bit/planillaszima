@@ -1,690 +1,368 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Planillas ZIMA - Mantenimiento</title>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Control Operacional | Gestión de Fondos Transbank</title>
 
     <meta name="description"
-          content="La plataforma de Planillas de Transportadora ZIMA se encuentra temporalmente en mantenimiento.">
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --azul-zima: #123b78;
-            --azul-claro: #eaf3fc;
-            --naranja-ani: #dc6b35;
-            --amarillo: #ffc400;
-            --azul-ani: #123c82;
-            --rojo-ani: #d90b2f;
-            --texto: #183354;
-            --gris: #64748b;
-            --blanco: #ffffff;
-        }
-
-        body {
-            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
-            min-height: 100vh;
-            background:
-                radial-gradient(
-                    circle at 90% 20%,
-                    #eaf4ff 0%,
-                    #f7fbff 28%,
-                    #ffffff 60%
-                );
-            color: var(--texto);
-            overflow-x: hidden;
-        }
-
-        /* =========================
-           CONTENEDOR PRINCIPAL
-        ========================== */
-
-        .page {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            position: relative;
-        }
-
-        .container {
-            width: min(1180px, 92%);
-            margin: auto;
-        }
-
-        /* =========================
-           HEADER
-        ========================== */
-
-        header {
-            padding: 35px 0 20px;
-        }
-
-        .logos {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 40px;
-        }
-
-        .logo-ani {
-            width: 135px;
-            height: auto;
-            object-fit: contain;
-        }
-
-        .logo-zima {
-            width: 180px;
-            height: auto;
-            object-fit: contain;
-        }
-
-        .separator {
-            width: 1px;
-            height: 80px;
-            background: #cbd5e1;
-        }
-
-        /* =========================
-           CONTENIDO
-        ========================== */
-
-        main {
-            flex: 1;
-            display: flex;
-            align-items: center;
-        }
-
-        .hero {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            align-items: center;
-            gap: 50px;
-            padding: 40px 0 70px;
-        }
-
-        /* =========================
-           TEXTO
-        ========================== */
-
-        .content h1 {
-            font-size: clamp(42px, 5vw, 68px);
-            line-height: 1.05;
-            font-weight: 800;
-            color: var(--azul-zima);
-            margin-bottom: 20px;
-        }
-
-        .line {
-            width: 100px;
-            height: 5px;
-            background: var(--naranja-ani);
-            border-radius: 20px;
-            margin-bottom: 30px;
-        }
-
-        .content p {
-            font-size: 19px;
-            line-height: 1.7;
-            color: #52657d;
-            max-width: 590px;
-        }
-
-        /* =========================
-           TARJETA
-        ========================== */
-
-        .notice {
-            margin-top: 35px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            background: rgba(234, 243, 252, 0.9);
-            border: 1px solid #dceaf7;
-            border-radius: 20px;
-            padding: 24px;
-            max-width: 560px;
-        }
-
-        .clock {
-            min-width: 65px;
-            width: 65px;
-            height: 65px;
-            border-radius: 50%;
-            background: var(--azul-zima);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .clock::before {
-            content: "";
-            width: 30px;
-            height: 30px;
-            border: 3px solid white;
-            border-radius: 50%;
-            position: absolute;
-        }
-
-        .clock::after {
-            content: "";
-            position: absolute;
-            width: 3px;
-            height: 12px;
-            background: white;
-            top: 19px;
-            border-radius: 5px;
-            transform-origin: bottom;
-            transform: rotate(0deg);
-        }
-
-        .notice h2 {
-            color: var(--azul-zima);
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-
-        .notice p {
-            font-size: 16px;
-            line-height: 1.5;
-            color: #53677f;
-        }
-
-        /* =========================
-           ILUSTRACIÓN
-        ========================== */
-
-        .illustration {
-            position: relative;
-            min-height: 450px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .circle-bg {
-            position: absolute;
-            width: 460px;
-            height: 460px;
-            border-radius: 50%;
-            background: linear-gradient(
-                135deg,
-                #eef7ff,
-                #dbeefe
-            );
-            z-index: 0;
-        }
-
-        .monitor {
-            position: relative;
-            z-index: 2;
-            width: 390px;
-            height: 270px;
-            background: white;
-            border: 14px solid #315e8e;
-            border-radius: 18px;
-            box-shadow:
-                0 25px 60px rgba(18, 59, 120, .18);
-        }
-
-        .screen {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(
-                145deg,
-                #f8fcff,
-                #eef6fd
-            );
-        }
-
-        .gear {
-            font-size: 90px;
-            color: var(--azul-zima);
-            line-height: 1;
-            animation: rotate 8s linear infinite;
-        }
-
-        .maintenance-text {
-            margin-top: 15px;
-            font-size: 18px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            color: var(--azul-zima);
-        }
-
-        .stand {
-            position: absolute;
-            z-index: 1;
-            bottom: 35px;
-            width: 130px;
-            height: 65px;
-            background: #315e8e;
-            clip-path: polygon(
-                20% 0,
-                80% 0,
-                100% 100%,
-                0 100%
-            );
-        }
-
-        /* =========================
-           CONO
-        ========================== */
-
-        .cone {
-            position: absolute;
-            right: 5%;
-            bottom: 35px;
-            z-index: 4;
-            width: 75px;
-            height: 115px;
-        }
-
-        .cone-top {
-            width: 0;
-            height: 0;
-            border-left: 32px solid transparent;
-            border-right: 32px solid transparent;
-            border-bottom: 85px solid #f28b22;
-            margin: auto;
-        }
-
-        .cone-stripe {
-            position: absolute;
-            top: 45px;
-            left: 12px;
-            width: 51px;
-            height: 14px;
-            background: white;
-            transform: rotate(-8deg);
-        }
-
-        .cone-base {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 75px;
-            height: 20px;
-            border-radius: 7px;
-            background: #f28b22;
-        }
-
-        /* =========================
-           CASCO
-        ========================== */
-
-        .helmet {
-            position: absolute;
-            left: 5%;
-            bottom: 25px;
-            z-index: 4;
-            width: 125px;
-            height: 58px;
-            background: #ffc928;
-            border-radius: 70px 70px 25px 25px;
-            box-shadow: 0 8px 15px rgba(0,0,0,.12);
-        }
-
-        .helmet::after {
-            content: "";
-            position: absolute;
-            bottom: -7px;
-            left: -12px;
-            width: 150px;
-            height: 15px;
-            border-radius: 20px;
-            background: #f0b500;
-        }
-
-        /* =========================
-           BARRERA
-        ========================== */
-
-        .barrier {
-            position: absolute;
-            bottom: 38px;
-            left: 0;
-            width: 190px;
-            height: 55px;
-            background:
-                repeating-linear-gradient(
-                    -45deg,
-                    var(--azul-zima) 0,
-                    var(--azul-zima) 20px,
-                    #ffc928 20px,
-                    #ffc928 40px
-                );
-            border-radius: 7px;
-            z-index: 5;
-            box-shadow: 0 8px 20px rgba(0,0,0,.12);
-        }
-
-        /* =========================
-           FOOTER
-        ========================== */
-
-        footer {
-            padding: 25px 0 30px;
-            text-align: center;
-        }
-
-        .footer-line {
-            width: 80%;
-            height: 1px;
-            background: #cbd5e1;
-            margin: 0 auto 20px;
-        }
-
-        footer p {
-            color: #5c7089;
-            font-size: 15px;
-            line-height: 1.7;
-        }
-
-        footer strong {
-            color: var(--azul-zima);
-        }
-
-        /* =========================
-           BARRA ANI
-        ========================== */
-
-        .ani-bar {
-            display: flex;
-            width: 110px;
-            height: 7px;
-            margin: 22px auto 0;
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .ani-bar span:nth-child(1) {
-            flex: 1;
-            background: var(--amarillo);
-        }
-
-        .ani-bar span:nth-child(2) {
-            flex: 1;
-            background: var(--azul-ani);
-        }
-
-        .ani-bar span:nth-child(3) {
-            flex: 1;
-            background: var(--rojo-ani);
-        }
-
-        /* =========================
-           ANIMACIONES
-        ========================== */
-
-        @keyframes rotate {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* =========================
-           RESPONSIVE
-        ========================== */
-
-        @media (max-width: 900px) {
-
-            .hero {
-                grid-template-columns: 1fr;
-                text-align: center;
-            }
-
-            .content p {
-                margin: auto;
-            }
-
-            .line {
-                margin-left: auto;
-                margin-right: auto;
-            }
-
-            .notice {
-                margin-left: auto;
-                margin-right: auto;
-                text-align: left;
-            }
-
-            .illustration {
-                min-height: 400px;
-            }
-        }
-
-        @media (max-width: 600px) {
-
-            header {
-                padding-top: 25px;
-            }
-
-            .logos {
-                gap: 20px;
-            }
-
-            .logo-ani {
-                width: 95px;
-            }
-
-            .logo-zima {
-                width: 125px;
-            }
-
-            .separator {
-                height: 55px;
-            }
-
-            .hero {
-                padding-top: 20px;
-            }
-
-            .content h1 {
-                font-size: 42px;
-            }
-
-            .content p {
-                font-size: 17px;
-            }
-
-            .notice {
-                padding: 18px;
-            }
-
-            .illustration {
-                min-height: 320px;
-                transform: scale(.75);
-                margin: -30px 0;
-            }
-
-            footer {
-                padding-bottom: 20px;
-            }
-        }
-    </style>
+        content="Sistema de gestión, control y conciliación de fondos entregados a Transbank.">
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="login-theme.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
 </head>
 
 <body>
 
-<div class="page">
+    <section id="loginView" class="login-view" aria-label="Ingreso al sistema">
 
-    <!-- =========================
-         HEADER
-    ========================== -->
+        <div class="login-shell">
 
-    <header>
-        <div class="container">
+            <!-- PANEL IZQUIERDO -->
+            <aside class="login-hero">
 
-            <div class="logos">
+                <div class="login-logos">
 
-                <!-- LOGO ANI -->
-                <img
-                    src="img/logo-ani.png"
-                    alt="ANI"
-                    class="logo-ani"
-                >
+                    <img
+                        src="assets/logo-zima.png"
+                        alt="Logo ZIMA"
+                        class="hero-logo">
 
-                <div class="separator"></div>
+                </div>
 
-                <!-- LOGO ZIMA -->
-                <img
-                    src="img/logo-zima.png"
-                    alt="ZIMA Seguridad Ltda."
-                    class="logo-zima"
-                >
+                <div class="login-hero-content">
 
-            </div>
+                    <div class="login-hero-copy">
 
-        </div>
-    </header>
+                        <span class="hero-tag">
+                            CONTROL OPERACIONAL
+                        </span>
 
+                        <h1>
+                            Gestión de fondos entregados a
+                            <span class="hero-accent">Transbank</span>
+                        </h1>
 
-    <!-- =========================
-         CONTENIDO
-    ========================== -->
+                        <!-- NUEVO: línea corta de acento bajo el título -->
+                        <span class="hero-rule" aria-hidden="true"></span>
 
-    <main>
+                        <p class="hero-description">
+                            Plataforma digital para el registro, consulta,
+                            conciliación e impresión de movimientos por peaje.
+                        </p>
 
-        <div class="container">
+                    </div>
 
-            <section class="hero">
+                </div>
 
-                <!-- TEXTO -->
+                <div class="hero-divider"></div>
 
-                <div class="content">
+                <div class="login-metrics" aria-label="Resumen del sistema">
+                    <div>
+                        <!-- NUEVO: icono + micro-copy de apoyo -->
+                        <span class="metric-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            </svg>
+                        </span>
+                        <strong>2</strong>
+                        <span>Peajes activos</span>
+                        <small>En operación</small>
+                    </div>
+                    <div>
+                        <span class="metric-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                                <path d="m9 12 2 2 4-4" />
+                            </svg>
+                        </span>
+                        <strong>24/7</strong>
+                        <span>Control disponible</span>
+                        <small>Monitoreo continuo</small>
+                    </div>
+                </div>
 
-                    <h1>
-                        ¡Estamos en
-                        mantenimiento!
-                    </h1>
+                <div class="login-peajes">
 
-                    <div class="line"></div>
+                    <span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        Peaje Zaragoza
+                    </span>
 
-                    <p>
-                        Estamos realizando mejoras en la página
-                        de <strong>Planillas de Transportadora ZIMA</strong>
-                        para brindarte una experiencia más rápida,
-                        segura y eficiente.
+                    <span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+                            <circle cx="12" cy="10" r="3" />
+                        </svg>
+                        Peaje Fragua
+                    </span>
+                    <span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="20" x2="12" y2="10" />
+                            <line x1="18" y1="20" x2="18" y2="4" />
+                            <line x1="6" y1="20" x2="6" y2="16" />
+                        </svg>
+                        Auditoría de operaciones
+                    </span>
+
+                </div>
+
+            </aside>
+
+            <!-- PANEL DERECHO -->
+            <form id="loginForm" class="login-card">
+
+                <header class="login-brand">
+
+                    <!-- NUEVO: icono circular junto al nombre -->
+                    <div class="brand-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                    </div>
+
+                    <div class="brand-copy">
+                        <h2>Planillas</h2>
+                        <p>Ingreso seguro</p>
+                    </div>
+
+                </header>
+
+                <div class="login-heading">
+
+                    <p class="eyebrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                        </svg>
+                        ACCESO AUTORIZADO
                     </p>
 
+                    <h3>
+                        Iniciar sesión
+                    </h3>
 
-                    <div class="notice">
+                    <p class="login-subtitle">
+                        Seleccione su punto de operación e ingrese la clave asignada.
+                    </p>
 
-                        <div class="clock"></div>
+                </div>
 
-                        <div>
-                            <h2>
-                                Volveremos pronto
-                            </h2>
+                <div class="form-group">
 
-                            <p>
-                                Agradecemos tu comprensión.
-                                Intenta nuevamente más tarde.
-                            </p>
-                        </div>
+                    <label for="loginPeaje">
+                        Peaje
+                    </label>
+
+                    <!-- NUEVO: envoltorio para icono izquierdo del select -->
+                    <div class="input-icon-group">
+
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0Z" />
+                                <circle cx="12" cy="10" r="3" />
+                            </svg>
+                        </span>
+
+                        <select
+                            id="loginPeaje"
+                            name="peaje"
+                            class="has-icon"
+                            required>
+
+                            <option value="PEAJE ZARAGOZA">
+                                Peaje Zaragoza
+                            </option>
+
+                            <option value="PEAJE FRAGUA">
+                                Peaje Fragua
+                            </option>
+                            <option value="AUDITORIA DE OPERACIONES">
+                                Auditoría de la Jefa Beatriz
+                            </option>
+                            <option value="ADMINISTRADOR GENERAL">
+                                Administrador General
+                            </option>
+                            <option value="SOPORTE SISTEMA">
+                                Soporte Sistema
+                            </option>
+
+                        </select>
 
                     </div>
 
                 </div>
 
+                <div class="form-group">
 
-                <!-- ILUSTRACIÓN -->
+                    <label for="loginPassword">
+                        Clave
+                    </label>
 
-                <div class="illustration">
+                    <!-- NUEVO: envoltorio con icono de candado + botón mostrar/ocultar -->
+                    <div class="input-icon-group">
 
-                    <div class="circle-bg"></div>
+                        <span class="input-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" />
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                            </svg>
+                        </span>
 
-                    <div class="monitor">
+                        <input
+                            id="loginPassword"
+                            name="password"
+                            type="password"
+                            required
+                            autocomplete="current-password"
+                            placeholder="Ingrese su clave"
+                            class="has-icon has-toggle">
 
-                        <div class="screen">
-
-                            <div class="gear">
-                                ⚙
-                            </div>
-
-                            <div class="maintenance-text">
-                                MANTENIMIENTO
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <div class="stand"></div>
-
-                    <div class="barrier"></div>
-
-                    <div class="helmet"></div>
-
-                    <div class="cone">
-
-                        <div class="cone-top"></div>
-
-                        <div class="cone-stripe"></div>
-
-                        <div class="cone-base"></div>
+                        <button
+                            type="button"
+                            class="password-toggle"
+                            id="togglePassword"
+                            aria-label="Mostrar clave">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </button>
 
                     </div>
 
                 </div>
 
-            </section>
+                <button
+                    class="primary-button login-submit"
+                    type="submit">
+
+                    <span>Ingresar al sistema</span>
+
+                    <svg class="btn-arrow" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+
+                </button>
+
+                <div class="security-note">
+
+                    <span class="note-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+                            <path d="m9 12 2 2 4-4" />
+                        </svg>
+                    </span>
+
+                    <p><strong>SSL</strong> Conexión segura y operaciones auditadas.</p>
+
+                </div>
+
+                <!-- NUEVO: aviso adicional que aparece en la referencia -->
+                <div class="access-note">
+
+                    <span class="note-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="16" x2="12" y2="12" />
+                            <line x1="12" y1="8" x2="12.01" y2="8" />
+                        </svg>
+                    </span>
+
+                    <p>Uso exclusivo para personal autorizado.</p>
+
+                </div>
+
+                <small
+                    id="loginStatus"
+                    class="login-status"
+                    role="status"
+                    aria-live="polite">
+                </small>
+
+                <footer class="login-footer">
+
+                    <small>
+                        © 2026 Planillas · Sistema de Control Operacional · Versión 3.0
+                    </small>
+
+                </footer>
+
+            </form>
 
         </div>
 
-    </main>
+    </section>
 
-
-    <!-- =========================
-         FOOTER
-    ========================== -->
-
-    <footer>
-
-        <div class="container">
-
-            <div class="footer-line"></div>
-
-            <p>
-                Si necesitas ayuda, comunícate con nuestro
-                equipo de soporte.
-            </p>
-
-            <p>
-                <strong>
-                    Gracias por confiar en nosotros.
-                </strong>
-            </p>
-
-            <!-- COLORES ANI -->
-
-            <div class="ani-bar">
+    <div id="loginLoadingOverlay" class="login-loading-overlay is-hidden" aria-hidden="true">
+        <section class="login-loading-modal" role="status" aria-live="polite" aria-label="Validando acceso">
+            <div class="login-loading-orbit" aria-hidden="true">
                 <span></span>
                 <span></span>
                 <span></span>
+                <div class="login-loading-logo">
+                    <img src="assets/logo-zima.png" alt="Logo ZIMA">
+                </div>
             </div>
 
-        </div>
+            <div class="login-loading-copy">
+                <strong>Validando acceso</strong>
+                <p>Estamos conectando con la base online y preparando su sesión segura.</p>
+            </div>
 
-    </footer>
+            <div class="login-loading-steps" aria-hidden="true">
+                <i></i>
+                <i></i>
+                <i></i>
+            </div>
+        </section>
+    </div>
 
-</div>
+    <script src="login.js"></script>
+
+    <!-- NUEVO: script pequeño y autocontenido solo para el botón de mostrar/ocultar clave -->
+    <script>
+        (function () {
+            var toggle = document.getElementById('togglePassword');
+            var input = document.getElementById('loginPassword');
+            if (!toggle || !input) return;
+            toggle.addEventListener('click', function () {
+                var isPassword = input.getAttribute('type') === 'password';
+                input.setAttribute('type', isPassword ? 'text' : 'password');
+                toggle.classList.toggle('is-visible', isPassword);
+                toggle.setAttribute('aria-label', isPassword ? 'Ocultar clave' : 'Mostrar clave');
+            });
+        })();
+    </script>
 
 </body>
+
 </html>
+
