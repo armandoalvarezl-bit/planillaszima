@@ -1,47 +1,23 @@
-# Manejo de Dineros Transbank
+# ZIMA 360
 
-Aplicacion local basada en el archivo `Formato_Manejo_Dineros_Transbank_Peaje_Zaragoza.ods`.
+Sistema modular de gestión de efectivo y planillas de control.
 
-## Como usar
+## Estructura
 
-1. Abrir `index.html` en el navegador.
-2. Completar los datos del formato.
-3. Escribir los valores de efectivo, tula y billetes.
-4. Usar `Guardar` para enviar el registro al Excel online.
-5. Entrar a `Registros` para consultar el Excel, abrir, eliminar, exportar CSV o exportar JSON.
-6. Usar `Imprimir` para generar el formato fisico o guardarlo como PDF desde el navegador.
+- `dashboard.html` — Dashboard.
+- `planilla.html` — Formulario de planilla.
+- `guardar.html` — Confirmación de guardado.
+- `historial.html` — Historial, búsqueda, edición y eliminación.
+- `pdf.html` — Vista imprimible del documento.
+- `zima.css` — Estilos compartidos.
+- `backend/Code.gs` — API de Google Apps Script + Google Sheets.
+- `assets/logos/` — Recursos gráficos.
+- `docs/CONFIGURACION.txt` — Puesta en marcha.
 
-Los registros no se guardan en el navegador. El guardado valido es el de la hoja online.
+## Principio de separación
 
-## Acceso por peaje
+Cada pantalla es un HTML independiente. El CSS común está separado para que un cambio visual global pueda hacerse en un solo lugar; la lógica específica de cada módulo permanece dentro de su propio HTML.
 
-La app pide login antes de mostrar la planilla. Cada peaje solo consulta, guarda y elimina sus propios registros.
+## Almacenamiento en línea
 
-Al desplegar el Apps Script, el Excel crea automaticamente otra hoja llamada `USUARIOS PLANILLAS` con estos accesos iniciales:
-
-- Peaje Zaragoza: `zaragoza123`
-- Peaje Fragua: `fragua123`
-- Auditoria de operaciones: `auditoria123`
-- Administrador General: `admin123`
-- Soporte Sistema: `soporte123`
-
-Puedes cambiar las claves editando la columna `password` en esa hoja.
-
-## Guardar en hoja online
-
-1. Crear una hoja de calculo en Google Sheets.
-2. Abrir `Extensiones > Apps Script`.
-3. Pegar el contenido de `apps-script-planillas.gs`.
-4. Guardar y desplegar como `Aplicacion web`.
-5. En acceso, seleccionar quien pueda usarla segun tu necesidad.
-6. Copiar la URL que termina en `/exec`.
-7. Pegar esa URL en `API_BASE_URL` dentro de `app.js` y en `DEFAULT_SCRIPT_URL` dentro de `login.js`.
-
-El script crea o usa una pestaña llamada `BASE DE DATOS PLANILLAS` y otra llamada `USUARIOS PLANILLAS`.
-
-Si el script se pega dentro del Apps Script de la hoja actual, guarda en esa misma hoja.
-Si se usa como proyecto independiente, pega el ID de la hoja en `SPREADSHEET_ID` dentro de `apps-script-planillas.gs`.
-
-La app ya trae configurada esta URL por defecto:
-
-`https://script.google.com/macros/s/AKfycbyOzgAT7R-qjRk_Cwmyw0Q4Gcq6_C6wFJWHnNs7OziUQljjdXgV8sWmWPYgOAnDTh5ZHg/exec`
+La fuente de datos es Google Sheets mediante Google Apps Script. No se depende de `localStorage` para almacenar las planillas.
