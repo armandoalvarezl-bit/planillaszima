@@ -74,9 +74,7 @@ function getNotificationRecipients_(peaje) {
   const peajeEmail = getPeajeEmail_(peaje);
   if (peajeEmail) recipients.push(peajeEmail);
   if (SUPPORT_EMAIL) recipients.push(SUPPORT_EMAIL);
-  const allowedRecipients = filterAllowedNotificationEmails_(recipients);
-  Logger.log('getNotificationRecipients_ peaje=%s rawRecipients=%s allowedRecipients=%s', peaje, JSON.stringify(recipients), JSON.stringify(allowedRecipients));
-  return allowedRecipients;
+  return filterAllowedNotificationEmails_(recipients);
 }
 
 function doGet(e) {
@@ -747,75 +745,55 @@ function readRecords_(sheet, peaje, user) {
 }
 
 function saveRecord_(sheet, incoming, user, skipEmail = false) {
-  const now = new Date().toISOString();
-  const record = {};
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
 
-  HEADERS.forEach((header) => {
-    record[header] = incoming[header] == null ? '' : incoming[header];
-  });
+  try {
+    const now = new Date().toISOString();
+    const record = {};
 
-  record.id = record.id || Utilities.getUuid();
-  record.createdAt = record.createdAt || now;
-  record.updatedAt = now;
-  const incomingPeaje = normalizeText_(incoming.peaje || '');
-  record.peaje = canAuditRecords_(user) && incomingPeaje ? incomingPeaje : user.peaje;
+    HEADERS.forEach((header) => {
+      record[header] = incoming[header] == null ? '' : incoming[header];
+    });
 
-  const rowValues = HEADERS.map((header) => record[header]);
-  const existingRow = findRowById_(sheet, record.id);
+    record.id = record.id || Utilities.getUuid();
+    record.createdAt = record.createdAt || now;
+    record.updatedAt = now;
+    const incomingPeaje = normalizeText_(incoming.peaje || '');
+    record.peaje = canAuditRecords_(user) && incomingPeaje ? incomingPeaje : user.peaje;
 
-  if (existingRow) {
-    const existingRecord = getRecordAtRow_(sheet, existingRow);
-    if (!canAuditRecords_(user) && normalizeText_(existingRecord.peaje) !== normalizeText_(user.peaje)) {
-      throw new Error('No tiene permiso para modificar registros de otro peaje.');
+    const existingRow = findRowById_(sheet, record.id) || findRowByIdentity_(sheet, record);
+    if (existingRow) {
+      const existingRecord = getRecordAtRow_(sheet, existingRow);
+      if (!canAuditRecords_(user) && normalizeText_(existingRecord.peaje) !== normalizeText_(user.peaje)) {
+        throw new Error('No tiene permiso para modificar registros de otro peaje.');
+      }
+
+      record.id = existingRecord.id || record.id;
+      record.createdAt = existingRecord.createdAt || record.createdAt;
+      sheet.getRange(existingRow, 1, 1, HEADERS.length).setValues([HEADERS.map((header) => record[header])]);
+    } else {
+      sheet.appendRow(HEADERS.map((header) => record[header]));
     }
 
-    sheet.getRange(existingRow, 1, 1, HEADERS.length).setValues([rowValues]);
-  } else {
-    sheet.appendRow(rowValues);
-  }
-
-  const shouldSkipEmail = skipEmail === true || String(skipEmail).toLowerCase() === 'true';
-  if (!shouldSkipEmail) {
-    try {
-      sendRecordCopyEmail_(record);
-    } catch (error) {
-      Logger.log('No se pudo enviar copia por correo de la planilla: %s', error.message || error);
+    const shouldSkipEmail = skipEmail === true || String(skipEmail).toLowerCase() === 'true';
+    if (!shouldSkipEmail) {
+      try {
+        sendRecordCopyEmail_(record);
+      } catch (error) {
+        Logger.log('No se pudo enviar copia por correo de la planilla: %s', error.message || error);
+      }
     }
-  }
 
-  return record;
+    return record;
+  } finally {
+    lock.releaseLock();
+  }
 }
 
 function getPeajeEmail_(peaje) {
   if (!peaje) return null;
   return PEAJE_EMAILS[normalizeText_(peaje)] || null;
-}
-
-function sendEmailToRecipients_(recipients, subject, body, attachments = []) {
-  const normalizedRecipients = filterAllowedNotificationEmails_(Array.isArray(recipients) ? recipients : [recipients]);
-  if (!normalizedRecipients.length) {
-    Logger.log('sendEmailToRecipients_ no destinatarios válidos para subject=%s recipients=%s', subject, JSON.stringify(recipients));
-    return;
-  }
-
-  const mailOptions = {
-    to: normalizedRecipients.join(','),
-    subject: String(subject || 'Sin asunto'),
-    body: String(body || ''),
-    htmlBody: String(body || '').replace(/\n/g, '<br>')
-  };
-
-  if (Array.isArray(attachments) && attachments.length) {
-    mailOptions.attachments = attachments.filter(Boolean);
-  }
-
-  try {
-    MailApp.sendEmail(mailOptions);
-    Logger.log('sendEmailToRecipients_ enviado a %s subject=%s', normalizedRecipients.join(','), subject);
-  } catch (error) {
-    Logger.log('sendEmailToRecipients_ error al enviar correo: %s', String(error && error.message ? error.message : error));
-    throw error;
-  }
 }
 
 function sendRecordCopyEmail_(record) {
@@ -856,13 +834,6 @@ function sendCancellationEmail_(record, reason, user) {
   if (!recipients.length) {
     Logger.log('No se encontró correo para notificar anulación del peaje: %s', record.peaje);
     return;
-  }
-
-  // Log exact recipients for audit/debugging
-  try {
-    Logger.log('sendCancellationEmail_ called recordId=%s peaje=%s recipients=%s', record.id || '', record.peaje || '', (recipients || []).join(','));
-  } catch (logErr) {
-    Logger.log('sendCancellationEmail_ logger failed: %s', String(logErr && logErr.message ? logErr.message : logErr));
   }
 
   const subject = `Anulación Planilla Transbank - ${record.peaje || 'Sin Peaje'} ${record.codigoSello || ''}`.trim();
@@ -1226,11 +1197,7 @@ function deleteRecord_(sheet, id, user, reason) {
   const existingRecord = getRecordAtRow_(sheet, existingRow);
   const cancellationReason = String(reason || '').trim();
 
-  Logger.log('deleteRecord_ called userPeaje=%s userName=%s id=%s recordPeaje=%s reasonLen=%s',
-    user && user.peaje, user && user.username, id, existingRecord && existingRecord.peaje, cancellationReason.length);
-
-  // Allow short reasons (at least 1 character) to avoid blocking UI; keep server-side check minimal.
-  if (cancellationReason.length < 1) {
+  if (cancellationReason.length < 6) {
     throw new Error('Debe indicar una razón de anulación.');
   }
 
@@ -1238,11 +1205,7 @@ function deleteRecord_(sheet, id, user, reason) {
     throw new Error('No tiene permiso para eliminar registros de otro peaje.');
   }
 
-  try {
-    sendCancellationEmail_(existingRecord, cancellationReason, user);
-  } catch (emailErr) {
-    Logger.log('deleteRecord_ sendCancellationEmail_ failed: %s', String(emailErr && emailErr.message ? emailErr.message : emailErr));
-  }
+  sendCancellationEmail_(existingRecord, cancellationReason, user);
   sheet.deleteRow(existingRow);
   return true;
 }
@@ -1258,6 +1221,14 @@ function getRecordAtRow_(sheet, rowNumber) {
   return record;
 }
 
+function recordIdentityKey_(record) {
+  const fecha = recordDateKey_(record && record.fecha);
+  const peaje = normalizeText_(record && record.peaje);
+  const codigo = normalizeText_((record && record.codigoSello) || (record && record.consecutivo));
+  if (!fecha || !peaje || !codigo) return '';
+  return [fecha, peaje, codigo].join('|');
+}
+
 function findRowById_(sheet, id) {
   const lastRow = sheet.getLastRow();
   if (!id || lastRow < 2) return null;
@@ -1265,6 +1236,26 @@ function findRowById_(sheet, id) {
   const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
   for (let index = 0; index < ids.length; index += 1) {
     if (String(ids[index][0]) === String(id)) {
+      return index + 2;
+    }
+  }
+
+  return null;
+}
+
+function findRowByIdentity_(sheet, record) {
+  const key = recordIdentityKey_(record);
+  const lastRow = sheet.getLastRow();
+  if (!key || lastRow < 2) return null;
+
+  const values = sheet.getRange(2, 1, lastRow - 1, HEADERS.length).getValues();
+  for (let index = values.length - 1; index >= 0; index -= 1) {
+    const rowRecord = {};
+    HEADERS.forEach((header, columnIndex) => {
+      rowRecord[header] = values[index][columnIndex];
+    });
+
+    if (recordIdentityKey_(rowRecord) === key) {
       return index + 2;
     }
   }

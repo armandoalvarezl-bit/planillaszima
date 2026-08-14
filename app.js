@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbxzCm3a-hwrEPAz_vYxHljDwFAftI2CI0mQa4omIK2qO5rxWYTec17zjDOG2Lxu1mB2nQ/exec';
+const API_BASE_URL = 'https://script.google.com/macros/s/AKfycbyOzgAT7R-qjRk_Cwmyw0Q4Gcq6_C6wFJWHnNs7OziUQljjdXgV8sWmWPYgOAnDTh5ZHg/exec';
 const SESSION_KEY = 'transbankSession';
 const PEAJE_DEFAULTS = {
   'PEAJE ZARAGOZA': {
@@ -98,12 +98,9 @@ let homeTotalRecords;
 let homeTotalAmount;
 let homeLastRecord;
 let homeWeekRecords;
-let homeCurrentTime;
-let homeLastLogin;
 let toolbarEyebrow;
 let toolbarTitle;
 let formToolbarActions;
-let currentTimeInterval = null;
 
 let auditFiltered = [];
 
@@ -116,114 +113,15 @@ let autoSaveTimer = null;
 let inactivityTimer = null;
 let recordsShowAllMode = false;
 let passwordChangeNeedsCode = false;
+let saveInFlight = false;
+let loadInFlight = false;
+let latestLoadRequestId = 0;
+let pendingReloadAfterSave = false;
+let adminPasswordStatus;
 const AUTO_SAVE_DELAY_MS = 2000;
 const RECENT_RECORD_LIMIT = 10;
 const INACTIVITY_TIMEOUT_MS = 15 * 60 * 1000;
 const ACTIVITY_EVENTS = ['click', 'input', 'keydown', 'mousemove', 'mousedown', 'touchstart', 'scroll'];
-const OFFLINE_RECORDS_KEY = 'zima_offline_records';
-
-function getOfflineRecords() {
-  try {
-    return JSON.parse(localStorage.getItem(OFFLINE_RECORDS_KEY) || '[]');
-  } catch (error) {
-    console.warn('No se pudo leer registros offline:', error);
-    return [];
-  }
-}
-
-function getOfflineRecordsForCurrentUser() {
-  const offlineRecords = getOfflineRecords();
-  if (!currentUser) return [];
-  if (isAdminUser() || isAuditUser()) return offlineRecords;
-  return offlineRecords.filter((record) => String(record.peaje || '').trim() === String(currentUser.peaje || '').trim());
-}
-
-function saveOfflineRecords(records) {
-  try {
-    localStorage.setItem(OFFLINE_RECORDS_KEY, JSON.stringify(Array.isArray(records) ? records : []));
-  } catch (error) {
-    console.warn('No se pudo guardar registros offline:', error);
-  }
-}
-
-function addOrUpdateOfflineRecord(record, pendingSync = true) {
-  const records = getOfflineRecords();
-  const existingIndex = records.findIndex((item) => item.id === record.id);
-  const copy = {
-    ...record,
-    pendingSync: Boolean(pendingSync),
-    updatedAt: record.updatedAt || new Date().toISOString(),
-    createdAt: record.createdAt || new Date().toISOString()
-  };
-  if (existingIndex >= 0) {
-    records[existingIndex] = copy;
-  } else {
-    records.unshift(copy);
-  }
-  saveOfflineRecords(records);
-  return copy;
-}
-
-function removeOfflineRecord(recordId) {
-  const records = getOfflineRecords().filter((item) => item.id !== recordId);
-  saveOfflineRecords(records);
-}
-
-function setOfflineRecordSynced(recordId) {
-  const records = getOfflineRecords();
-  const index = records.findIndex((item) => item.id === recordId);
-  if (index >= 0) {
-    records[index].pendingSync = false;
-    saveOfflineRecords(records);
-  }
-}
-
-function mergeRecords(onlineRecords, localRecords) {
-  const merged = [...onlineRecords];
-  const onlineIds = new Set(onlineRecords.map((record) => record.id));
-  localRecords.forEach((record) => {
-    if (!onlineIds.has(record.id)) {
-      merged.push(record);
-    }
-  });
-  return merged;
-}
-
-function loadLocalRecords() {
-  const offlineRecords = getOfflineRecordsForCurrentUser();
-  if (offlineRecords.length) {
-    setRecords(offlineRecords);
-    setOnlineStatus(`Se cargaron ${offlineRecords.filter((r) => r.pendingSync).length} registro(s) guardados localmente.`);
-  }
-}
-
-async function syncPendingRecords() {
-  if (!currentUser || !navigator.onLine) return;
-
-  const pendingRecords = getOfflineRecordsForCurrentUser().filter((record) => record.pendingSync);
-  if (!pendingRecords.length) return;
-
-  setOnlineStatus(`Sincronizando ${pendingRecords.length} planilla(s) pendientes...`);
-  for (const record of pendingRecords) {
-    try {
-      const recordToSend = { ...record };
-      delete recordToSend.pendingSync;
-      const saved = await saveRecordOnline(recordToSend, true);
-      setOfflineRecordSynced(record.id);
-      const current = getRecords();
-      const index = current.findIndex((item) => item.id === saved.id);
-      if (index >= 0) {
-        current[index] = saved;
-      } else {
-        current.unshift(saved);
-      }
-      setRecords(current);
-    } catch (error) {
-      console.warn('No se pudo sincronizar planilla offline:', record.id, error);
-    }
-  }
-  setOnlineStatus('Sincronización offline completada.');
-}
 
 const currency = new Intl.NumberFormat('es-CO', {
   style: 'currency',
@@ -262,20 +160,6 @@ function formatDateTime(dateString) {
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit'
-    });
-  } catch {
-    return String(dateString) || '-';
-  }
-}
-
-function formatTime(dateString) {
-  if (!dateString) return '-';
-  try {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('es-CO', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
     });
   } catch {
     return String(dateString) || '-';
@@ -400,9 +284,40 @@ function getRecords() {
   return recordsCache;
 }
 
+function recordTimestamp(record) {
+  const value = record?.updatedAt || record?.createdAt || '';
+  const time = Date.parse(value);
+  return Number.isNaN(time) ? 0 : time;
+}
+
+function mergeRecordLists(...lists) {
+  const byKey = new Map();
+
+  lists.flat().forEach((record) => {
+    if (!record || typeof record !== 'object') return;
+
+    const id = String(record.id || '').trim();
+    const identity = recordIdentityKey(record);
+    const keys = [id ? `id:${id}` : '', identity ? `identity:${identity}` : ''].filter(Boolean);
+    if (!keys.length) return;
+
+    const existing = keys.map((key) => byKey.get(key)).find(Boolean);
+    const winner = !existing || recordTimestamp(record) >= recordTimestamp(existing) ? record : existing;
+
+    keys.forEach((key) => byKey.set(key, winner));
+  });
+
+  const seen = new Set();
+  return Array.from(byKey.values()).filter((record) => {
+    const key = String(record.id || recordIdentityKey(record));
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function setRecords(records) {
-  recordsCache = Array.isArray(records) ? records : [];
-  console.log('setRecords:', recordsCache.length, 'elementos');
+  recordsCache = mergeRecordLists(Array.isArray(records) ? records : []);
   setDefaultAuditReportMonth();
   updateHome();
   try {
@@ -475,6 +390,10 @@ function isAuditUser() {
   );
 }
 
+function canAccessAllRecords() {
+  return isAuditUser() || isAdminUser();
+}
+
 function clearAutoSaveTimer() {
   if (autoSaveTimer) {
     clearTimeout(autoSaveTimer);
@@ -508,7 +427,7 @@ function formData() {
   data.total = data.efectivo;
   data.valorLetras = valorLetras.value;
   if (currentUser) {
-    data.peaje = isAuditUser() ? (data.peaje || currentUser.peaje) : currentUser.peaje;
+    data.peaje = canAccessAllRecords() ? (data.peaje || currentUser.peaje) : currentUser.peaje;
   }
   Object.assign(data, getPeajeDefaults(data.peaje));
   data.consecutivo = data.codigoSello || data.consecutivo || '';
@@ -519,12 +438,7 @@ function recordIdentityKey(record) {
   const dateKey = recordDateKey(record.fecha);
   const peaje = String(record.peaje || '').trim().toUpperCase();
   const codigo = String(record.codigoSello || record.consecutivo || '').trim().toUpperCase();
-  
-  // Debug: log para identificar duplicados
-  if (record.id) {
-    console.log(`recordIdentityKey: fecha=${dateKey}, peaje=${peaje}, codigo=${codigo}, id=${record.id}`);
-  }
-  
+  if (!dateKey || !peaje || !codigo) return '';
   return [dateKey, peaje, codigo].join('|');
 }
 
@@ -532,15 +446,11 @@ function findExistingRecordFor(data) {
   if (!String(data.codigoSello || data.consecutivo || '').trim()) return null;
 
   const key = recordIdentityKey(data);
-  console.log('findExistingRecordFor: buscando clave:', key);
+  if (!key) return null;
   
   const matches = getRecords().filter((record) => {
     const recordKey = recordIdentityKey(record);
-    const match = recordKey === key;
-    if (match) {
-      console.log('Encontrado registro existente:', record.id, recordKey);
-    }
-    return match;
+    return recordKey === key;
   });
   
   if (matches.length > 1) {
@@ -560,11 +470,23 @@ async function withPdfExportMode(element, task) {
   }
 }
 
-function pdfOptions(filename) {
+function isTaintedCanvasError(error) {
+  return Boolean(error) && /tainted/i.test(error.message || '');
+}
+
+function pdfOptions(filename, { ignoreLogos = false } = {}) {
   const options = {
     margin: [8, 8, 8, 8],
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, scrollX: 0, scrollY: 0 },
+    html2canvas: {
+      scale: 2,
+      scrollX: 0,
+      scrollY: 0,
+      useCORS: true,
+      ...(ignoreLogos
+        ? { ignoreElements: (el) => el.tagName === 'IMG' && /logo-(zima|ani)\.png/i.test(el.getAttribute('src') || '') }
+        : {})
+    },
     jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' },
     pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
   };
@@ -715,8 +637,8 @@ function showReasonDialog({ title, message, confirmText = 'Confirmar', cancelTex
     overlay.querySelector('.confirm-cancel').addEventListener('click', () => close(null));
     overlay.querySelector('.confirm-accept').addEventListener('click', () => {
       const reason = textarea.value.trim();
-      if (reason.length < 1) {
-        error.textContent = 'Ingrese una razon antes de anular.';
+      if (reason.length < 6) {
+        error.textContent = 'Ingrese una razon clara antes de anular.';
         textarea.focus();
         return;
       }
@@ -742,9 +664,17 @@ function closePdfPreview() {
     delete pdfIframe.dataset.objectUrl;
   }
 
+  document.querySelectorAll('#openPdfLink, #downloadPdfLink').forEach((link) => {
+    link.removeAttribute('href');
+  });
   pdfIframe.removeAttribute('src');
   pdfModal.classList.add('is-hidden');
   pdfModal.setAttribute('aria-hidden', 'true');
+}
+
+function pdfFilenameForRecord(record) {
+  const name = `Planilla_${record?.peaje || 'SinPeaje'}_${record?.codigoSello || record?.consecutivo || 'SinCodigo'}_${record?.fecha || today()}.pdf`;
+  return name.replace(/[\\/:*?"<>|]+/g, '_');
 }
 
 async function withRenderablePaper(task) {
@@ -777,26 +707,79 @@ async function withRenderablePaper(task) {
 
 async function showPdfPreview(record) {
   const element = document.querySelector('.paper');
-  if (!element || !pdfModal || !pdfIframe) return;
+  if (!element) {
+    throw new Error('No se encontro el formato de la planilla para generar el PDF.');
+  }
+  if (!pdfModal || !pdfIframe) {
+    throw new Error('No se encontro el visor PDF en la pantalla.');
+  }
+  if (typeof html2pdf !== 'function') {
+    throw new Error('El generador PDF no esta disponible. Revise la conexion a internet y actualice la pagina.');
+  }
 
   fillForm(record);
 
-  const pdfBlob = await withRenderablePaper(() => {
-    return withPdfExportMode(element, async () => {
-      const worker = html2pdf().set(pdfOptions()).from(element);
-      return worker.outputPdf('blob');
-    });
-  });
+  const pdfBlob = await generateRecordPdfBlob(element);
   const objectUrl = URL.createObjectURL(pdfBlob);
 
   if (pdfIframe.dataset.objectUrl) {
     URL.revokeObjectURL(pdfIframe.dataset.objectUrl);
   }
 
+  const filename = pdfFilenameForRecord(record);
+  const openLink = document.querySelector('#openPdfLink');
+  const downloadLink = document.querySelector('#downloadPdfLink');
+  if (openLink) openLink.href = objectUrl;
+  if (downloadLink) {
+    downloadLink.href = objectUrl;
+    downloadLink.download = filename;
+  }
+
   pdfIframe.dataset.objectUrl = objectUrl;
   pdfIframe.src = objectUrl;
   pdfModal.classList.remove('is-hidden');
   pdfModal.setAttribute('aria-hidden', 'false');
+}
+
+async function generateRecordPdfBlob(element = document.querySelector('.paper')) {
+  if (!element) {
+    throw new Error('No se encontro el formato de la planilla para generar el PDF.');
+  }
+  if (typeof html2pdf !== 'function') {
+    throw new Error('El generador PDF no esta disponible. Revise la conexion a internet y actualice la pagina.');
+  }
+
+  return withRenderablePaper(() => {
+    return withPdfExportMode(element, async () => {
+      try {
+        const worker = html2pdf().set(pdfOptions()).from(element);
+        return await worker.outputPdf('blob');
+      } catch (error) {
+        if (!isTaintedCanvasError(error)) throw error;
+        console.warn('El PDF no pudo incluir los logos por restricciones de seguridad del navegador (canvas tainted). Se genera el PDF sin esos logos.');
+        const worker = html2pdf().set(pdfOptions(null, { ignoreLogos: true })).from(element);
+        return await worker.outputPdf('blob');
+      }
+    });
+  });
+}
+
+async function safeShowPdfPreview(record) {
+  showLoading({
+    title: 'Generando PDF',
+    message: 'Estamos preparando la vista previa del documento.',
+    overlayId: 'pdfDownloadOverlay'
+  });
+
+  try {
+    await showPdfPreview(record);
+    setOnlineStatus('Vista previa PDF lista.');
+  } catch (error) {
+    console.warn('No se pudo abrir la vista previa PDF:', error);
+    setOnlineStatus(`No se pudo abrir la vista previa del PDF. Detalle: ${error.message}`);
+  } finally {
+    hideLoading('pdfDownloadOverlay');
+  }
 }
 
 function clearForm() {
@@ -821,6 +804,11 @@ async function saveRecord(options = {}) {
 
   clearAutoSaveTimer();
 
+  if (saveInFlight) {
+    setOnlineStatus('Ya hay un guardado en curso. Espere a que termine antes de intentar nuevamente.');
+    return null;
+  }
+
   if (!currentUser) {
     setOnlineStatus('Debe iniciar sesion.');
     return null;
@@ -843,21 +831,15 @@ async function saveRecord(options = {}) {
   };
 
   showLoading();
+  saveInFlight = true;
+  const wasSaveButtonDisabled = Boolean(saveButton?.disabled);
+  if (saveButton) saveButton.disabled = true;
   currentStatus.textContent = activeRecordId ? 'Actualizando...' : 'Guardando...';
 
   try {
-    let saved = null;
-    if (navigator.onLine) {
-      saved = await saveRecordOnline(record, true);
-      setOfflineRecordSynced(record.id);
-    } else {
-      saved = addOrUpdateOfflineRecord(record, true);
-      setOnlineStatus('Sin conexion. La planilla se guardo localmente y se sincronizara cuando vuelva internet.');
-    }
-
-    const records = getRecords();
+    const saved = await saveRecordOnline(record, true);
+    const records = [...getRecords()];
     const index = records.findIndex((item) => item.id === saved.id);
-    const didSaveOffline = Boolean(!navigator.onLine || saved.pendingSync);
 
     if (index >= 0) records[index] = saved;
     else records.unshift(saved);
@@ -869,7 +851,7 @@ async function saveRecord(options = {}) {
 
     hideLoading();
 
-    if (promptEmail && !didSaveOffline) {
+    if (promptEmail) {
       const sendCopy = await showConfirmationDialog({
         title: 'Enviar copia por correo',
         message: 'La planilla ya fue guardada. Desea enviar una copia en PDF por correo?',
@@ -916,11 +898,15 @@ async function saveRecord(options = {}) {
     hideLoading();
     currentStatus.textContent = 'Error de guardado';
     updateSaveButtonLabel();
-    const offlineSaved = addOrUpdateOfflineRecord(record, true);
-    setRecords([offlineSaved, ...getRecords().filter((item) => item.id !== offlineSaved.id)]);
-    currentStatus.textContent = 'Guardado localmente';
-    setOnlineStatus(`No se pudo guardar la planilla online. Se guardo localmente y se sincronizara cuando vuelva internet. ${error.message}`);
-    return offlineSaved;
+    setOnlineStatus(`No se pudo guardar la planilla online. Verifique conexión y vuelva a intentarlo. ${error.message}`);
+    return null;
+  } finally {
+    saveInFlight = false;
+    if (saveButton) saveButton.disabled = wasSaveButtonDisabled;
+    if (pendingReloadAfterSave) {
+      pendingReloadAfterSave = false;
+      loadOnlineRecords();
+    }
   }
 }
 
@@ -981,12 +967,24 @@ function downloadRecordPdf(record) {
     return;
   }
 
-  const filename = `Planilla_${record.peaje}_${record.codigoSello}_${record.fecha}.pdf`;
+  const filename = pdfFilenameForRecord(record);
 
   setTimeout(async () => {
-    fillForm(record);
-    await withRenderablePaper(() => withPdfExportMode(element, () => html2pdf().set(pdfOptions(filename)).from(element).save()));
-    setOnlineStatus(`PDF descargado: ${filename}`);
+    try {
+      fillForm(record);
+      await withRenderablePaper(() => withPdfExportMode(element, async () => {
+        try {
+          await html2pdf().set(pdfOptions(filename)).from(element).save();
+        } catch (error) {
+          if (!isTaintedCanvasError(error)) throw error;
+          console.warn('El PDF no pudo incluir los logos por restricciones de seguridad del navegador (canvas tainted). Se genera el PDF sin esos logos.');
+          await html2pdf().set(pdfOptions(filename, { ignoreLogos: true })).from(element).save();
+        }
+      }));
+      setOnlineStatus(`PDF descargado: ${filename}`);
+    } catch (error) {
+      setOnlineStatus(`No se pudo descargar el PDF. Detalle: ${error.message}`);
+    }
   }, 300);
 }
 
@@ -1020,7 +1018,7 @@ function switchView(viewName) {
 }
 
 function updateHome() {
-  if (!homeWelcome || !homePeaje || !homeTotalRecords || !homeTotalAmount || !homeLastRecord || !homeWeekRecords || !homeCurrentTime || !homeLastLogin) {
+  if (!homeWelcome || !homePeaje || !homeTotalRecords || !homeTotalAmount || !homeLastRecord || !homeWeekRecords) {
     return;
   }
 
@@ -1032,7 +1030,6 @@ function updateHome() {
   const latest = records[0];
   const weekRecords = records.filter((record) => recordDateKey(record.fecha) >= sevenDaysAgo).length;
   const totalAmount = records.reduce((sum, record) => sum + onlyDigits(record.total), 0);
-  const loginTime = currentUser?.loginAt || currentUser?.lastLogin || new Date().toISOString();
 
   homeWelcome.textContent = `Bienvenido, ${userName}`;
   homePeaje.textContent = `Sesion activa para ${peajeName}. Desde aqui puedes crear planillas, consultar registros y mantener el control diario.`;
@@ -1040,21 +1037,6 @@ function updateHome() {
   homeTotalAmount.textContent = formatMoney(totalAmount);
   homeLastRecord.textContent = latest ? formatDate(latest.fecha) : 'Sin datos';
   homeWeekRecords.textContent = weekRecords;
-  homeCurrentTime.textContent = formatTime(today_.toISOString());
-  homeLastLogin.textContent = formatDateTime(loginTime);
-}
-
-function updateCurrentTimeTicker() {
-  if (!homeCurrentTime) return;
-  if (currentTimeInterval) {
-    window.clearInterval(currentTimeInterval);
-  }
-  homeCurrentTime.textContent = formatTime(new Date().toISOString());
-  currentTimeInterval = window.setInterval(() => {
-    if (homeCurrentTime) {
-      homeCurrentTime.textContent = formatTime(new Date().toISOString());
-    }
-  }, 1000);
 }
 
 function updateToolbar(viewName) {
@@ -1117,7 +1099,7 @@ async function startSession(user) {
   resetInactivityTimer();
   appShell.classList.remove('is-hidden');
   sessionPeaje.textContent = currentUser.nombre;
-  const canAuditPanel = isAuditUser() || isAdminUser();
+  const canAuditPanel = canAccessAllRecords();
   form.elements.peaje.disabled = !canAuditPanel;
   setAutoFilledFieldsLocked(true);
   
@@ -1131,7 +1113,6 @@ async function startSession(user) {
   if (isAdminUser() && alertsViewButton) {
     alertsViewButton.style.display = 'block';
   }
-  loadLocalRecords();
   const selfChangePasswordButton = document.querySelector('#selfChangePasswordButton');
   if (selfChangePasswordButton) {
     selfChangePasswordButton.hidden = isAdminUser();
@@ -1146,18 +1127,10 @@ async function startSession(user) {
   updateDashboard();
   switchView('home');
   showWelcomeModal();
-  updateCurrentTimeTicker();
-  if (navigator.onLine) {
-    await syncPendingRecords();
-  }
   loadOnlineRecords();
 }
 
 function clearSession() {
-  if (currentTimeInterval) {
-    window.clearInterval(currentTimeInterval);
-    currentTimeInterval = null;
-  }
   if (inactivityTimer) {
     window.clearTimeout(inactivityTimer);
     inactivityTimer = null;
@@ -1287,7 +1260,7 @@ function renderRecords() {
         <output class="record-total">${formatMoney(record.total)}</output>
         <div class="record-actions">
           <button class="secondary-button load-record" type="button">Editar</button>
-          <button class="secondary-button download-pdf" type="button" title="Ver PDF">PDF</button>
+          <button class="secondary-button download-pdf" type="button" title="Ver PDF">Ver PDF</button>
           <button class="danger-button delete-record" type="button">Anular</button>
         </div>
       `;
@@ -1297,7 +1270,7 @@ function renderRecords() {
         switchView('form');
       });
       article.querySelector('.download-pdf').addEventListener('click', () => {
-        showPdfPreview(record);
+        safeShowPdfPreview(record);
       });
       article.querySelector('.delete-record').addEventListener('click', () => deleteRecord(record.id));
       fragment.append(article);
@@ -1483,11 +1456,17 @@ async function deleteRecordOnline(id, reason) {
   }
 }
 
-async function loadOnlineRecords() {
+function loadOnlineRecords() {
   if (!currentUser) return;
-  if (!navigator.onLine) {
-    setOnlineStatus('No hay conexión de red. Cargando registros guardados localmente.');
-    loadLocalRecords();
+
+  if (saveInFlight) {
+    pendingReloadAfterSave = true;
+    setOnlineStatus('Hay un guardado en curso. La consulta se actualizara al finalizar.');
+    return;
+  }
+
+  if (loadInFlight) {
+    setOnlineStatus('Ya se estan consultando los registros online...');
     return;
   }
 
@@ -1498,42 +1477,46 @@ async function loadOnlineRecords() {
   }
 
   setOnlineStatus('Consultando registros en la base online...');
+  loadInFlight = true;
+  const requestId = ++latestLoadRequestId;
 
+  requestOnlineRecords(url)
+    .then((payload) => {
+      if (requestId !== latestLoadRequestId) return;
+      if (!payload || !payload.ok) {
+        setOnlineStatus(payload && payload.error ? payload.error : 'No fue posible consultar los registros online.');
+        return;
+      }
+
+      const onlineRecords = Array.isArray(payload.records) ? payload.records : [];
+      setRecords(onlineRecords);
+      setOnlineStatus(`Consulta completada. Se encontraron ${onlineRecords.length} registros online.`);
+      notifyMissingRecordsIfNeeded();
+    })
+    .catch((error) => {
+      if (requestId !== latestLoadRequestId) return;
+      setOnlineStatus(`No fue posible conectar con la base online. Intente nuevamente cuando la conexión esté disponible. Detalle: ${error.message}`);
+    })
+    .finally(() => {
+      if (requestId === latestLoadRequestId) {
+        loadInFlight = false;
+      }
+    });
+}
+
+async function requestOnlineRecords(url) {
   const params = {
     action: 'list',
     peaje: currentUser.peaje,
     password: currentUser.password
   };
 
-  const timeouts = [8000, 15000, 30000];
-  let lastError = null;
-  for (let attempt = 0; attempt < timeouts.length; attempt++) {
-    try {
-      const payload = await requestJsonp(url, params, timeouts[attempt]);
-      if (!payload || !payload.ok) {
-        lastError = new Error(payload && payload.error ? payload.error : 'Respuesta invalida del servicio online');
-        // intentar siguiente
-        await new Promise((r) => setTimeout(r, 700));
-        continue;
-      }
-
-      const onlineRecords = Array.isArray(payload.records) ? payload.records : [];
-      const merged = mergeRecords(onlineRecords, getOfflineRecordsForCurrentUser());
-      setRecords(merged);
-      setOnlineStatus(`Consulta completada. Se encontraron ${onlineRecords.length} registros online.`);
-      notifyMissingRecordsIfNeeded();
-      return;
-    } catch (error) {
-      console.warn(`Intento ${attempt + 1} fallo:`, error);
-      lastError = error;
-      // esperar un poco antes del siguiente intento
-      await new Promise((r) => setTimeout(r, 800 + attempt * 500));
-    }
+  try {
+    return await requestJsonp(url, params);
+  } catch (jsonpError) {
+    console.warn('Fallo consulta por JSONP, reintentando por GET:', jsonpError);
+    return requestGetJson(url, params);
   }
-
-  // Si llegamos aqui, todos los intentos fallaron
-  loadLocalRecords();
-  setOnlineStatus(`No fue posible conectar con la base online. Se cargaron registros locales si existen. Detalle: ${lastError && lastError.message ? lastError.message : 'Sin respuesta'}`);
 }
 
 function notifyMissingRecordsIfNeeded() {
@@ -1585,12 +1568,27 @@ async function requestPostJson(url, body) {
   return payload;
 }
 
-function requestJsonp(url, params, timeoutMs = 20000) {
+async function requestGetJson(url, params) {
+  const separator = url.includes('?') ? '&' : '?';
+  const query = new URLSearchParams(params);
+  const response = await fetch(`${url}${separator}${query.toString()}`, {
+    method: 'GET',
+    mode: 'cors'
+  });
+
+  if (!response.ok) {
+    throw new Error(`No se pudo conectar con Apps Script (HTTP ${response.status}).`);
+  }
+
+  return response.json();
+}
+
+function requestJsonp(url, params, timeoutMs = 45000) {
   return new Promise((resolve, reject) => {
     const callbackName = `onlinePlanillas_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const script = document.createElement('script');
     const separator = url.includes('?') ? '&' : '?';
-    const query = new URLSearchParams({ ...params, callback: callbackName });
+    const query = new URLSearchParams({ ...params, callback: callbackName, _: Date.now() });
     let timeoutId;
 
     const cleanup = () => {
@@ -1604,45 +1602,9 @@ function requestJsonp(url, params, timeoutMs = 20000) {
       resolve(payload);
     };
 
-    script.onerror = async () => {
+    script.onerror = () => {
       cleanup();
-      const src = `${url}${separator}${query.toString()}`;
-      console.warn('JSONP script error for', src);
-      // Intentar diagnostico con fetch para obtener mas detalle si es posible
-      try {
-        const resp = await fetch(src, { method: 'GET' });
-        const text = await resp.text();
-        console.warn('Fetch diagnostic response:', resp.status, text.slice(0, 300));
-
-        // Intentar extraer payload JSONP dentro del body si existe
-        const marker = `${callbackName}(`;
-        const idx = text.indexOf(marker);
-        if (idx !== -1) {
-          try {
-            const start = text.indexOf('(', idx);
-            const end = text.lastIndexOf(')');
-            const jsonText = text.substring(start + 1, end);
-            const payload = JSON.parse(jsonText);
-            console.info('Parsed JSONP payload from fetched body, using fallback.');
-            resolve(payload);
-            return;
-          } catch (pex) {
-            console.warn('Fallback parse failed:', pex);
-          }
-        }
-
-        // Mostrar diagnostico corto en la UI si existe
-        const box = document.querySelector('#jsErrorBox') || document.querySelector('#onlineStatus');
-        const msg = `No se pudo cargar Apps Script (status: ${resp.status}). URL: ${src}`;
-        if (box) {
-          const short = text.replace(/\s+/g, ' ').slice(0, 400);
-          box.textContent = `${msg} Respuesta: ${short}`;
-        }
-
-        reject(new Error(msg));
-      } catch (ferr) {
-        reject(new Error(`No se pudo cargar Apps Script. URL: ${src}. Detalle fetch: ${ferr && ferr.message ? ferr.message : String(ferr)}`));
-      }
+      reject(new Error('No se pudo cargar Apps Script'));
     };
 
     timeoutId = window.setTimeout(() => {
@@ -1800,7 +1762,7 @@ function renderAuditRecords() {
     node.querySelector('.record-total').textContent = formatMoney(record.total);
     node.querySelector('.load-record').textContent = 'Ver PDF';
     node.querySelector('.load-record').addEventListener('click', () => {
-      showPdfPreview(record);
+      safeShowPdfPreview(record);
     });
     node.querySelector('.delete-record').textContent = 'Anular';
     node.querySelector('.delete-record').addEventListener('click', () => deleteRecord(record.id));
@@ -1996,17 +1958,30 @@ async function saveMonthlyAuditReportPdf(html, monthKey) {
   try {
     await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const report = container.querySelector('.report') || container;
-    await html2pdf()
-      .set({
-        filename: `RECAUDOAUDITADO_${monthKey}.pdf`,
-        margin: [10, 10, 10, 10],
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, scrollX: 0, scrollY: 0 },
-        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      })
-      .from(report)
-      .save();
+    const buildOptions = (ignoreLogos) => ({
+      filename: `RECAUDOAUDITADO_${monthKey}.pdf`,
+      margin: [10, 10, 10, 10],
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        scrollX: 0,
+        scrollY: 0,
+        useCORS: true,
+        ...(ignoreLogos
+          ? { ignoreElements: (el) => el.tagName === 'IMG' && /logo-(zima|ani)\.png/i.test(el.getAttribute('src') || '') }
+          : {})
+      },
+      jsPDF: { orientation: 'portrait', unit: 'mm', format: 'letter' },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+    });
+
+    try {
+      await html2pdf().set(buildOptions(false)).from(report).save();
+    } catch (error) {
+      if (!isTaintedCanvasError(error)) throw error;
+      console.warn('El PDF no pudo incluir los logos por restricciones de seguridad del navegador (canvas tainted). Se genera el PDF sin esos logos.');
+      await html2pdf().set(buildOptions(true)).from(report).save();
+    }
   } finally {
     container.remove();
   }
@@ -2651,8 +2626,6 @@ document.addEventListener('DOMContentLoaded', function() {
   homeTotalAmount = document.querySelector('#homeTotalAmount');
   homeLastRecord = document.querySelector('#homeLastRecord');
   homeWeekRecords = document.querySelector('#homeWeekRecords');
-  homeCurrentTime = document.querySelector('#homeCurrentTime');
-  homeLastLogin = document.querySelector('#homeLastLogin');
   toolbarEyebrow = document.querySelector('#toolbarEyebrow');
   toolbarTitle = document.querySelector('#toolbarTitle');
   formToolbarActions = document.querySelector('#formToolbarActions');
@@ -2766,16 +2739,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (dashboardRefresh) {
     dashboardRefresh.addEventListener('click', loadOnlineRecords);
   }
-
-  window.addEventListener('online', () => {
-    setOnlineStatus('Conexion restablecida. Intentando sincronizar registros pendientes...');
-    syncPendingRecords();
-    loadOnlineRecords();
-  });
-
-  window.addEventListener('offline', () => {
-    setOnlineStatus('Conexion perdida. Las planillas se guardaran localmente hasta reconexion.');
-  });
 
   syncCodigoSelloConsecutivo();
 

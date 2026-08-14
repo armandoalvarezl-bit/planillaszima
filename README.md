@@ -21,6 +21,9 @@ Al desplegar el Apps Script, el Excel crea automaticamente otra hoja llamada `US
 
 - Peaje Zaragoza: `zaragoza123`
 - Peaje Fragua: `fragua123`
+- Auditoria de operaciones: `auditoria123`
+- Administrador General: `admin123`
+- Soporte Sistema: `soporte123`
 
 Puedes cambiar las claves editando la columna `password` en esa hoja.
 
@@ -32,7 +35,7 @@ Puedes cambiar las claves editando la columna `password` en esa hoja.
 4. Guardar y desplegar como `Aplicacion web`.
 5. En acceso, seleccionar quien pueda usarla segun tu necesidad.
 6. Copiar la URL que termina en `/exec`.
-7. Pegar esa URL en `DEFAULT_SCRIPT_URL` dentro de `app.js`.
+7. Pegar esa URL en `API_BASE_URL` dentro de `app.js` y en `DEFAULT_SCRIPT_URL` dentro de `login.js`.
 
 El script crea o usa una pestaña llamada `BASE DE DATOS PLANILLAS` y otra llamada `USUARIOS PLANILLAS`.
 
@@ -41,4 +44,4 @@ Si se usa como proyecto independiente, pega el ID de la hoja en `SPREADSHEET_ID`
 
 La app ya trae configurada esta URL por defecto:
 
-`https://script.google.com/macros/s/AKfycbzTKLKpxU7oLYoqT9sIt7vjIxVkq6saEQeykwJcXboa8nHJUbw_iAe2z67hfzdcqZ4lnQ/exec`
+`https://script.google.com/macros/s/AKfycbyOzgAT7R-qjRk_Cwmyw0Q4Gcq6_C6wFJWHnNs7OziUQljjdXgV8sWmWPYgOAnDTh5ZHg/exec`

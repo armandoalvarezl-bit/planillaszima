@@ -231,7 +231,7 @@ body:has(#homeView.active) #printRecord{background:#fff!important;color:#173747!
               <p class="dashboard-eyebrow">PANEL DE CONTROL</p>
               <h3>Gestión y seguimiento de entregas de efectivo</h3>
               <p id="welcomeMessage" class="welcome-message" aria-live="polite"></p>
-              <div class="dashboard-location"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.8 4L21 14"/><path d="M21 19v-5h-5"/></svg> <span>Peaje Zaragoza &nbsp;•&nbsp; Sincronizado hace 2 minutos</span></div>
+              <div class="dashboard-location"><svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.8 4L21 14"/><path d="M21 19v-5h-5"/></svg> <span id="homeLocationText">Sesión activa</span></div>
             </div>
             <div class="dashboard-actions">
               <button id="dashboardRefresh" class="secondary-button dashboard-refresh" type="button"><svg class="icon-svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.8-4L3 10"/><path d="M3 5v5h5"/><path d="M4 13a8 8 0 0 0 14.8 4L21 14"/><path d="M21 19v-5h-5"/></svg> <span>Actualizar datos</span></button>
@@ -257,7 +257,7 @@ body:has(#homeView.active) #printRecord{background:#fff!important;color:#173747!
             </article>
             <article class="status-card">
               <div class="status-icon"><svg class="icon-svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 21a7 7 0 0 1 14 0"/></svg></div>
-              <div><span>USUARIO ACTUAL</span><strong>Supervisor</strong><small>Administrador</small></div>
+              <div><span>USUARIO ACTUAL</span><strong id="homeCurrentUserName">Usuario</strong><small id="homeCurrentUserRole">Operador</small></div>
             </article>
           </div>
 
