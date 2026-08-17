@@ -1,23 +1,690 @@
-# ZIMA 360
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-Sistema modular de gestión de efectivo y planillas de control.
+    <title>Planillas ZIMA - Mantenimiento</title>
 
-## Estructura
+    <meta name="description"
+          content="La plataforma de Planillas de Transportadora ZIMA se encuentra temporalmente en mantenimiento.">
 
-- `dashboard.html` — Dashboard.
-- `planilla.html` — Formulario de planilla.
-- `guardar.html` — Confirmación de guardado.
-- `historial.html` — Historial, búsqueda, edición y eliminación.
-- `pdf.html` — Vista imprimible del documento.
-- `zima.css` — Estilos compartidos.
-- `backend/Code.gs` — API de Google Apps Script + Google Sheets.
-- `assets/logos/` — Recursos gráficos.
-- `docs/CONFIGURACION.txt` — Puesta en marcha.
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-## Principio de separación
+        :root {
+            --azul-zima: #123b78;
+            --azul-claro: #eaf3fc;
+            --naranja-ani: #dc6b35;
+            --amarillo: #ffc400;
+            --azul-ani: #123c82;
+            --rojo-ani: #d90b2f;
+            --texto: #183354;
+            --gris: #64748b;
+            --blanco: #ffffff;
+        }
 
-Cada pantalla es un HTML independiente. El CSS común está separado para que un cambio visual global pueda hacerse en un solo lugar; la lógica específica de cada módulo permanece dentro de su propio HTML.
+        body {
+            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 90% 20%,
+                    #eaf4ff 0%,
+                    #f7fbff 28%,
+                    #ffffff 60%
+                );
+            color: var(--texto);
+            overflow-x: hidden;
+        }
 
-## Almacenamiento en línea
+        /* =========================
+           CONTENEDOR PRINCIPAL
+        ========================== */
 
-La fuente de datos es Google Sheets mediante Google Apps Script. No se depende de `localStorage` para almacenar las planillas.
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .container {
+            width: min(1180px, 92%);
+            margin: auto;
+        }
+
+        /* =========================
+           HEADER
+        ========================== */
+
+        header {
+            padding: 35px 0 20px;
+        }
+
+        .logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .logo-ani {
+            width: 135px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .logo-zima {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .separator {
+            width: 1px;
+            height: 80px;
+            background: #cbd5e1;
+        }
+
+        /* =========================
+           CONTENIDO
+        ========================== */
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 50px;
+            padding: 40px 0 70px;
+        }
+
+        /* =========================
+           TEXTO
+        ========================== */
+
+        .content h1 {
+            font-size: clamp(42px, 5vw, 68px);
+            line-height: 1.05;
+            font-weight: 800;
+            color: var(--azul-zima);
+            margin-bottom: 20px;
+        }
+
+        .line {
+            width: 100px;
+            height: 5px;
+            background: var(--naranja-ani);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .content p {
+            font-size: 19px;
+            line-height: 1.7;
+            color: #52657d;
+            max-width: 590px;
+        }
+
+        /* =========================
+           TARJETA
+        ========================== */
+
+        .notice {
+            margin-top: 35px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(234, 243, 252, 0.9);
+            border: 1px solid #dceaf7;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 560px;
+        }
+
+        .clock {
+            min-width: 65px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: var(--azul-zima);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .clock::before {
+            content: "";
+            width: 30px;
+            height: 30px;
+            border: 3px solid white;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .clock::after {
+            content: "";
+            position: absolute;
+            width: 3px;
+            height: 12px;
+            background: white;
+            top: 19px;
+            border-radius: 5px;
+            transform-origin: bottom;
+            transform: rotate(0deg);
+        }
+
+        .notice h2 {
+            color: var(--azul-zima);
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .notice p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #53677f;
+        }
+
+        /* =========================
+           ILUSTRACIÓN
+        ========================== */
+
+        .illustration {
+            position: relative;
+            min-height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-bg {
+            position: absolute;
+            width: 460px;
+            height: 460px;
+            border-radius: 50%;
+            background: linear-gradient(
+                135deg,
+                #eef7ff,
+                #dbeefe
+            );
+            z-index: 0;
+        }
+
+        .monitor {
+            position: relative;
+            z-index: 2;
+            width: 390px;
+            height: 270px;
+            background: white;
+            border: 14px solid #315e8e;
+            border-radius: 18px;
+            box-shadow:
+                0 25px 60px rgba(18, 59, 120, .18);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(
+                145deg,
+                #f8fcff,
+                #eef6fd
+            );
+        }
+
+        .gear {
+            font-size: 90px;
+            color: var(--azul-zima);
+            line-height: 1;
+            animation: rotate 8s linear infinite;
+        }
+
+        .maintenance-text {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--azul-zima);
+        }
+
+        .stand {
+            position: absolute;
+            z-index: 1;
+            bottom: 35px;
+            width: 130px;
+            height: 65px;
+            background: #315e8e;
+            clip-path: polygon(
+                20% 0,
+                80% 0,
+                100% 100%,
+                0 100%
+            );
+        }
+
+        /* =========================
+           CONO
+        ========================== */
+
+        .cone {
+            position: absolute;
+            right: 5%;
+            bottom: 35px;
+            z-index: 4;
+            width: 75px;
+            height: 115px;
+        }
+
+        .cone-top {
+            width: 0;
+            height: 0;
+            border-left: 32px solid transparent;
+            border-right: 32px solid transparent;
+            border-bottom: 85px solid #f28b22;
+            margin: auto;
+        }
+
+        .cone-stripe {
+            position: absolute;
+            top: 45px;
+            left: 12px;
+            width: 51px;
+            height: 14px;
+            background: white;
+            transform: rotate(-8deg);
+        }
+
+        .cone-base {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 75px;
+            height: 20px;
+            border-radius: 7px;
+            background: #f28b22;
+        }
+
+        /* =========================
+           CASCO
+        ========================== */
+
+        .helmet {
+            position: absolute;
+            left: 5%;
+            bottom: 25px;
+            z-index: 4;
+            width: 125px;
+            height: 58px;
+            background: #ffc928;
+            border-radius: 70px 70px 25px 25px;
+            box-shadow: 0 8px 15px rgba(0,0,0,.12);
+        }
+
+        .helmet::after {
+            content: "";
+            position: absolute;
+            bottom: -7px;
+            left: -12px;
+            width: 150px;
+            height: 15px;
+            border-radius: 20px;
+            background: #f0b500;
+        }
+
+        /* =========================
+           BARRERA
+        ========================== */
+
+        .barrier {
+            position: absolute;
+            bottom: 38px;
+            left: 0;
+            width: 190px;
+            height: 55px;
+            background:
+                repeating-linear-gradient(
+                    -45deg,
+                    var(--azul-zima) 0,
+                    var(--azul-zima) 20px,
+                    #ffc928 20px,
+                    #ffc928 40px
+                );
+            border-radius: 7px;
+            z-index: 5;
+            box-shadow: 0 8px 20px rgba(0,0,0,.12);
+        }
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        footer {
+            padding: 25px 0 30px;
+            text-align: center;
+        }
+
+        .footer-line {
+            width: 80%;
+            height: 1px;
+            background: #cbd5e1;
+            margin: 0 auto 20px;
+        }
+
+        footer p {
+            color: #5c7089;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        footer strong {
+            color: var(--azul-zima);
+        }
+
+        /* =========================
+           BARRA ANI
+        ========================== */
+
+        .ani-bar {
+            display: flex;
+            width: 110px;
+            height: 7px;
+            margin: 22px auto 0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .ani-bar span:nth-child(1) {
+            flex: 1;
+            background: var(--amarillo);
+        }
+
+        .ani-bar span:nth-child(2) {
+            flex: 1;
+            background: var(--azul-ani);
+        }
+
+        .ani-bar span:nth-child(3) {
+            flex: 1;
+            background: var(--rojo-ani);
+        }
+
+        /* =========================
+           ANIMACIONES
+        ========================== */
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media (max-width: 900px) {
+
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .content p {
+                margin: auto;
+            }
+
+            .line {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .notice {
+                margin-left: auto;
+                margin-right: auto;
+                text-align: left;
+            }
+
+            .illustration {
+                min-height: 400px;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            header {
+                padding-top: 25px;
+            }
+
+            .logos {
+                gap: 20px;
+            }
+
+            .logo-ani {
+                width: 95px;
+            }
+
+            .logo-zima {
+                width: 125px;
+            }
+
+            .separator {
+                height: 55px;
+            }
+
+            .hero {
+                padding-top: 20px;
+            }
+
+            .content h1 {
+                font-size: 42px;
+            }
+
+            .content p {
+                font-size: 17px;
+            }
+
+            .notice {
+                padding: 18px;
+            }
+
+            .illustration {
+                min-height: 320px;
+                transform: scale(.75);
+                margin: -30px 0;
+            }
+
+            footer {
+                padding-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header>
+        <div class="container">
+
+            <div class="logos">
+
+                <!-- LOGO ANI -->
+                <img
+                    src="img/logo-ani.png"
+                    alt="ANI"
+                    class="logo-ani"
+                >
+
+                <div class="separator"></div>
+
+                <!-- LOGO ZIMA -->
+                <img
+                    src="img/logo-zima.png"
+                    alt="ZIMA Seguridad Ltda."
+                    class="logo-zima"
+                >
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- =========================
+         CONTENIDO
+    ========================== -->
+
+    <main>
+
+        <div class="container">
+
+            <section class="hero">
+
+                <!-- TEXTO -->
+
+                <div class="content">
+
+                    <h1>
+                        ¡Estamos en
+                        mantenimiento!
+                    </h1>
+
+                    <div class="line"></div>
+
+                    <p>
+                        Estamos realizando mejoras en la página
+                        de <strong>Planillas de Transportadora ZIMA</strong>
+                        para brindarte una experiencia más rápida,
+                        segura y eficiente.
+                    </p>
+
+
+                    <div class="notice">
+
+                        <div class="clock"></div>
+
+                        <div>
+                            <h2>
+                                Volveremos pronto
+                            </h2>
+
+                            <p>
+                                Agradecemos tu comprensión.
+                                Intenta nuevamente más tarde.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ILUSTRACIÓN -->
+
+                <div class="illustration">
+
+                    <div class="circle-bg"></div>
+
+                    <div class="monitor">
+
+                        <div class="screen">
+
+                            <div class="gear">
+                                ⚙
+                            </div>
+
+                            <div class="maintenance-text">
+                                MANTENIMIENTO
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="stand"></div>
+
+                    <div class="barrier"></div>
+
+                    <div class="helmet"></div>
+
+                    <div class="cone">
+
+                        <div class="cone-top"></div>
+
+                        <div class="cone-stripe"></div>
+
+                        <div class="cone-base"></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+        <div class="container">
+
+            <div class="footer-line"></div>
+
+            <p>
+                Si necesitas ayuda, comunícate con nuestro
+                equipo de soporte.
+            </p>
+
+            <p>
+                <strong>
+                    Gracias por confiar en nosotros.
+                </strong>
+            </p>
+
+            <!-- COLORES ANI -->
+
+            <div class="ani-bar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+        </div>
+
+    </footer>
+
+</div>
+
+</body>
+</html>
