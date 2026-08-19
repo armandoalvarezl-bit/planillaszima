@@ -322,7 +322,8 @@
     }
 
     .table-wrap {
-      overflow: auto
+      overflow: auto;
+      max-height: calc(100vh - 285px)
     }
 
     table {
@@ -342,7 +343,11 @@
       font-size: 10px;
       letter-spacing: .06em;
       color: #526477;
-      background: #f8fafc
+      background: #f8fafc;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      box-shadow: 0 1px 0 var(--line)
     }
 
     td {
@@ -416,6 +421,15 @@
       border-color: #f1b9b4;
       color: #8c1d18
     }
+
+    .pdf-modal{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(10,20,34,.58);backdrop-filter:blur(3px)}
+    .pdf-modal.open{display:flex}
+    .pdf-dialog{width:min(1180px,100%);height:min(900px,94vh);display:flex;flex-direction:column;overflow:hidden;background:#fff;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.28)}
+    .pdf-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}
+    .pdf-dialog-title{font-weight:850}
+    .pdf-dialog-subtitle{margin-top:3px;color:var(--muted);font-size:11px}
+    .pdf-frame{width:100%;flex:1;border:0;background:#f5f7fa}
+    .pdf-close{width:36px;height:36px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:17px}
 
     .footer {
       display: flex;
@@ -571,6 +585,77 @@
   .nav-item,.nav a{justify-content:center!important;padding:13px!important}
   .nav-item.active,.nav a.active{padding-left:10px!important}
 }
+@media(max-width:700px){
+  .sidebar{
+    inset:auto 0 0!important;
+    width:100%!important;
+    height:68px!important;
+    padding:8px 10px!important;
+    flex-direction:row!important;
+    align-items:center!important;
+    border-top:1px solid rgba(255,255,255,.1)!important;
+  }
+  .brand-block,.sidebar-bottom{display:none!important}
+  .main-nav{
+    width:100%!important;
+    display:flex!important;
+    align-items:stretch!important;
+    justify-content:space-around!important;
+    gap:4px!important;
+  }
+  .nav-item,.nav a{
+    min-height:52px!important;
+    flex:1 1 0!important;
+    justify-content:center!important;
+    padding:10px 6px!important;
+    border-radius:10px!important;
+  }
+  .nav-item.active,.nav a.active{padding-left:6px!important;border-left:0!important;border-bottom:3px solid #f7c600!important}
+  .nav-icon{width:24px!important;height:24px!important;flex-basis:24px!important}
+  .main{margin-left:0!important;width:100%!important;padding-bottom:68px!important}
+  .top{min-height:64px;height:auto!important;padding:12px!important;gap:10px;align-items:flex-start}
+  .breadcrumb{font-size:11px;line-height:1.35}
+  .status{display:none}
+  .session-user{margin-left:auto;padding-left:0;border-left:0;gap:6px}
+  .session-user .user-meta{display:none}
+  .logout-btn{margin-left:0}
+  .content{padding:12px!important;width:100%;overflow:hidden}
+  .hero{padding:18px!important;margin-bottom:12px!important;border-radius:14px!important}
+  h1{font-size:23px!important;line-height:1.15}
+  .hero p{font-size:12px;line-height:1.4}
+  .hero-mark{font-size:10px}
+  .toolbar{align-items:stretch!important;gap:9px!important}
+  .filters{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .field,.filters .field{width:100%;min-width:0!important;height:40px}
+  .filters #buscar{grid-column:1 / -1}
+  .toolbar>.btn{width:100%;justify-content:center}
+  .card{border-radius:13px}
+  .card-head{padding:14px!important}
+  .table-wrap{max-height:calc(100vh - 330px);-webkit-overflow-scrolling:touch}
+  th,td{padding:11px 10px}
+  .footer{display:none}
+  .pdf-modal{padding:0}
+  .pdf-dialog{width:100%;height:100%;border-radius:0}
+  .pdf-dialog-head{padding:11px 12px}
+  .pdf-dialog-subtitle{display:none}
+}
+@media(max-width:700px){
+  .sidebar{inset:0 auto 0 0!important;width:293px!important;height:100vh!important;padding:28px 16px 18px!important;flex-direction:column!important;transform:translateX(-105%);transition:transform .22s ease;box-shadow:18px 0 45px rgba(0,0,0,.22);z-index:1002}
+  .sidebar.mobile-open{transform:translateX(0)}
+  .sidebar .brand-block,.sidebar .branch-card,.sidebar .sidebar-bottom{display:flex!important}
+  .sidebar .brand-block{justify-content:flex-start!important;padding:0 6px 24px!important}
+  .sidebar .brand-copy,.sidebar .branch-card,.sidebar .nav-title,.sidebar .nav-item span,.sidebar .sidebar-bottom{display:block!important}
+  .sidebar .main-nav{display:grid!important;width:auto!important}
+  .sidebar .nav-item{display:flex!important;justify-content:flex-start!important;min-height:54px!important;flex:none!important;padding:13px 14px!important}
+  .sidebar .nav-item.active{border-left:3px solid #f7c600!important;border-bottom:0!important;padding-left:11px!important}
+  .sidebar .sidebar-bottom{display:block!important}
+  .menu-toggle{display:inline-flex!important;align-items:center;justify-content:center;width:38px;height:38px;flex:0 0 38px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--navy);cursor:pointer;font-size:20px}
+  .menu-backdrop{display:block;position:fixed;inset:0;background:rgba(10,20,34,.42);z-index:1001;opacity:0;pointer-events:none;transition:opacity .22s ease}
+  .menu-backdrop.open{opacity:1;pointer-events:auto}
+  .top{justify-content:flex-start!important}
+  .breadcrumb{flex:1}
+}
+@media(min-width:701px){.menu-toggle,.menu-backdrop{display:none!important}}
 </style>
 
 </head>
@@ -609,6 +694,7 @@
 </aside>
     <main class="main">
       <header class="top">
+        <button class="menu-toggle" id="menuToggle" type="button" title="Abrir menú" aria-label="Abrir menú" aria-expanded="false" onclick="alternarMenu()"><i class="bi bi-list"></i></button>
         <div class="breadcrumb"><b>Historial</b> / Planillas registradas</div>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px"><div class="status"><i class="bi bi-circle-fill"></i> <span id="syncLabel">Conectado</span></div><div class="session-user"><div class="avatar" id="headerAvatar">ZU</div><div class="user-meta"><strong id="headerUser">Usuario ZIMA</strong><span id="headerPeaje">Administración central</span></div><button class="logout-btn" type="button" title="Cerrar sesión" onclick="abrirModalSesion()"><i class="bi bi-box-arrow-right"></i></button></div></div>
       </header>
@@ -664,6 +750,21 @@
     </main>
   </div>
 
+  <div class="menu-backdrop" id="menuBackdrop" onclick="cerrarMenu()"></div>
+
+  <div class="pdf-modal" id="pdfModal" aria-hidden="true" onclick="cerrarPdfDesdeFondo(event)">
+    <div class="pdf-dialog" role="dialog" aria-modal="true" aria-labelledby="pdfTitle" onclick="event.stopPropagation()">
+      <div class="pdf-dialog-head">
+        <div>
+          <div class="pdf-dialog-title" id="pdfTitle">Vista previa de la planilla</div>
+          <div class="pdf-dialog-subtitle">Desde aquí puede imprimirla o guardarla como PDF.</div>
+        </div>
+        <button class="pdf-close" type="button" title="Cerrar vista previa" aria-label="Cerrar vista previa" onclick="cerrarPdf()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <iframe class="pdf-frame" id="pdfFrame" title="Vista previa PDF de la planilla"></iframe>
+    </div>
+  </div>
+
   <div id="sessionModal" class="session-modal" onclick="cerrarModalSesionDesdeFondo(event)">
     <div class="session-box" onclick="event.stopPropagation()">
       <div class="session-head"><div class="session-avatar" id="sessionAvatar">ZU</div><div><strong>Sesión activa</strong><span>ZIMA 360 · Historial y trazabilidad</span></div></div>
@@ -685,11 +786,17 @@
     function abrirModalSesion(){ const m=document.getElementById('sessionModal'); if(!m)return; document.getElementById('modalSessionUser').textContent=SESSION.name || SESSION.user; document.getElementById('modalSessionRole').textContent=SESSION.role; document.getElementById('modalSessionPeaje').textContent=SESSION.peaje; document.getElementById('sessionAvatar').textContent=(SESSION.name||SESSION.user||'ZU').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'ZU'; m.classList.add('open'); }
     function cerrarModalSesion(){ const m=document.getElementById('sessionModal'); if(m)m.classList.remove('open'); }
     function cerrarModalSesionDesdeFondo(e){ if(e.target && e.target.id==='sessionModal') cerrarModalSesion(); }
+    function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'<i class="bi bi-x-lg"></i>':'<i class="bi bi-list"></i>';toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');} }
+    function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<i class="bi bi-list"></i>';toggle.setAttribute('aria-label','Abrir menú');} }
     function cerrarSesion(){ try{ ['ZIMA360_SESION','ZIMA_SESION','ZIMA_USER_NAME','ZIMA_PEAJE','ZIMA_LAST_LOGIN'].forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k);}); }catch(e){} location.href='login.html'; }
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarModalSesion();});
+    document.addEventListener('click',e=>{if(e.target.closest('.nav-item'))cerrarMenu();});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarMenu();}});
     function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function statusClass(v) { return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA'].includes(v) ? v : 'BORRADOR' }
     let allRows = []; function render() { const q = $('buscar').value.trim().toLowerCase(), f = $('estado').value, d = $('fecha').value; const rows = allRows.filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || x.estado === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong></td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(x.estado === 'APROBADO' ? 'APROBADO' : (x.estado || 'BORRADOR'))}</span></td><td><button class="action" title="Ver planilla" onclick="ver('${encodeURIComponent(x.id || '')}')"><i class="bi bi-eye-fill"></i></button></td></tr>`).join('') }
-    function ver(id) { if (id) location.href = 'planilla.html?id=' + id } async function cargar() { try { $('syncLabel').textContent = 'Sincronizando…'; $('msg').innerHTML = '<div class="notice">Consultando planillas registradas...</div>'; const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); $('msg').innerHTML = ''; $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; $('msg').innerHTML = '<div class="notice error">' + esc(e.message) + '</div>'; render() } }
+    function ver(id) { if (!id) return; const row = allRows.find(x => String(x.id) === decodeURIComponent(id)); const modal = $('pdfModal'); const frame = $('pdfFrame'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
+    function cerrarPdf() { const modal = $('pdfModal'); const frame = $('pdfFrame'); if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); } if (frame) frame.src = 'about:blank'; document.body.style.overflow = ''; }
+    function cerrarPdfDesdeFondo(e) { if (e.target && e.target.id === 'pdfModal') cerrarPdf(); }
+    async function cargar() { try { $('syncLabel').textContent = 'Sincronizando…'; $('msg').innerHTML = '<div class="notice">Consultando planillas registradas...</div>'; const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); $('msg').innerHTML = ''; $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; $('msg').innerHTML = '<div class="notice error">' + esc(e.message) + '</div>'; render() } }
     setupSession(); $('buscar').addEventListener('input', render); $('estado').addEventListener('change', render); $('fecha').addEventListener('change', render); cargar();
   </script>
 </body>

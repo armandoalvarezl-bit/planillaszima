@@ -509,6 +509,11 @@ textarea {
   background:transparent;color:#fff;border:1px solid #ffffff44;
   border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:750;
 }
+.embedded-preview{background:#dfe4e9!important}
+.embedded-preview .shell{display:none!important}
+.embedded-preview .print-preview-backdrop{position:fixed;padding:0;background:#dfe4e9}
+.embedded-preview .print-preview{width:100%;height:100%;max-width:none;border-radius:0;box-shadow:none}
+.embedded-preview .preview-page{padding:28px}
 @media print{
   html,body{background:#fff!important}
   body{margin:0!important}
@@ -716,6 +721,29 @@ body{font-family:Inter,Arial,sans-serif}
 }
 @media(max-width:520px){.brand-ani{display:none}}
 </style>
+<style id="mobile-navigation-layout">
+@media(max-width:700px){
+  .sidebar{inset:auto 0 0!important;width:100%!important;height:68px!important;padding:8px 10px!important;flex-direction:row!important;align-items:center!important;border-top:1px solid rgba(255,255,255,.1)!important}
+  .brand-block,.sidebar-bottom{display:none!important}
+  .main-nav{width:100%!important;display:flex!important;align-items:stretch!important;justify-content:space-around!important;gap:4px!important}
+  .nav-item{min-height:52px!important;flex:1 1 0!important;justify-content:center!important;padding:10px 6px!important;border-radius:10px!important}
+  .nav-item.active{border-left:0!important;border-bottom:3px solid #f7c600!important;padding-left:6px!important}
+  .nav-icon{width:24px!important;height:24px!important;flex-basis:24px!important}
+  .main{margin-left:0!important;width:100%!important;padding-bottom:68px!important}
+  .top{padding:12px!important;min-height:64px;height:auto!important}
+}
+</style>
+<style id="historial-menu-reference">
+:root{--sidebar-w:293px!important}
+.sidebar{width:293px!important;padding:28px 16px 18px!important;background:linear-gradient(180deg,#101827 0%,#0d1726 100%)!important}
+.main{margin-left:293px!important;width:calc(100% - 293px)!important}
+.nav-item{min-height:54px!important;padding:13px 14px!important;border-radius:13px!important;color:#c7d0db!important;background:transparent!important;box-shadow:none!important}
+.nav-item:hover{background:rgba(255,255,255,.06)!important;color:#fff!important}
+.nav-item.active{background:rgba(255,255,255,.09)!important;color:#fff!important;border-left:3px solid #f7c600!important;padding-left:11px!important;box-shadow:none!important}
+.nav-item.active .nav-icon{color:#f7c600!important}
+@media(max-width:950px){.sidebar{width:82px!important;padding:22px 10px 18px!important}.main{margin-left:82px!important;width:calc(100% - 82px)!important}}
+@media(max-width:700px){.sidebar{inset:auto 0 0!important;width:100%!important;height:68px!important;padding:8px 10px!important}.main{margin-left:0!important;width:100%!important;padding-bottom:68px!important}.nav-item.active{border-left:0!important;border-bottom:3px solid #f7c600!important;padding-left:6px!important}}
+</style>
 </head>
  <body>
   <div class="shell">
@@ -743,8 +771,8 @@ body{font-family:Inter,Arial,sans-serif}
 
       <nav class="main-nav" aria-label="Navegación principal">
         <div class="nav-title">MENÚ PRINCIPAL</div>
-        <a class="nav-item active" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
-        <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
+        <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
+        <a class="nav-item active" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
         
       </nav>
@@ -1113,7 +1141,11 @@ function go(p){location.href=p}
 async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.error||'No se pudieron consultar las planillas');return r.rows||[]}
   </script>
   <script>
-   let id=new URLSearchParams(location.search).get('id');
+  const queryParams=new URLSearchParams(location.search);
+  let id=queryParams.get('id');
+  const openPreviewOnLoad=queryParams.get('preview')==='1';
+  const embeddedPreview=queryParams.get('embed')==='1';
+  if(embeddedPreview) document.documentElement.classList.add('embedded-preview');
     const $=id=>document.getElementById(id);
     const totalInput=$('total');
     const totalVisual=$('totalVisual');
@@ -1263,6 +1295,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           else e.value=r.row[k]??'';
         });
         actualizar();
+        if(openPreviewOnLoad) setTimeout(abrirVistaPrevia,250);
       }catch(e){
         msg.innerHTML='<div class="notice error">'+esc(e.message)+'</div>';
       }
