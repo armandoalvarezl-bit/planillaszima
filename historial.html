@@ -658,6 +658,7 @@
 @media(min-width:701px){.menu-toggle,.menu-backdrop{display:none!important}}
 </style>
 
+  <link rel="stylesheet" href="zima-ui-modern.css">
 </head>
 
 <body>
@@ -718,7 +719,7 @@
               <option value="APROBADO">Aprobado</option>
               <option value="ENTREGADA">Entregada</option>
               <option value="CERRADA">Cerrada</option>
-            </select><input id="fecha" class="field" type="date"></div><button class="btn btn-dark" type="button"
+            </select><input id="fecha" class="field" type="date"></div><button class="btn btn-dark" id="refreshBtn" type="button"
             onclick="cargar()"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
         </div>
         <section class="card">
@@ -761,6 +762,10 @@
         </div>
         <button class="pdf-close" type="button" title="Cerrar vista previa" aria-label="Cerrar vista previa" onclick="cerrarPdf()"><i class="bi bi-x-lg"></i></button>
       </div>
+      <div class="pdf-loading" id="pdfLoading" hidden>
+        <span class="zima-spinner" aria-hidden="true"></span>
+        Cargando vista previa...
+      </div>
       <iframe class="pdf-frame" id="pdfFrame" title="Vista previa PDF de la planilla"></iframe>
     </div>
   </div>
@@ -772,6 +777,7 @@
       <div class="session-actions"><button class="session-btn" type="button" onclick="cerrarModalSesion()">Cancelar</button><button class="session-btn logout" type="button" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button></div>
     </div>
   </div>
+  <script src="zima-ui.js"></script>
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbzcTUFKBSpOF5G1Nh3-B9yEkRkihYIik3npJDLXloSgIxbAJ5PYhnW1fvoQYySBEyaY7Q/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
@@ -793,10 +799,11 @@
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarMenu();}});
     function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function statusClass(v) { return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA'].includes(v) ? v : 'BORRADOR' }
     let allRows = []; function render() { const q = $('buscar').value.trim().toLowerCase(), f = $('estado').value, d = $('fecha').value; const rows = allRows.filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || x.estado === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong></td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(x.estado === 'APROBADO' ? 'APROBADO' : (x.estado || 'BORRADOR'))}</span></td><td><button class="action" title="Ver planilla" onclick="ver('${encodeURIComponent(x.id || '')}')"><i class="bi bi-eye-fill"></i></button></td></tr>`).join('') }
-    function ver(id) { if (!id) return; const row = allRows.find(x => String(x.id) === decodeURIComponent(id)); const modal = $('pdfModal'); const frame = $('pdfFrame'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden'; }
-    function cerrarPdf() { const modal = $('pdfModal'); const frame = $('pdfFrame'); if (modal) { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); } if (frame) frame.src = 'about:blank'; document.body.style.overflow = ''; }
+    let currentPreviewId = '';
+    function ver(id) { if (!id) return; const decodedId=decodeURIComponent(id); const row = allRows.find(x => String(x.id) === decodedId); const modal = $('pdfModal'); const frame = $('pdfFrame'); const loading=$('pdfLoading'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); if(loading)loading.hidden=false; frame.onload=function(){ if(loading)loading.hidden=true; }; if(currentPreviewId!==decodedId){ frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; currentPreviewId=decodedId; } ZimaUI.openModal(modal); }
+    function cerrarPdf() { const frame = $('pdfFrame'); ZimaUI.closeModal('pdfModal'); if (frame) frame.src = 'about:blank'; currentPreviewId=''; const loading=$('pdfLoading'); if(loading)loading.hidden=true; }
     function cerrarPdfDesdeFondo(e) { if (e.target && e.target.id === 'pdfModal') cerrarPdf(); }
-    async function cargar() { try { $('syncLabel').textContent = 'Sincronizando…'; $('msg').innerHTML = '<div class="notice">Consultando planillas registradas...</div>'; const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); $('msg').innerHTML = ''; $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; $('msg').innerHTML = '<div class="notice error">' + esc(e.message) + '</div>'; render() } }
+    async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando…'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }
     setupSession(); $('buscar').addEventListener('input', render); $('estado').addEventListener('change', render); $('fecha').addEventListener('change', render); cargar();
   </script>
 </body>

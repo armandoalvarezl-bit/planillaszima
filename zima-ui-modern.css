@@ -1,0 +1,1375 @@
+/* ZIMA 360 visual refresh
+   Solo estilos: no cambia HTML funcional, JavaScript, API ni almacenamiento. */
+
+:root {
+  --zima-ink: #182333;
+  --zima-muted: #66758a;
+  --zima-border: #e3e8ef;
+  --zima-surface: #ffffff;
+  --zima-soft: #f5f7fa;
+  --zima-navy: #101827;
+  --zima-navy-2: #172235;
+  --zima-gold: #f7c600;
+  --zima-gold-2: #dcae00;
+  --zima-blue: #2563eb;
+  --zima-green: #15803d;
+  --zima-danger: #b42318;
+  --zima-radius: 14px;
+  --zima-shadow-sm: 0 8px 22px rgba(16, 24, 39, .06);
+  --zima-shadow: 0 16px 42px rgba(16, 24, 39, .10);
+  --zima-focus: 0 0 0 4px rgba(247, 198, 0, .18);
+}
+
+html {
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  color: var(--zima-ink);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .78), rgba(245, 247, 250, .96)),
+    radial-gradient(circle at 14% 0%, rgba(247, 198, 0, .10), transparent 26%),
+    radial-gradient(circle at 100% 15%, rgba(37, 99, 235, .08), transparent 28%),
+    var(--zima-soft);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a,
+input,
+select,
+textarea {
+  transition:
+    background-color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease,
+    color .18s ease,
+    transform .18s ease;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 0;
+  box-shadow: var(--zima-focus);
+}
+
+/* Login */
+body:has(.login-wrapper) {
+  background:
+    linear-gradient(140deg, rgba(9, 16, 30, .92), rgba(18, 31, 51, .94)),
+    radial-gradient(circle at 18% 12%, rgba(247, 198, 0, .28), transparent 30%),
+    radial-gradient(circle at 84% 78%, rgba(37, 99, 235, .24), transparent 34%),
+    #0b1220;
+}
+
+.login-wrapper {
+  filter: drop-shadow(0 24px 55px rgba(0, 0, 0, .22));
+}
+
+.login-card {
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, .66);
+  box-shadow: var(--zima-shadow) !important;
+}
+
+.login-card::before {
+  height: 6px !important;
+  background: linear-gradient(90deg, var(--zima-gold), #ffffff, #1f5a9d) !important;
+}
+
+.logo-container {
+  margin-bottom: 16px !important;
+}
+
+.logo {
+  width: 190px !important;
+}
+
+.system-title {
+  letter-spacing: .02em;
+  color: #10284a !important;
+}
+
+.system-subtitle {
+  color: #718096 !important;
+  letter-spacing: .16em !important;
+}
+
+.field label,
+label {
+  color: #334155;
+}
+
+.input-box input,
+input,
+select,
+textarea,
+.field {
+  border-color: #d8e0ea;
+}
+
+.input-box input,
+input,
+select,
+textarea {
+  background: #fbfcfe;
+}
+
+.input-box input:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--zima-gold-2) !important;
+  box-shadow: var(--zima-focus) !important;
+  background: #fff;
+}
+
+.password-toggle {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px !important;
+}
+
+.password-toggle:hover {
+  background: #eef2f7 !important;
+}
+
+.login-button {
+  background: linear-gradient(135deg, #101827, #20324f) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 12px 26px rgba(16, 24, 39, .22) !important;
+}
+
+.login-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #172235, #263a5a) !important;
+}
+
+.status,
+.notice {
+  border-radius: 12px !important;
+}
+
+.connection-dot,
+.secure-dot,
+.branch-status span {
+  box-shadow: 0 0 0 4px rgba(21, 128, 61, .12);
+}
+
+/* Navegacion y layout compartido */
+.sidebar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .04), rgba(255, 255, 255, 0)),
+    linear-gradient(180deg, var(--zima-navy), #0b1220) !important;
+  border-right: 1px solid rgba(255, 255, 255, .07);
+}
+
+.brand-block,
+.brand,
+.sidebar-bottom,
+.bottom {
+  border-color: rgba(255, 255, 255, .10) !important;
+}
+
+.branch-card,
+.branch {
+  background: rgba(255, 255, 255, .055) !important;
+  border-color: rgba(255, 255, 255, .11) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+
+.nav-item,
+.nav a,
+.main-nav a {
+  min-height: 46px;
+}
+
+.nav-item:hover,
+.nav a:hover {
+  background: rgba(255, 255, 255, .09) !important;
+}
+
+.nav-item.active,
+.nav a.active {
+  background: linear-gradient(135deg, var(--zima-gold), #ffd94a) !important;
+  color: #111827 !important;
+  box-shadow: 0 10px 24px rgba(247, 198, 0, .18);
+}
+
+.top,
+.topbar {
+  background: rgba(255, 255, 255, .94) !important;
+  backdrop-filter: blur(14px);
+  border-bottom-color: var(--zima-border) !important;
+  box-shadow: 0 1px 0 rgba(16, 24, 39, .03);
+}
+
+.content,
+.page {
+  width: 100%;
+}
+
+.toolbar,
+.panel-header,
+.hero {
+  gap: 16px;
+}
+
+.card,
+.main-panel,
+.side-panel,
+.metric-card,
+.hero,
+.planilla,
+.login-card,
+.service-card,
+.login-card {
+  border-color: var(--zima-border) !important;
+  box-shadow: var(--zima-shadow-sm) !important;
+}
+
+.card,
+.main-panel,
+.side-panel,
+.metric-card,
+.hero {
+  border-radius: var(--zima-radius) !important;
+}
+
+.card-head,
+.section,
+.data-table th,
+.table th {
+  background: linear-gradient(180deg, #f8fafc, #f1f5f9) !important;
+}
+
+/* Botones */
+.btn,
+.row-button,
+.action,
+.icon-button,
+.profile-logout,
+.session-btn,
+.preview-close,
+.pdf-close {
+  border-radius: 10px !important;
+}
+
+.btn,
+.row-button,
+.action,
+.session-btn {
+  box-shadow: 0 1px 0 rgba(16, 24, 39, .03);
+}
+
+.btn:hover,
+.row-button:hover,
+.action:hover,
+.session-btn:hover,
+.profile-logout:hover,
+.icon-button:hover {
+  transform: translateY(-1px);
+}
+
+.btn-dark {
+  background: linear-gradient(135deg, #101827, #22334f) !important;
+  border-color: #101827 !important;
+}
+
+.btn-primary,
+.btn-gold {
+  background: linear-gradient(135deg, var(--zima-gold), #ffd84a) !important;
+  border-color: var(--zima-gold) !important;
+  color: #111827 !important;
+}
+
+.btn-danger {
+  background: #fff;
+}
+
+/* Dashboard */
+.welcome-card {
+  background:
+    radial-gradient(circle at 84% 5%, rgba(247, 198, 0, .18), transparent 27%),
+    linear-gradient(125deg, #101827 0%, #1d2939 62%, #26374f 100%) !important;
+  border: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 18px 42px rgba(16, 24, 39, .14) !important;
+}
+
+.metric-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 16px 0;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  background: transparent;
+}
+
+.metric-card.highlight::after {
+  background: var(--zima-gold);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--zima-shadow) !important;
+}
+
+.bar-track {
+  background-color: #f7f9fb;
+}
+
+.bar-fill {
+  box-shadow: 0 6px 14px rgba(247, 198, 0, .24) !important;
+}
+
+/* Tablas e historial */
+.table-wrap,
+.table-container {
+  border-radius: 0 0 var(--zima-radius) var(--zima-radius);
+}
+
+.table tbody tr:hover td,
+.data-table tbody tr:hover td {
+  background: #fffdf2 !important;
+}
+
+.status,
+.status-pill {
+  border: 1px solid rgba(255, 255, 255, .55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45);
+}
+
+.money,
+.money-value {
+  color: #14613b !important;
+}
+
+.filters,
+.actions {
+  align-items: center;
+}
+
+/* Planilla */
+.planilla {
+  border: 1px solid #cdd7e3 !important;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.cell {
+  border-color: #dfe6ee !important;
+}
+
+.section {
+  color: #172235;
+  letter-spacing: .06em;
+}
+
+.codebox {
+  border-left-color: var(--zima-gold) !important;
+}
+
+.totalbox {
+  background: linear-gradient(90deg, #effaf3, #f7fcf9) !important;
+}
+
+.sig {
+  background: linear-gradient(180deg, #fff, #fbfcfe);
+}
+
+/* Mantenimiento */
+body:has(.illustration) .notice {
+  background: rgba(255, 255, 255, .88) !important;
+  box-shadow: var(--zima-shadow-sm);
+}
+
+body:has(.illustration) .content h1 {
+  letter-spacing: -.03em;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .top,
+  .topbar {
+    min-height: 68px;
+  }
+
+  .toolbar,
+  .hero,
+  .panel-header {
+    align-items: flex-start;
+  }
+
+  .btn {
+    min-height: 42px;
+  }
+}
+
+@media (max-width: 650px) {
+  .login-card {
+    padding-inline: 22px !important;
+  }
+
+  .logo {
+    width: 170px !important;
+  }
+
+  .system-title {
+    font-size: 23px !important;
+  }
+
+  .content,
+  .page {
+    padding-inline: 14px !important;
+  }
+
+  .toolbar,
+  .actions,
+  .filters {
+    width: 100%;
+  }
+
+  .actions .btn,
+  .toolbar .btn,
+  .filters .field {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .planilla {
+    border-radius: 10px;
+  }
+}
+
+@media print {
+  body {
+    background: #fff !important;
+  }
+
+  .planilla {
+    width: 203mm !important;
+    max-width: 203mm !important;
+    margin: 0 auto !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    transform: none !important;
+    zoom: 1 !important;
+    font-size: 10.2px !important;
+  }
+
+  .planilla .cell {
+    min-height: 40px !important;
+    padding: 6px 8px !important;
+  }
+
+  .planilla input,
+  .planilla select,
+  .planilla textarea {
+    font-size: 10px !important;
+    padding: 5px 6px !important;
+  }
+
+  .planilla .section {
+    font-size: 9.5px !important;
+    padding: 6px 8px !important;
+  }
+
+  .planilla .sig {
+    min-height: 82px !important;
+  }
+
+  @page {
+    size: letter portrait;
+    margin: 6mm;
+  }
+}
+
+/* ==========================================================
+   Tema operativo tipo consola administrativa
+   Inspirado en paneles de recaudo: topbar oscuro, menu blanco,
+   tarjetas planas y graficos con enfoque funcional.
+   ========================================================== */
+:root {
+  --op-topbar: #003747;
+  --op-topbar-2: #002b39;
+  --op-accent: #25d6ad;
+  --op-blue: #66aeea;
+  --op-orange: #ffb52d;
+  --op-sidebar: #ffffff;
+  --op-sidebar-soft: #f1f1f1;
+  --op-border: #dedede;
+  --op-text: #111111;
+  --op-muted: #5d6670;
+  --op-shadow: 0 1px 5px rgba(0, 0, 0, .18);
+}
+
+body:not(:has(.login-wrapper)):not(:has(.illustration)) {
+  background: #f7f7f7 !important;
+  color: var(--op-text) !important;
+  font-size: 14px;
+}
+
+/* Barra superior */
+body:not(:has(.login-wrapper)) .top,
+body:not(:has(.login-wrapper)) .topbar {
+  height: 70px !important;
+  min-height: 70px !important;
+  background: linear-gradient(180deg, var(--op-topbar), var(--op-topbar-2)) !important;
+  color: #fff !important;
+  border-bottom: 0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .30) !important;
+  backdrop-filter: none;
+}
+
+body:not(:has(.login-wrapper)) .top *,
+body:not(:has(.login-wrapper)) .topbar * {
+  color: inherit;
+}
+
+body:not(:has(.login-wrapper)) .breadcrumb,
+body:not(:has(.login-wrapper)) .muted,
+body:not(:has(.login-wrapper)) .connection,
+body:not(:has(.login-wrapper)) .status {
+  color: rgba(255, 255, 255, .88) !important;
+}
+
+body:not(:has(.login-wrapper)) .connection {
+  border-right-color: rgba(255, 255, 255, .20) !important;
+}
+
+body:not(:has(.login-wrapper)) .connection-dot {
+  background: var(--op-accent) !important;
+  box-shadow: 0 0 0 4px rgba(37, 214, 173, .16) !important;
+}
+
+body:not(:has(.login-wrapper)) .icon-button,
+body:not(:has(.login-wrapper)) .profile-logout {
+  color: #fff !important;
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, .20) !important;
+}
+
+body:not(:has(.login-wrapper)) .icon-button:hover,
+body:not(:has(.login-wrapper)) .profile-logout:hover {
+  background: rgba(255, 255, 255, .10) !important;
+}
+
+body:not(:has(.login-wrapper)) .avatar {
+  background: #000 !important;
+  color: #fff !important;
+  border: 2px solid rgba(255, 255, 255, .8);
+}
+
+/* Menu lateral blanco */
+body:not(:has(.login-wrapper)) .sidebar {
+  background: var(--op-sidebar) !important;
+  color: #000 !important;
+  border-right: 1px solid #d4d4d4 !important;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, .12) !important;
+}
+
+body:not(:has(.login-wrapper)) .brand-block,
+body:not(:has(.login-wrapper)) .brand {
+  background: #fff !important;
+  border-bottom: 1px solid #e5e5e5 !important;
+  text-align: center;
+}
+
+body:not(:has(.login-wrapper)) .brand-logo-pair {
+  justify-content: center;
+}
+
+body:not(:has(.login-wrapper)) .brand-symbol,
+body:not(:has(.login-wrapper)) .brand-ani,
+body:not(:has(.login-wrapper)) .logo {
+  background: #fff !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+body:not(:has(.login-wrapper)) .brand-name,
+body:not(:has(.login-wrapper)) .brand-name strong,
+body:not(:has(.login-wrapper)) .brand-caption,
+body:not(:has(.login-wrapper)) .branch-name,
+body:not(:has(.login-wrapper)) .branch-status,
+body:not(:has(.login-wrapper)) .branch-label,
+body:not(:has(.login-wrapper)) .nav-title,
+body:not(:has(.login-wrapper)) .bottom,
+body:not(:has(.login-wrapper)) .sidebar-bottom {
+  color: #000 !important;
+}
+
+body:not(:has(.login-wrapper)) .brand-caption,
+body:not(:has(.login-wrapper)) .branch-status,
+body:not(:has(.login-wrapper)) .sidebar-bottom,
+body:not(:has(.login-wrapper)) .bottom {
+  color: #4f5964 !important;
+}
+
+body:not(:has(.login-wrapper)) .branch-card,
+body:not(:has(.login-wrapper)) .branch {
+  background: #f8f8f8 !important;
+  border: 0 !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  margin: 14px 0 16px !important;
+  padding: 13px 14px !important;
+}
+
+body:not(:has(.login-wrapper)) .nav-title {
+  background: #e8e8e8;
+  color: #000 !important;
+  display: block;
+  margin: 8px -16px 0 !important;
+  padding: 10px 16px !important;
+  font-size: 13px !important;
+  letter-spacing: 0 !important;
+  text-transform: none;
+}
+
+body:not(:has(.login-wrapper)) .branch-label {
+  background: transparent !important;
+  color: #4f5964 !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 10px !important;
+  letter-spacing: .08em !important;
+  text-transform: uppercase !important;
+}
+
+body:not(:has(.login-wrapper)) .main-nav,
+body:not(:has(.login-wrapper)) .nav {
+  gap: 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .nav-item,
+body:not(:has(.login-wrapper)) .nav a {
+  color: #000 !important;
+  background: #fff !important;
+  border-radius: 0 !important;
+  min-height: 48px !important;
+  padding: 13px 12px !important;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+  gap: 10px !important;
+}
+
+body:not(:has(.login-wrapper)) .nav-item:hover,
+body:not(:has(.login-wrapper)) .nav a:hover {
+  background: #f3f5f6 !important;
+}
+
+body:not(:has(.login-wrapper)) .nav-item.active,
+body:not(:has(.login-wrapper)) .nav a.active {
+  background: #e8e8e8 !important;
+  color: #000 !important;
+  border-left: 4px solid var(--op-topbar) !important;
+  padding-left: 8px !important;
+  box-shadow: none !important;
+}
+
+body:not(:has(.login-wrapper)) .nav-icon,
+body:not(:has(.login-wrapper)) .nav a i {
+  color: #000 !important;
+  width: 32px !important;
+  min-width: 32px !important;
+  font-size: 19px !important;
+}
+
+body:not(:has(.login-wrapper)) .secure-dot,
+body:not(:has(.login-wrapper)) .branch-status span {
+  background: var(--op-accent) !important;
+  box-shadow: none !important;
+}
+
+/* Contenido principal */
+body:not(:has(.login-wrapper)) .content,
+body:not(:has(.login-wrapper)) .page {
+  max-width: none !important;
+  padding: 20px 22px 32px !important;
+}
+
+body:not(:has(.login-wrapper)) .welcome-card {
+  min-height: auto !important;
+  background: #fff !important;
+  color: #111 !important;
+  border: 1px solid var(--op-border) !important;
+  border-radius: 2px !important;
+  box-shadow: var(--op-shadow) !important;
+  padding: 18px 22px !important;
+}
+
+body:not(:has(.login-wrapper)) .welcome-card::before,
+body:not(:has(.login-wrapper)) .welcome-card::after {
+  display: none !important;
+}
+
+body:not(:has(.login-wrapper)) .welcome-kicker,
+body:not(:has(.login-wrapper)) .panel-kicker {
+  color: var(--op-topbar) !important;
+  letter-spacing: 0 !important;
+  font-size: 12px !important;
+}
+
+body:not(:has(.login-wrapper)) .welcome-card h1 {
+  color: #111 !important;
+  font-size: 22px !important;
+  letter-spacing: 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .welcome-card p {
+  color: #3f4750 !important;
+  font-size: 13px !important;
+}
+
+body:not(:has(.login-wrapper)) .institutional-mark {
+  color: #111 !important;
+  background: #f2f2f2 !important;
+  border-color: #ddd !important;
+  border-radius: 2px !important;
+}
+
+body:not(:has(.login-wrapper)) .quick-grid {
+  gap: 14px !important;
+  margin: 16px 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .metric-card,
+body:not(:has(.login-wrapper)) .card,
+body:not(:has(.login-wrapper)) .main-panel,
+body:not(:has(.login-wrapper)) .side-panel,
+body:not(:has(.login-wrapper)) .hero,
+body:not(:has(.login-wrapper)) .planilla,
+body:not(:has(.login-wrapper)) .service-card,
+body:not(:has(.login-wrapper)) .login-card {
+  background: #fff !important;
+  border: 1px solid var(--op-border) !important;
+  border-radius: 3px !important;
+  box-shadow: var(--op-shadow) !important;
+}
+
+body:not(:has(.login-wrapper)) .metric-card {
+  min-height: 112px !important;
+  padding: 14px 16px !important;
+}
+
+body:not(:has(.login-wrapper)) .metric-card::after {
+  inset: auto 0 0;
+  height: 4px;
+  border-radius: 0;
+  background: #e7e7e7;
+}
+
+body:not(:has(.login-wrapper)) .metric-card.highlight::after {
+  background: var(--op-orange);
+}
+
+body:not(:has(.login-wrapper)) .metric-top {
+  color: #222 !important;
+  font-size: 12px !important;
+  letter-spacing: 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .metric-value {
+  font-size: 25px !important;
+  letter-spacing: 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .metric-icon {
+  background: #ebebeb !important;
+  color: #000 !important;
+  border-radius: 3px !important;
+}
+
+body:not(:has(.login-wrapper)) .money,
+body:not(:has(.login-wrapper)) .money-value {
+  color: #111 !important;
+}
+
+body:not(:has(.login-wrapper)) .dashboard-grid {
+  gap: 14px !important;
+}
+
+body:not(:has(.login-wrapper)) .panel-header,
+body:not(:has(.login-wrapper)) .card-head {
+  background: #fff !important;
+  border-bottom: 1px solid #e4e4e4 !important;
+  padding: 14px 18px !important;
+}
+
+body:not(:has(.login-wrapper)) .panel-header h2,
+body:not(:has(.login-wrapper)) .card-head strong,
+body:not(:has(.login-wrapper)) .side-title {
+  color: #111 !important;
+  font-size: 15px !important;
+  text-align: center;
+}
+
+body:not(:has(.login-wrapper)) .chart-wrap {
+  background: #fff !important;
+}
+
+body:not(:has(.login-wrapper)) .bar-track {
+  background:
+    repeating-linear-gradient(to top, transparent 0, transparent calc(20% - 1px), #e6e6e6 calc(20% - 1px), #e6e6e6 20%) !important;
+  border-radius: 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .bar-fill {
+  width: min(34px, 82%) !important;
+  border-radius: 0 !important;
+  background: var(--op-accent) !important;
+  box-shadow: none !important;
+}
+
+body:not(:has(.login-wrapper)) .bar-fill.current {
+  background: var(--op-orange) !important;
+}
+
+body:not(:has(.login-wrapper)) .bar-value,
+body:not(:has(.login-wrapper)) .bar-label,
+body:not(:has(.login-wrapper)) .chart-y-labels {
+  color: #111 !important;
+}
+
+/* Formularios, botones y tablas */
+body:not(:has(.login-wrapper)) input,
+body:not(:has(.login-wrapper)) select,
+body:not(:has(.login-wrapper)) textarea,
+body:not(:has(.login-wrapper)) .field {
+  background: #fff !important;
+  border: 1px solid #cfcfcf !important;
+  border-radius: 2px !important;
+  color: #111 !important;
+  font-weight: 500 !important;
+}
+
+body:not(:has(.login-wrapper)) input:focus,
+body:not(:has(.login-wrapper)) select:focus,
+body:not(:has(.login-wrapper)) textarea:focus {
+  border-color: var(--op-topbar) !important;
+  box-shadow: 0 0 0 3px rgba(0, 55, 71, .13) !important;
+}
+
+body:not(:has(.login-wrapper)) label {
+  color: #111 !important;
+}
+
+body:not(:has(.login-wrapper)) .btn,
+body:not(:has(.login-wrapper)) .row-button,
+body:not(:has(.login-wrapper)) .action,
+body:not(:has(.login-wrapper)) .session-btn {
+  border-radius: 3px !important;
+  border: 1px solid #cfcfcf !important;
+  background: #fff !important;
+  color: #111 !important;
+  box-shadow: none !important;
+}
+
+body:not(:has(.login-wrapper)) .btn:hover,
+body:not(:has(.login-wrapper)) .row-button:hover,
+body:not(:has(.login-wrapper)) .action:hover,
+body:not(:has(.login-wrapper)) .session-btn:hover {
+  background: #f0f0f0 !important;
+  transform: none !important;
+}
+
+body:not(:has(.login-wrapper)) .btn-dark,
+body:not(:has(.login-wrapper)) .btn-primary,
+body:not(:has(.login-wrapper)) .btn-gold {
+  background: var(--op-topbar) !important;
+  color: #fff !important;
+  border-color: var(--op-topbar) !important;
+}
+
+body:not(:has(.login-wrapper)) .btn-primary {
+  background: var(--op-accent) !important;
+  border-color: var(--op-accent) !important;
+  color: #062229 !important;
+}
+
+body:not(:has(.login-wrapper)) .notice {
+  border-radius: 2px !important;
+  background: #eef7fb !important;
+  border-color: #c7dbe5 !important;
+  color: #123746 !important;
+}
+
+body:not(:has(.login-wrapper)) .notice.error {
+  background: #fff2f0 !important;
+  border-color: #efc5be !important;
+  color: #8d2118 !important;
+}
+
+body:not(:has(.login-wrapper)) .notice.success {
+  background: #ecfff8 !important;
+  border-color: #b8ebd7 !important;
+  color: #0f6147 !important;
+}
+
+body:not(:has(.login-wrapper)) .table th,
+body:not(:has(.login-wrapper)) .data-table th {
+  background: #f1f1f1 !important;
+  color: #111 !important;
+  letter-spacing: 0 !important;
+  font-size: 12px !important;
+}
+
+body:not(:has(.login-wrapper)) .table td,
+body:not(:has(.login-wrapper)) .data-table td {
+  color: #111 !important;
+  border-bottom-color: #e6e6e6 !important;
+}
+
+body:not(:has(.login-wrapper)) .table tbody tr:hover td,
+body:not(:has(.login-wrapper)) .data-table tbody tr:hover td {
+  background: #f7fbfc !important;
+}
+
+body:not(:has(.login-wrapper)) .status,
+body:not(:has(.login-wrapper)) .status-pill {
+  border-radius: 2px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Planilla mas documental */
+body:not(:has(.login-wrapper)) .planilla {
+  border-color: #b8b8b8 !important;
+}
+
+body:not(:has(.login-wrapper)) .section {
+  background: #e8e8e8 !important;
+  color: #000 !important;
+  letter-spacing: 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .cell {
+  border-color: #d4d4d4 !important;
+}
+
+body:not(:has(.login-wrapper)) .codebox {
+  border-left-color: var(--op-topbar) !important;
+}
+
+body:not(:has(.login-wrapper)) .totalbox {
+  background: #f5f5f5 !important;
+}
+
+/* Login en la misma identidad */
+body:has(.login-wrapper) {
+  background:
+    linear-gradient(180deg, rgba(0, 55, 71, .94), rgba(0, 43, 57, .94)),
+    #003747 !important;
+}
+
+.login-card {
+  border-radius: 4px !important;
+}
+
+.login-card::before {
+  background: var(--op-accent) !important;
+}
+
+.login-button {
+  background: var(--op-topbar) !important;
+  border-radius: 3px !important;
+}
+
+.login-button:hover:not(:disabled) {
+  background: #00485c !important;
+}
+
+@media (max-width: 900px) {
+  body:not(:has(.login-wrapper)) .sidebar {
+    box-shadow: 2px 0 7px rgba(0, 0, 0, .16) !important;
+  }
+
+  body:not(:has(.login-wrapper)) .brand-copy,
+  body:not(:has(.login-wrapper)) .branch-card,
+  body:not(:has(.login-wrapper)) .branch,
+  body:not(:has(.login-wrapper)) .nav-title,
+  body:not(:has(.login-wrapper)) .sidebar-bottom,
+  body:not(:has(.login-wrapper)) .bottom,
+  body:not(:has(.login-wrapper)) .nav-item span:not(.nav-icon),
+  body:not(:has(.login-wrapper)) .nav a span {
+    display: none !important;
+  }
+
+  body:not(:has(.login-wrapper)) .nav-item,
+  body:not(:has(.login-wrapper)) .nav a {
+    justify-content: center;
+    min-height: 48px !important;
+    padding: 12px 8px !important;
+    border-left: 0 !important;
+  }
+
+  body:not(:has(.login-wrapper)) .nav-item.active,
+  body:not(:has(.login-wrapper)) .nav a.active {
+    border-left: 0 !important;
+    box-shadow: inset 4px 0 0 var(--op-topbar) !important;
+    padding-left: 8px !important;
+  }
+}
+
+@media (max-width: 650px) {
+  body:not(:has(.login-wrapper)) .top,
+  body:not(:has(.login-wrapper)) .topbar {
+    height: 64px !important;
+    min-height: 64px !important;
+  }
+
+  body:not(:has(.login-wrapper)) .welcome-card,
+  body:not(:has(.login-wrapper)) .metric-card,
+  body:not(:has(.login-wrapper)) .card,
+  body:not(:has(.login-wrapper)) .main-panel,
+  body:not(:has(.login-wrapper)) .side-panel,
+  body:not(:has(.login-wrapper)) .hero {
+    border-radius: 2px !important;
+  }
+}
+
+@media (max-width: 700px) {
+  body:not(:has(.login-wrapper)) .sidebar {
+    background: var(--op-topbar) !important;
+    color: #fff !important;
+    border-right: 0 !important;
+    border-top: 1px solid rgba(255, 255, 255, .16) !important;
+  }
+
+  body:not(:has(.login-wrapper)) .main-nav {
+    gap: 4px !important;
+  }
+
+  body:not(:has(.login-wrapper)) .nav-item,
+  body:not(:has(.login-wrapper)) .nav a {
+    background: transparent !important;
+    color: #fff !important;
+    border: 0 !important;
+    border-radius: 3px !important;
+  }
+
+  body:not(:has(.login-wrapper)) .nav-icon,
+  body:not(:has(.login-wrapper)) .nav a i {
+    color: #fff !important;
+  }
+
+  body:not(:has(.login-wrapper)) .nav-item.active,
+  body:not(:has(.login-wrapper)) .nav a.active {
+    background: rgba(255, 255, 255, .12) !important;
+    border-left: 0 !important;
+    border-bottom: 3px solid var(--op-accent) !important;
+    box-shadow: none !important;
+    padding-left: 8px !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open {
+    background: #fff !important;
+    color: #000 !important;
+    border-right: 1px solid #d4d4d4 !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open .brand-copy,
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open .branch-card,
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open .nav-title,
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open .sidebar-bottom,
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open .nav-item span {
+    display: block !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open .nav-item {
+    background: #fff !important;
+    color: #000 !important;
+    border-radius: 0 !important;
+    justify-content: flex-start !important;
+  }
+}
+
+/* ==========================================================
+   Ajuste final: login conservando logo y paneles mas uniformes
+   ========================================================== */
+body:has(.login-wrapper) {
+  align-items: center !important;
+  background:
+    linear-gradient(180deg, rgba(0, 55, 71, .96), rgba(0, 43, 57, .96)),
+    #003747 !important;
+}
+
+.login-wrapper {
+  max-width: 420px !important;
+  filter: none !important;
+}
+
+.login-card {
+  padding: 34px 32px 30px !important;
+  border: 1px solid #d7d7d7 !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 9px rgba(0, 0, 0, .28) !important;
+}
+
+.login-card::before {
+  height: 5px !important;
+  background: var(--op-accent) !important;
+}
+
+.login-wrapper .logo {
+  width: 210px !important;
+  max-width: 80% !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+.login-wrapper .system-title {
+  color: var(--op-topbar) !important;
+  font-size: 24px !important;
+  letter-spacing: 0 !important;
+}
+
+.login-wrapper .system-subtitle {
+  color: #606b76 !important;
+  letter-spacing: .12em !important;
+  margin-bottom: 28px !important;
+}
+
+.login-wrapper .field label {
+  color: #111 !important;
+  font-size: 13px !important;
+}
+
+.login-wrapper .input-box input {
+  height: 48px !important;
+  border: 1px solid #cfcfcf !important;
+  border-radius: 2px !important;
+  background: #fff !important;
+  color: #111 !important;
+  font-weight: 500 !important;
+}
+
+.login-wrapper .input-box input:focus {
+  border-color: var(--op-topbar) !important;
+  box-shadow: 0 0 0 3px rgba(0, 55, 71, .13) !important;
+}
+
+.login-wrapper .password-toggle {
+  color: #111 !important;
+  border-radius: 2px !important;
+}
+
+.login-wrapper .password-toggle:hover {
+  background: #eeeeee !important;
+}
+
+.login-wrapper .login-button {
+  height: 50px !important;
+  background: var(--op-topbar) !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+}
+
+.login-wrapper .login-button:hover:not(:disabled) {
+  background: #00485c !important;
+  transform: none !important;
+}
+
+.login-wrapper .connection {
+  color: #59636f !important;
+}
+
+.login-wrapper .footer {
+  color: rgba(255, 255, 255, .82) !important;
+}
+
+.login-success-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 28, 37, .58);
+}
+
+.login-success-modal.open {
+  display: flex;
+}
+
+.login-success-box {
+  width: min(360px, 100%);
+  background: #fff;
+  border: 1px solid #d8d8d8;
+  border-radius: 3px;
+  box-shadow: 0 12px 38px rgba(0, 0, 0, .32);
+  padding: 24px 24px 22px;
+  text-align: center;
+  color: #111;
+}
+
+.login-success-icon {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 14px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--op-accent);
+  color: #062229;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+.login-success-title {
+  font-size: 19px;
+  font-weight: 850;
+  color: var(--op-topbar);
+}
+
+.login-success-text {
+  margin-top: 7px;
+  color: #59636f;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.login-success-progress {
+  height: 4px;
+  margin-top: 18px;
+  background: #e7e7e7;
+  overflow: hidden;
+}
+
+.login-success-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--op-accent);
+  transform-origin: left;
+  animation: login-success-progress .7s ease forwards;
+}
+
+@keyframes login-success-progress {
+  from {
+    transform: scaleX(.12);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Historial y formularios: acabado mas operativo */
+body:not(:has(.login-wrapper)) .filters {
+  gap: 8px !important;
+}
+
+body:not(:has(.login-wrapper)) .filters .field,
+body:not(:has(.login-wrapper)) .toolbar input,
+body:not(:has(.login-wrapper)) .toolbar select {
+  min-height: 38px !important;
+}
+
+body:not(:has(.login-wrapper)) .card-head {
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+body:not(:has(.login-wrapper)) .count {
+  background: #efefef !important;
+  border: 1px solid #d6d6d6 !important;
+  color: #111 !important;
+  border-radius: 2px !important;
+  padding: 5px 8px !important;
+  font-size: 12px !important;
+}
+
+body:not(:has(.login-wrapper)) .table-wrap {
+  border-top: 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .empty {
+  color: #646b73 !important;
+}
+
+body:not(:has(.login-wrapper)) .pdf-dialog,
+body:not(:has(.login-wrapper)) .print-preview {
+  border-radius: 3px !important;
+}
+
+body:not(:has(.login-wrapper)) .pdf-dialog-head,
+body:not(:has(.login-wrapper)) .preview-bar {
+  background: var(--op-topbar) !important;
+  color: #fff !important;
+  border-bottom: 0 !important;
+}
+
+body:not(:has(.login-wrapper)) .pdf-dialog-subtitle,
+body:not(:has(.login-wrapper)) .preview-sub {
+  color: rgba(255, 255, 255, .78) !important;
+}
+
+.btn.is-busy,
+.login-button.is-busy,
+.session-btn.is-busy {
+  cursor: wait !important;
+  opacity: .78 !important;
+}
+
+.zima-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  vertical-align: -2px;
+  animation: zima-spin .75s linear infinite;
+}
+
+@keyframes zima-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pdf-dialog {
+  position: relative;
+}
+
+.pdf-loading {
+  position: absolute;
+  inset: 56px 0 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  background: rgba(247, 247, 247, .92);
+  color: #111;
+  font-weight: 700;
+}
+
+.pdf-loading[hidden] {
+  display: none !important;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 22px 26px !important;
+  }
+
+  .login-wrapper .logo {
+    width: 185px !important;
+  }
+}

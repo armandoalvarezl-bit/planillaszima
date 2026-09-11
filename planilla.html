@@ -409,8 +409,8 @@ textarea {
     box-shadow:none
   }
 @page {
-    size:A4 portrait;
-    margin:8mm
+    size:letter portrait;
+    margin:6mm
   }
 }
 
@@ -502,7 +502,7 @@ textarea {
   display:flex; justify-content:center; align-items:flex-start;
 }
 .preview-page .planilla{
-  width:190mm; max-width:190mm; margin:0;
+  width:203mm; max-width:203mm; margin:0;
   box-shadow:0 10px 30px rgba(16,35,59,.18);
 }
 .preview-close{
@@ -522,19 +522,19 @@ textarea {
   .main{margin:0!important;width:100%!important}
   .content{padding:0!important;max-width:none!important}
   .planilla{
-    display:block!important;width:190mm!important;max-width:190mm!important;
+    display:block!important;width:203mm!important;max-width:203mm!important;
     margin:0 auto!important;border:1px solid #26374a!important;
-    box-shadow:none!important;font-size:9px!important;
+    box-shadow:none!important;font-size:10.2px!important;
   }
-  .cell{padding:6px 8px!important;min-height:44px!important}
-  label{font-size:8px!important;margin-bottom:3px!important}
-  input,select,textarea{padding:5px 6px!important;font-size:9px!important}
-  textarea{min-height:42px!important}
-  .section{padding:6px 8px!important;font-size:9px!important}
-  .sig{min-height:90px!important}
-  .money{font-size:15px!important}
-  .amount-words input{font-size:9px!important}
-  @page{size:A4 portrait;margin:5mm}
+  .cell{padding:6px 8px!important;min-height:40px!important}
+  label{font-size:8.5px!important;margin-bottom:3px!important}
+  input,select,textarea{padding:5px 6px!important;font-size:10px!important}
+  textarea{min-height:38px!important}
+  .section{padding:6px 8px!important;font-size:9.5px!important}
+  .sig{min-height:82px!important}
+  .money{font-size:16px!important}
+  .amount-words input{font-size:10px!important}
+  @page{size:letter portrait;margin:6mm}
 }
 
 
@@ -744,7 +744,8 @@ body{font-family:Inter,Arial,sans-serif}
 @media(max-width:950px){.sidebar{width:82px!important;padding:22px 10px 18px!important}.main{margin-left:82px!important;width:calc(100% - 82px)!important}}
 @media(max-width:700px){.sidebar{inset:auto 0 0!important;width:100%!important;height:68px!important;padding:8px 10px!important}.main{margin-left:0!important;width:100%!important;padding-bottom:68px!important}.nav-item.active{border-left:0!important;border-bottom:3px solid #f7c600!important;padding-left:6px!important}}
 </style>
-</head>
+  <link rel="stylesheet" href="zima-ui-modern.css">
+ </head>
  <body>
   <div class="shell">
    <aside class="sidebar">
@@ -811,11 +812,11 @@ body{font-family:Inter,Arial,sans-serif}
         <i class="bi bi-arrow-left" aria-hidden="true"></i>
         Cancelar
        </button>
-       <button class="btn btn-primary" type="button" onclick="guardar()">
+       <button class="btn btn-primary" id="saveBtn" type="button" onclick="guardar()">
         <i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i>
         Guardar en línea
        </button>
-       <button class="btn btn-dark" onclick="imprimir()">
+       <button class="btn btn-dark" id="printBtn" type="button" onclick="imprimir()">
         <i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i>
         Vista previa / PDF
        </button>
@@ -1018,7 +1019,7 @@ body{font-family:Inter,Arial,sans-serif}
           <div class="preview-sub">Revise el documento antes de imprimir o guardar como PDF.</div>
         </div>
         <div class="preview-actions">
-          <button type="button" class="btn btn-dark" onclick="imprimirDesdeVistaPrevia()">
+          <button type="button" class="btn btn-dark" id="previewPrintBtn" onclick="imprimirDesdeVistaPrevia()">
             <i class="bi bi-printer-fill" aria-hidden="true"></i>
             Imprimir / Guardar PDF
           </button>
@@ -1032,6 +1033,7 @@ body{font-family:Inter,Arial,sans-serif}
     </div>
   </div>
 
+  <script src="zima-ui.js"></script>
   <script>
    const API_URL='https://script.google.com/macros/s/AKfycbzcTUFKBSpOF5G1Nh3-B9yEkRkihYIik3npJDLXloSgIxbAJ5PYhnW1fvoQYySBEyaY7Q/exec';
 try{localStorage.setItem('ZIMA_API_URL',API_URL);}catch(_){}
@@ -1302,20 +1304,26 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     }
 
     async function guardar(){
+      if(window.__zimaSavingPlanilla)return;
       actualizar();
       const d=datos();
       if(!d.peaje||!d.fecha||d.total<=0){
-        msg.innerHTML='<div class="notice error">Complete Peaje, Fecha y Total entregado.</div>';
+        ZimaUI.notice(msg,'Complete Peaje, Fecha y Total entregado.','error');
         return;
       }
       try{
-        msg.innerHTML='<div class="notice">Guardando...</div>';
+        window.__zimaSavingPlanilla=true;
+        ZimaUI.busy('saveBtn',true,'Guardando...');
+        ZimaUI.notice(msg,'Guardando...');
         const r=await apiPost({action:id?'update':'save',id,...d,estado:'APROBADO'});
         if(!r.ok)throw Error(r.error);
         id=r.row.id;
         msg.innerHTML='<div class="notice success">Guardado en línea. Código: <b>'+esc(r.row.codigo)+'</b></div>';
       }catch(e){
-        msg.innerHTML='<div class="notice error">'+esc(e.message)+'</div>';
+        ZimaUI.notice(msg,e.message,'error');
+      }finally{
+        window.__zimaSavingPlanilla=false;
+        ZimaUI.busy('saveBtn',false);
       }
     }
 
@@ -1356,9 +1364,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         }
         const clone=construirDocumentoImpresion();
         page.replaceChildren(clone);
-        $('printPreview').classList.add('open');
-        $('printPreview').setAttribute('aria-hidden','false');
-        document.body.style.overflow='hidden';
+        ZimaUI.openModal('printPreview');
         setTimeout(()=>{
           page.scrollTop=0;
         },30);
@@ -1370,14 +1376,14 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     }
 
     function cerrarVistaPrevia(){
-      const modal=$('printPreview');
-      if(modal) modal.classList.remove('open');
-      if(modal) modal.setAttribute('aria-hidden','true');
-      document.body.style.overflow='';
+      ZimaUI.closeModal('printPreview');
     }
 
     function imprimirDesdeVistaPrevia(){
+      if(window.__zimaPrintingPlanilla)return;
       try{
+        window.__zimaPrintingPlanilla=true;
+        ZimaUI.busy('previewPrintBtn',true,'Preparando PDF...');
         const clone=construirDocumentoImpresion();
         const frame=document.createElement('iframe');
         frame.setAttribute('aria-hidden','true');
@@ -1421,17 +1427,22 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         printStyle.textContent=[
           'html,body{background:#fff!important;margin:0!important;padding:0!important;}',
           'body{font-family:Arial,Helvetica,sans-serif;}',
-          '.planilla{display:block!important;width:190mm!important;max-width:190mm!important;margin:0 auto!important;box-shadow:none!important;zoom:.94;}',
+          '.planilla{display:block!important;width:203mm!important;max-width:203mm!important;margin:0 auto!important;box-shadow:none!important;font-size:10.2px!important;transform:none!important;zoom:1!important;}',
           '.no-print,.sidebar,.top,.toolbar,.notice,.print-preview-backdrop{display:none!important;}',
-          '@page{size:A4 portrait;margin:5mm;}',
-          '@media print{body{margin:0!important;} .planilla{width:190mm!important;max-width:190mm!important;zoom:.94;} .doc-brand-cell{min-height:54px!important;height:54px!important;overflow:hidden!important;} .doc-brand-logo.zima{width:52px!important;height:42px!important;} .doc-brand-logo.zima img{width:50px!important;height:40px!important;} .doc-brand-logo.ani{width:44px!important;height:42px!important;} .doc-brand-logo.ani img{width:36px!important;height:40px!important;}}'
+          '.cell{padding:6px 8px!important;min-height:40px!important;} label{font-size:8.5px!important;margin-bottom:3px!important;} input,select,textarea{padding:5px 6px!important;font-size:10px!important;} textarea{min-height:38px!important;} .section{padding:6px 8px!important;font-size:9.5px!important;} .sig{min-height:82px!important;} .money{font-size:16px!important;} .amount-words input{font-size:10px!important;}',
+          '@page{size:letter portrait;margin:6mm;}',
+          '@media print{html,body{width:auto!important;height:auto!important;} body{margin:0!important;} .planilla{width:203mm!important;max-width:203mm!important;zoom:1!important;transform:none!important;} .doc-brand-cell{min-height:54px!important;height:54px!important;overflow:hidden!important;} .doc-brand-logo.zima{width:58px!important;height:46px!important;} .doc-brand-logo.zima img{width:56px!important;height:44px!important;} .doc-brand-logo.ani{width:46px!important;height:46px!important;} .doc-brand-logo.ani img{width:38px!important;height:44px!important;}}'
         ].join('');
         printDocument.head.appendChild(printStyle);
 
         printDocument.body.appendChild(clone);
 
         const cleanup=()=>{
-          setTimeout(()=>{ try{ frame.remove(); }catch(_){} },1000);
+          setTimeout(()=>{
+            try{ frame.remove(); }catch(_){}
+            window.__zimaPrintingPlanilla=false;
+            ZimaUI.busy('previewPrintBtn',false);
+          },1000);
         };
 
         // El iframe ya contiene el documento completo; no dependemos de onload
@@ -1450,6 +1461,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           }
         },700);
       }catch(e){
+        window.__zimaPrintingPlanilla=false;
+        ZimaUI.busy('previewPrintBtn',false);
         const m=$('msg');
         if(m)m.innerHTML='<div class="notice error">No se pudo iniciar la impresión: '+esc(e.message)+'</div>';
         console.error(e);

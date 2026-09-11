@@ -215,6 +215,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="zima-ui-modern.css">
 </head>
 
 <body>
@@ -318,6 +319,20 @@
   </div>
 
 
+  <div class="login-success-modal" id="loginSuccessModal" aria-hidden="true">
+    <div class="login-success-box" role="status" aria-live="polite">
+      <div class="login-success-icon">✓</div>
+      <div class="login-success-title">Acceso correcto</div>
+      <div class="login-success-text" id="loginSuccessText">
+        Validando sesión...
+      </div>
+      <div class="login-success-progress">
+        <span></span>
+      </div>
+    </div>
+  </div>
+
+
 <script>
 
 /* ============================================================
@@ -353,6 +368,12 @@ const statusBox =
 
 const togglePassword =
   document.getElementById("togglePassword");
+
+const loginSuccessModal =
+  document.getElementById("loginSuccessModal");
+
+const loginSuccessText =
+  document.getElementById("loginSuccessText");
 
 
 /* ============================================================
@@ -398,6 +419,31 @@ function limpiarMensaje() {
 
   statusBox.textContent =
     "";
+
+}
+
+
+function mostrarAccesoCorrecto(datos) {
+
+  const nombre =
+    datos.nombre ||
+    datos.usuario ||
+    "Usuario ZIMA";
+
+  mostrarMensaje(
+    "Acceso correcto. Bienvenido " + nombre + ".",
+    "success"
+  );
+
+  if (loginSuccessText) {
+    loginSuccessText.textContent =
+      "Bienvenido, " + nombre + ". Preparando el panel de operaciones.";
+  }
+
+  if (loginSuccessModal) {
+    loginSuccessModal.classList.add("open");
+    loginSuccessModal.setAttribute("aria-hidden", "false");
+  }
 
 }
 
@@ -700,11 +746,8 @@ loginForm.addEventListener(
         );
 
 
-        mostrarMensaje(
-          "Acceso correcto. Bienvenido " +
-          (resultado.nombre || resultado.usuario) +
-          ".",
-          "success"
+        mostrarAccesoCorrecto(
+          resultado
         );
 
 
