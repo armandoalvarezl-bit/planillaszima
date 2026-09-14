@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -239,7 +239,7 @@
       </div>
 
       <div class="system-subtitle">
-        SFT · EFICIENCIA · CONTROL · CONFIANZA
+        SFT &middot; EFICIENCIA &middot; CONTROL &middot; CONFIANZA
       </div>
 
       <!-- LOGIN -->
@@ -284,7 +284,7 @@
               id="togglePassword"
               title="Mostrar contraseña"
             >
-              👁
+              ver
             </button>
 
           </div>
@@ -340,7 +340,7 @@
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzcTUFKBSpOF5G1Nh3-B9yEkRkihYIik3npJDLXloSgIxbAJ5PYhnW1fvoQYySBEyaY7Q/exec";
+  "https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);
@@ -385,12 +385,12 @@ togglePassword.addEventListener("click", function () {
   if (passwordInput.type === "password") {
 
     passwordInput.type = "text";
-    togglePassword.textContent = "🙈";
+    togglePassword.textContent = "Ocultar";
 
   } else {
 
     passwordInput.type = "password";
-    togglePassword.textContent = "👁";
+    togglePassword.textContent = "Ver";
 
   }
 
@@ -477,6 +477,31 @@ function guardarSesion(datos) {
     estado:
       datos.estado || "ACTIVO",
 
+    email:
+      datos.email ||
+      datos.EMAIL ||
+      (datos.usuarioData && (datos.usuarioData.email || datos.usuarioData.EMAIL)) ||
+      "",
+
+    telefono:
+      datos.telefono ||
+      datos.TELEFONO ||
+      (datos.usuarioData && (datos.usuarioData.telefono || datos.usuarioData.TELEFONO)) ||
+      "",
+
+    cargo:
+      datos.cargo ||
+      datos.CARGO ||
+      (datos.usuarioData && (datos.usuarioData.cargo || datos.usuarioData.CARGO)) ||
+      "",
+
+    foto:
+      datos.foto ||
+      datos.FOTO ||
+      datos.photo ||
+      (datos.usuarioData && (datos.usuarioData.foto || datos.usuarioData.FOTO || datos.usuarioData.photo)) ||
+      "",
+
     token:
       token,
 
@@ -513,6 +538,10 @@ function guardarSesion(datos) {
   localStorage.setItem("ZIMA360_NOMBRE", usuarioSesion.nombre);
   localStorage.setItem("ZIMA360_ROL", usuarioSesion.rol);
   localStorage.setItem("ZIMA360_PEAJE", usuarioSesion.peaje);
+  localStorage.setItem("ZIMA360_FOTO", usuarioSesion.foto);
+  localStorage.setItem("ZIMA360_EMAIL", usuarioSesion.email);
+  localStorage.setItem("ZIMA360_TELEFONO", usuarioSesion.telefono);
+  localStorage.setItem("ZIMA360_CARGO", usuarioSesion.cargo);
   localStorage.setItem("ZIMA_USER_NAME", usuarioSesion.nombre);
   localStorage.setItem("ZIMA_PEAJE", usuarioSesion.peaje);
 
@@ -522,6 +551,11 @@ function guardarSesion(datos) {
     localStorage.setItem("ZIMA_TOKEN", token);
     sessionStorage.setItem("ZIMA_SESSION_TOKEN", token);
   }
+
+  try {
+    sessionStorage.setItem("ZIMA360_SESION", JSON.stringify(usuarioSesion));
+    sessionStorage.setItem("ZIMA360_FOTO", usuarioSesion.foto);
+  } catch (e) {}
 
 }
 
@@ -833,20 +867,12 @@ window.addEventListener(
 
   try {
 
-    const activa =
-      localStorage.getItem(
-        "ZIMA_SESION"
-      );
-
     const usuario =
       localStorage.getItem(
-        "ZIMA_USUARIO"
+        "ZIMA360_SESION"
       );
 
-    if (
-      activa === "ACTIVA" &&
-      usuario
-    ) {
+    if (usuario) {
 
       // No redirigimos automáticamente
       // para evitar bloquear el login.
@@ -867,3 +893,5 @@ window.addEventListener(
 
 </body>
 </html>
+
+

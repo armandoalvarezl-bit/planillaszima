@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 
 <head>
@@ -385,6 +385,17 @@
       color: #126440
     }
 
+    .ANULADA {
+      background: #ffe1df;
+      color: #8c1d18
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
+
     .action {
       border: 1px solid var(--line);
       background: #fff;
@@ -497,7 +508,7 @@
       }
     }
   
-    .session-user{display:flex;align-items:center;gap:10px;margin-left:16px;padding-left:14px;border-left:1px solid rgba(0,0,0,.10);font-size:13px}.session-user .avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-weight:700;font-size:11px}.session-user .user-meta{display:flex;flex-direction:column;line-height:1.15}.session-user .user-meta strong{font-size:12px}.session-user .user-meta span{font-size:10px;opacity:.65}.logout-btn{border:0;background:transparent;cursor:pointer;margin-left:8px;width:34px;height:34px;border-radius:9px;font-size:17px}.logout-btn:hover{background:#f1f1f1}.session-modal{position:fixed;inset:0;background:rgba(0,0,0,.38);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:9999}.session-modal.open{display:flex}.session-box{width:min(390px,calc(100% - 32px));background:#fff;border-radius:18px;padding:22px;box-shadow:0 22px 70px rgba(0,0,0,.22)}.session-head{display:flex;gap:12px;align-items:center;margin-bottom:18px}.session-avatar{width:44px;height:44px;border-radius:13px;background:#111;color:#fff;display:grid;place-items:center;font-weight:800}.session-head strong,.session-head span{display:block}.session-head span{font-size:12px;opacity:.58;margin-top:3px}.session-info{border:1px solid #eee;border-radius:13px;padding:12px 14px}.session-row{display:flex;justify-content:space-between;gap:16px;padding:7px 0;font-size:13px}.session-row span{opacity:.58}.session-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.session-btn{border:1px solid #ddd;background:#fff;border-radius:10px;padding:9px 13px;cursor:pointer;font-weight:600}.session-btn.logout{background:#111;color:#fff;border-color:#111}
+    .session-user{display:flex;align-items:center;gap:10px;margin-left:16px;padding-left:14px;border-left:1px solid rgba(0,0,0,.10);font-size:13px}.session-user .avatar{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-weight:700;font-size:11px;overflow:hidden}.session-user .avatar img,.session-avatar img{width:100%;height:100%;object-fit:cover;display:block}.session-user .user-meta{display:flex;flex-direction:column;line-height:1.15}.session-user .user-meta strong{font-size:12px}.session-user .user-meta span{font-size:10px;opacity:.65}.logout-btn{border:0;background:transparent;cursor:pointer;margin-left:8px;width:34px;height:34px;border-radius:9px;font-size:17px}.logout-btn:hover{background:#f1f1f1}.session-modal{position:fixed;inset:0;background:rgba(0,0,0,.38);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:9999}.session-modal.open{display:flex}.session-box{width:min(390px,calc(100% - 32px));background:#fff;border-radius:18px;padding:22px;box-shadow:0 22px 70px rgba(0,0,0,.22)}.session-head{display:flex;gap:12px;align-items:center;margin-bottom:18px}.session-avatar{width:44px;height:44px;border-radius:13px;background:#111;color:#fff;display:grid;place-items:center;font-weight:800;overflow:hidden}.session-head strong,.session-head span{display:block}.session-head span{font-size:12px;opacity:.58;margin-top:3px}.session-info{border:1px solid #eee;border-radius:13px;padding:12px 14px}.session-row{display:flex;justify-content:space-between;gap:16px;padding:7px 0;font-size:13px}.session-row span{opacity:.58}.session-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.session-btn{border:1px solid #ddd;background:#fff;border-radius:10px;padding:9px 13px;cursor:pointer;font-weight:600}.session-btn.logout{background:#111;color:#fff;border-color:#111}
 </style>
 
 <style id="zima-dashboard-sidebar-exact">
@@ -686,6 +697,7 @@
     <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i class="bi bi-grid-3x3-gap"></i></span><span>Inicio</span></a>
     <a class="nav-item" href="planilla.html"><span class="nav-icon"><i class="bi bi-file-earmark-plus"></i></span><span>Nueva planilla</span></a>
     <a class="nav-item active" href="historial.html"><span class="nav-icon"><i class="bi bi-clock-history"></i></span><span>Historial</span></a>
+    <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i class="bi bi-shield-check"></i></span><span>Gran admin</span></a>
   </nav>
 
   <div class="sidebar-bottom">
@@ -719,6 +731,7 @@
               <option value="APROBADO">Aprobado</option>
               <option value="ENTREGADA">Entregada</option>
               <option value="CERRADA">Cerrada</option>
+              <option value="ANULADA">Anulada</option>
             </select><input id="fecha" class="field" type="date"></div><button class="btn btn-dark" id="refreshBtn" type="button"
             onclick="cargar()"><i class="bi bi-arrow-clockwise"></i> Actualizar</button>
         </div>
@@ -779,7 +792,7 @@
   </div>
   <script src="zima-ui.js"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzcTUFKBSpOF5G1Nh3-B9yEkRkihYIik3npJDLXloSgIxbAJ5PYhnW1fvoQYySBEyaY7Q/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
     function onlineRun(fn, arg) { return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg)); }
     function leerSesionLocal(){ const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','usuarioSesion','usuario','ZIMA_USER']; for(const storage of [localStorage,sessionStorage]){ for(const k of keys){ try{ const raw=storage.getItem(k); if(!raw || raw==='ACTIVA') continue; if(raw.trim().startsWith('{')) return JSON.parse(raw); return {usuario:raw}; }catch(e){} } } return {}; }
@@ -787,25 +800,62 @@
     function zimaJsonp(params={}){ return new Promise((resolve,reject)=>{ const cb='__zima_historial_'+Date.now()+'_'+Math.random().toString(36).slice(2); const script=document.createElement('script'); const q=new URLSearchParams({...params,callback:cb}); const timer=setTimeout(()=>{cleanup();reject(new Error('Tiempo agotado al conectar con el Web App.'));},20000); function cleanup(){clearTimeout(timer);try{delete window[cb];}catch(e){window[cb]=undefined;}script.remove();} window[cb]=data=>{cleanup();resolve(data);}; script.onerror=()=>{cleanup();reject(new Error('No fue posible acceder al Web App.'));}; script.src=API_URL+'?'+q.toString(); document.head.appendChild(script); }); }
     async function zimaFetchGet(params={}){ const r=await fetch(API_URL+'?'+new URLSearchParams(params),{method:'GET',redirect:'follow',cache:'no-store',headers:{'Accept':'application/json'}}); if(!r.ok)throw Error('HTTP '+r.status); const text=await r.text(); return JSON.parse(text); }
     async function apiGet(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiGet', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); try { return await zimaFetchGet(payload); } catch(fetchError) { return zimaJsonp(payload); } }
-    const SESSION = (() => { let data = null; try { data = JSON.parse(localStorage.getItem('ZIMA360_SESION') || localStorage.getItem('ZIMA_SESION') || sessionStorage.getItem('ZIMA360_SESION') || sessionStorage.getItem('ZIMA_SESION') || 'null'); } catch(e) {} return { user:data?.usuario || data?.user || 'Usuario ZIMA', name:data?.nombre || data?.name || data?.usuario || 'Usuario ZIMA', role:data?.rol || data?.role || 'USUARIO', peaje:data?.peaje || data?.office || 'Administración central' }; })();
-    function setupSession(){ const name=SESSION.name || SESSION.user; const peaje=SESSION.peaje || 'Administración central'; const h=document.getElementById('headerUser'), p=document.getElementById('headerPeaje'), a=document.getElementById('headerAvatar'), sp=document.getElementById('sidebarPeaje'); if(h) h.textContent=name; if(p) p.textContent=peaje; if(sp) sp.textContent=peaje; if(a) a.textContent=name.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'ZU'; }
-    function abrirModalSesion(){ const m=document.getElementById('sessionModal'); if(!m)return; document.getElementById('modalSessionUser').textContent=SESSION.name || SESSION.user; document.getElementById('modalSessionRole').textContent=SESSION.role; document.getElementById('modalSessionPeaje').textContent=SESSION.peaje; document.getElementById('sessionAvatar').textContent=(SESSION.name||SESSION.user||'ZU').split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'ZU'; m.classList.add('open'); }
+    const SESSION = (() => { let data = null; try { data = JSON.parse(localStorage.getItem('ZIMA360_SESION') || localStorage.getItem('ZIMA_SESION') || sessionStorage.getItem('ZIMA360_SESION') || sessionStorage.getItem('ZIMA_SESION') || 'null'); } catch(e) {} const foto=localStorage.getItem('ZIMA360_FOTO') || sessionStorage.getItem('ZIMA360_FOTO') || data?.foto || data?.FOTO || data?.photo || ''; return { user:data?.usuario || data?.user || 'Usuario ZIMA', name:data?.nombre || data?.name || data?.usuario || 'Usuario ZIMA', role:data?.rol || data?.role || 'USUARIO', peaje:data?.peaje || data?.office || 'Administración central', foto:foto }; })();
+    function iniciales(name){ return String(name||'ZU').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'ZU'; }
+    function pintarAvatar(el,foto,nombre){ if(!el)return; const src=String(foto||'').trim(); if(src){ el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'" onerror="this.remove();this.parentElement.textContent=\''+esc(iniciales(nombre)).replace(/'/g,'')+'\'">'; }else{ el.textContent=iniciales(nombre); } }
+    function guardarPerfilSesion(perfil){ perfil=perfil||{}; const foto=String(perfil.foto||perfil.FOTO||perfil.photo||'').trim(); if(perfil.nombre)SESSION.name=perfil.nombre; if(perfil.rol)SESSION.role=perfil.rol; if(perfil.peaje)SESSION.peaje=perfil.peaje; if(foto)SESSION.foto=foto; try{ if(foto)localStorage.setItem('ZIMA360_FOTO',foto); if(perfil.nombre)localStorage.setItem('ZIMA360_NOMBRE',perfil.nombre); if(perfil.rol)localStorage.setItem('ZIMA360_ROL',perfil.rol); if(perfil.peaje)localStorage.setItem('ZIMA360_PEAJE',perfil.peaje); ['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO'].forEach(key=>{ const raw=localStorage.getItem(key)||sessionStorage.getItem(key); if(!raw||!raw.trim().startsWith('{'))return; try{ const data=JSON.parse(raw); if(perfil.nombre)data.nombre=perfil.nombre; if(perfil.rol)data.rol=perfil.rol; if(perfil.peaje)data.peaje=perfil.peaje; if(foto){data.foto=foto;data.FOTO=foto;} localStorage.setItem(key,JSON.stringify(data)); sessionStorage.setItem(key,JSON.stringify(data)); }catch(e){} }); }catch(e){} setupSession(); }
+    async function refrescarPerfil(){ try{ const data=await apiGet('perfil'); if(data&&data.ok!==false)guardarPerfilSesion(data); }catch(e){} }
+    function esGranAdministradorSesion(){ const rol=String(SESSION.role||'').trim().toUpperCase(); return rol==='ADMIN'||rol==='ADMINISTRADOR'; }
+    function mostrarMenuAdmin(){ document.querySelectorAll('.admin-only').forEach(item=>{ item.style.display=esGranAdministradorSesion()?'flex':'none'; }); }
+    function setupSession(){ const name=SESSION.name || SESSION.user; const peaje=SESSION.peaje || 'Administración central'; const h=document.getElementById('headerUser'), p=document.getElementById('headerPeaje'), a=document.getElementById('headerAvatar'), sp=document.getElementById('sidebarPeaje'); if(h) h.textContent=name; if(p) p.textContent=peaje; if(sp) sp.textContent=peaje; pintarAvatar(a,SESSION.foto,name); }
+    function abrirModalSesion(){ const m=document.getElementById('sessionModal'); if(!m)return; document.getElementById('modalSessionUser').textContent=SESSION.name || SESSION.user; document.getElementById('modalSessionRole').textContent=SESSION.role; document.getElementById('modalSessionPeaje').textContent=SESSION.peaje; pintarAvatar(document.getElementById('sessionAvatar'),SESSION.foto,SESSION.name||SESSION.user); m.classList.add('open'); }
     function cerrarModalSesion(){ const m=document.getElementById('sessionModal'); if(m)m.classList.remove('open'); }
     function cerrarModalSesionDesdeFondo(e){ if(e.target && e.target.id==='sessionModal') cerrarModalSesion(); }
     function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'<i class="bi bi-x-lg"></i>':'<i class="bi bi-list"></i>';toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');} }
     function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<i class="bi bi-list"></i>';toggle.setAttribute('aria-label','Abrir menú');} }
-    function cerrarSesion(){ try{ ['ZIMA360_SESION','ZIMA_SESION','ZIMA_USER_NAME','ZIMA_PEAJE','ZIMA_LAST_LOGIN'].forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k);}); }catch(e){} location.href='login.html'; }
+    function cerrarSesion(){ try{ ['ZIMA360_SESION','ZIMA_SESION','ZIMA_USER_NAME','ZIMA_PEAJE','ZIMA_LAST_LOGIN','ZIMA360_FOTO','ZIMA360_EMAIL','ZIMA360_TELEFONO','ZIMA360_CARGO'].forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k);}); }catch(e){} location.href='login.html'; }
     document.addEventListener('click',e=>{if(e.target.closest('.nav-item'))cerrarMenu();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarMenu();}});
-    function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function statusClass(v) { return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA'].includes(v) ? v : 'BORRADOR' }
-    let allRows = []; function render() { const q = $('buscar').value.trim().toLowerCase(), f = $('estado').value, d = $('fecha').value; const rows = allRows.filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || x.estado === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong></td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(x.estado === 'APROBADO' ? 'APROBADO' : (x.estado || 'BORRADOR'))}</span></td><td><button class="action" title="Ver planilla" onclick="ver('${encodeURIComponent(x.id || '')}')"><i class="bi bi-eye-fill"></i></button></td></tr>`).join('') }
+    function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function statusClass(v) { return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA', 'ANULADA'].includes(v) ? v : 'BORRADOR' }
+    async function apiPost(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
+    function editar(id) { if (!id) return; location.href = 'planilla.html?id=' + id; }
+    async function anular(id) {
+      if (!id || !esGranAdministradorSesion()) return;
+      const decodedId = decodeURIComponent(id);
+      const row = allRows.find(x => String(x.id) === decodedId);
+      const codigo = row?.codigo || 'esta planilla';
+      if (!confirm('¿Anular ' + codigo + '? Esta acción quedará registrada y se enviará correo de seguimiento.')) return;
+      try {
+        ZimaUI.notice('msg', 'Anulando planilla...');
+        const r = await apiPost('delete', { id: decodedId });
+        if (!r.ok) throw Error(r.error || r.message || 'No fue posible anular la planilla.');
+        allRows = allRows.map(x => String(x.id) === decodedId ? Object.assign({}, x, { estado: 'ANULADA', updatedAt: new Date().toISOString() }) : x);
+        render();
+        ZimaUI.notice('msg', 'Planilla anulada. Se notificó el cambio por correo si el usuario tiene email configurado.', 'success');
+      } catch (e) {
+        ZimaUI.notice('msg', e.message, 'error');
+      }
+    }
+    function accionesFila(x) {
+      const id = encodeURIComponent(x.id || '');
+      const anulada = String(x.estado || '').toUpperCase() === 'ANULADA';
+      const admin = esGranAdministradorSesion();
+      return '<div class="row-actions">' +
+        '<button class="action" title="Ver planilla" onclick="ver(\'' + id + '\')"><i class="bi bi-eye-fill"></i></button>' +
+        (admin ? '<button class="action" title="Editar / actualizar planilla" onclick="editar(\'' + id + '\')"><i class="bi bi-pencil-square"></i></button>' : '') +
+        (admin && !anulada ? '<button class="action" title="Anular planilla" onclick="anular(\'' + id + '\')"><i class="bi bi-x-octagon"></i></button>' : '') +
+      '</div>';
+    }
+    let allRows = []; function render() { const q = $('buscar').value.trim().toLowerCase(), f = $('estado').value, d = $('fecha').value; const rows = allRows.filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || x.estado === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong></td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(x.estado === 'APROBADO' ? 'APROBADO' : (x.estado || 'BORRADOR'))}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
     let currentPreviewId = '';
     function ver(id) { if (!id) return; const decodedId=decodeURIComponent(id); const row = allRows.find(x => String(x.id) === decodedId); const modal = $('pdfModal'); const frame = $('pdfFrame'); const loading=$('pdfLoading'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); if(loading)loading.hidden=false; frame.onload=function(){ if(loading)loading.hidden=true; }; if(currentPreviewId!==decodedId){ frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; currentPreviewId=decodedId; } ZimaUI.openModal(modal); }
     function cerrarPdf() { const frame = $('pdfFrame'); ZimaUI.closeModal('pdfModal'); if (frame) frame.src = 'about:blank'; currentPreviewId=''; const loading=$('pdfLoading'); if(loading)loading.hidden=true; }
     function cerrarPdfDesdeFondo(e) { if (e.target && e.target.id === 'pdfModal') cerrarPdf(); }
-    async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando…'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }
-    setupSession(); $('buscar').addEventListener('input', render); $('estado').addEventListener('change', render); $('fecha').addEventListener('change', render); cargar();
+    async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando...'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }
+    setupSession(); mostrarMenuAdmin(); refrescarPerfil().then(mostrarMenuAdmin); $('buscar').addEventListener('input', render); $('estado').addEventListener('change', render); $('fecha').addEventListener('change', render); cargar();
   </script>
 </body>
 
 </html>
+
+

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
  <head>
   <meta charset="utf-8"/>
@@ -775,6 +775,7 @@ body{font-family:Inter,Arial,sans-serif}
         <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
         <a class="nav-item active" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
+        <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
         
       </nav>
 
@@ -794,7 +795,7 @@ body{font-family:Inter,Arial,sans-serif}
       </div>
      </div>
      <div class="muted">
-      ● En l&iacute;nea
+      <span aria-hidden="true" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#4ade80;margin-right:6px;vertical-align:middle"></span>En linea
      </div>
     </header>
     <div class="content">
@@ -815,6 +816,10 @@ body{font-family:Inter,Arial,sans-serif}
        <button class="btn btn-primary" id="saveBtn" type="button" onclick="guardar()">
         <i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i>
         Guardar en línea
+       </button>
+       <button class="btn btn-danger" id="annulBtn" type="button" onclick="anularPlanilla()" style="display:none">
+        <i class="bi bi-x-octagon" aria-hidden="true"></i>
+        Anular
        </button>
        <button class="btn btn-dark" id="printBtn" type="button" onclick="imprimir()">
         <i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i>
@@ -1035,7 +1040,7 @@ body{font-family:Inter,Arial,sans-serif}
 
   <script src="zima-ui.js"></script>
   <script>
-   const API_URL='https://script.google.com/macros/s/AKfycbzcTUFKBSpOF5G1Nh3-B9yEkRkihYIik3npJDLXloSgIxbAJ5PYhnW1fvoQYySBEyaY7Q/exec';
+   const API_URL='https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec';
 try{localStorage.setItem('ZIMA_API_URL',API_URL);}catch(_){}
 
 function zimaSession(){
@@ -1066,6 +1071,16 @@ function zimaSessionParams(){
     sessionToken:token
   };
 }
+function esGranAdministradorSesion(){
+  const rol=String(zimaSessionParams().rol||'').trim().toUpperCase();
+  return rol==='ADMIN'||rol==='ADMINISTRADOR';
+}
+function mostrarMenuAdmin(){
+  document.querySelectorAll('.admin-only').forEach(item=>{
+    item.style.display=esGranAdministradorSesion()?'flex':'none';
+  });
+}
+mostrarMenuAdmin();
 
 function onlineRun(fn,arg){return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg))}
 function zimaJsonp(params={}){
@@ -1153,6 +1168,20 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     const totalVisual=$('totalVisual');
     const letrasInput=$('letras');
     const msg=$('msg');
+
+    function actualizarAccionesAdmin(){
+      const saveBtn=$('saveBtn');
+      const annulBtn=$('annulBtn');
+      const editando=Boolean(id);
+      if(saveBtn){
+        saveBtn.innerHTML=editando
+          ? '<i class="bi bi-cloud-check-fill" aria-hidden="true"></i> Actualizar en línea'
+          : '<i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i> Guardar en línea';
+      }
+      if(annulBtn){
+        annulBtn.style.display=(editando && esGranAdministradorSesion())?'inline-flex':'none';
+      }
+    }
 
     /*
      * PLANILLA NUEVA: tomar el peaje directamente de la sesión activa.
@@ -1286,6 +1315,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     }
 
     async function cargar(){
+      actualizarAccionesAdmin();
       if(!id){actualizar();return}
       try{
         const r=await apiGet('get',{id});
@@ -1297,6 +1327,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           else e.value=r.row[k]??'';
         });
         actualizar();
+        actualizarAccionesAdmin();
         if(openPreviewOnLoad) setTimeout(abrirVistaPrevia,250);
       }catch(e){
         msg.innerHTML='<div class="notice error">'+esc(e.message)+'</div>';
@@ -1312,18 +1343,45 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         return;
       }
       try{
+        const editando=Boolean(id);
         window.__zimaSavingPlanilla=true;
-        ZimaUI.busy('saveBtn',true,'Guardando...');
-        ZimaUI.notice(msg,'Guardando...');
+        ZimaUI.busy('saveBtn',true,editando?'Actualizando...':'Guardando...');
+        ZimaUI.notice(msg,editando?'Actualizando la planilla...':'Guardando la planilla...');
         const r=await apiPost({action:id?'update':'save',id,...d,estado:'APROBADO'});
         if(!r.ok)throw Error(r.error);
         id=r.row.id;
-        msg.innerHTML='<div class="notice success">Guardado en línea. Código: <b>'+esc(r.row.codigo)+'</b></div>';
+        actualizarAccionesAdmin();
+        msg.innerHTML='<div class="notice success">'+(editando?'Planilla actualizada':'Planilla guardada')+' correctamente. Código: <b>'+esc(r.row.codigo)+'</b></div>';
       }catch(e){
         ZimaUI.notice(msg,e.message,'error');
       }finally{
         window.__zimaSavingPlanilla=false;
         ZimaUI.busy('saveBtn',false);
+      }
+    }
+
+    async function anularPlanilla(){
+      if(!id || !esGranAdministradorSesion())return;
+      const codigo=($('codigo')&&$('codigo').value)||'esta planilla';
+      const confirmar=await ZimaUI.confirm({
+        title:'Anular planilla',
+        message:'Esta planilla pasará a estado ANULADA. El cambio quedará registrado en auditoría y se enviará correo de seguimiento si el usuario tiene email configurado.',
+        detail:'Código: '+codigo,
+        confirmText:'Anular planilla',
+        cancelText:'Conservar planilla',
+        danger:true
+      });
+      if(!confirmar)return;
+      try{
+        ZimaUI.busy('annulBtn',true,'Anulando...');
+        ZimaUI.notice(msg,'Anulando la planilla...');
+        const r=await apiPost({action:'delete',id});
+        if(!r.ok)throw Error(r.error||r.message||'No fue posible anular la planilla.');
+        msg.innerHTML='<div class="notice success">Planilla anulada correctamente. Se notificó el cambio por correo si el usuario tiene email configurado.</div>';
+      }catch(e){
+        ZimaUI.notice(msg,e.message,'error');
+      }finally{
+        ZimaUI.busy('annulBtn',false);
       }
     }
 
@@ -1490,3 +1548,5 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 </body>
 </html>
+
+

@@ -48,7 +48,11 @@ const ZIMA = {
     'PEAJE',
     'ESTADO',
     'FECHA_CREACION',
-    'ULTIMO_INGRESO'
+    'ULTIMO_INGRESO',
+    'EMAIL',
+    'TELEFONO',
+    'CARGO',
+    'FOTO'
   ]
 };
 
@@ -459,6 +463,35 @@ function prepararHojaUsuarios_(ss) {
     sh.setFrozenRows(1);
   }
 
+  const currentHeaders =
+    sh
+      .getRange(
+        1,
+        1,
+        1,
+        Math.max(
+          sh.getLastColumn(),
+          1
+        )
+      )
+      .getValues()[0]
+      .map(function(header) {
+        return String(header || '').trim();
+      });
+
+  ZIMA.USUARIOS_HEADERS.forEach(function(header) {
+    if (currentHeaders.indexOf(header) === -1) {
+      sh
+        .getRange(
+          1,
+          sh.getLastColumn() + 1
+        )
+        .setValue(header)
+        .setFontWeight('bold');
+      currentHeaders.push(header);
+    }
+  });
+
   return sh;
 }
 
@@ -486,6 +519,10 @@ function crearUsuariosIniciales_(ss) {
       'TODOS',
       'ACTIVO',
       new Date(),
+      '',
+      '',
+      '',
+      'Gran Administrador',
       ''
     ],
 
@@ -498,6 +535,10 @@ function crearUsuariosIniciales_(ss) {
       'TODOS',
       'ACTIVO',
       new Date(),
+      '',
+      '',
+      '',
+      'Interventoría',
       ''
     ]
 
@@ -643,9 +684,9 @@ function autenticarUsuario(
           2,
           1,
           lastRow - 1,
-          9
+          ZIMA.USUARIOS_HEADERS.length
         )
-        .getDisplayValues();
+        .getValues();
 
     for (
       let i = 0;
@@ -689,6 +730,29 @@ function autenticarUsuario(
         )
           .trim()
           .toUpperCase();
+
+      const email =
+        String(
+          fila[9] || ''
+        ).trim();
+
+      const telefono =
+        String(
+          fila[10] || ''
+        ).trim();
+
+      const cargo =
+        String(
+          fila[11] || ''
+        ).trim();
+
+      const foto =
+        obtenerFotoUsuarioPersistente_(
+          usuarioBD,
+          String(
+            fila[12] || ''
+          ).trim()
+        );
 
       const usuarioCoincide =
         usuarioBD.toLowerCase() ===
@@ -761,6 +825,18 @@ function autenticarUsuario(
           estado:
             estado,
 
+          email:
+            email,
+
+          telefono:
+            telefono,
+
+          cargo:
+            cargo,
+
+          foto:
+            foto,
+
           loginAt:
             new Date().toISOString()
         };
@@ -801,6 +877,18 @@ function autenticarUsuario(
           estado:
             estado,
 
+          email:
+            email,
+
+          telefono:
+            telefono,
+
+          cargo:
+            cargo,
+
+          foto:
+            foto,
+
           usuarioData: {
             usuario:
               usuarioBD,
@@ -818,7 +906,19 @@ function autenticarUsuario(
               'TODOS',
 
             estado:
-              estado
+              estado,
+
+            email:
+              email,
+
+            telefono:
+              telefono,
+
+            cargo:
+              cargo,
+
+            foto:
+              foto
           },
 
           mensaje:
@@ -1137,6 +1237,14 @@ function crearUsuario(datos) {
     );
   }
 
+  const fotoUsuario =
+    String(datos.foto || '').trim();
+
+  guardarFotoUsuarioPersistente_(
+    usuario,
+    fotoUsuario
+  );
+
   sh.appendRow([
 
     Utilities.getUuid(),
@@ -1156,7 +1264,15 @@ function crearUsuario(datos) {
 
     new Date(),
 
-    ''
+    '',
+
+    String(datos.email || '').trim(),
+
+    String(datos.telefono || '').trim(),
+
+    String(datos.cargo || '').trim(),
+
+    fotoUsuario
 
   ]);
 
@@ -1172,7 +1288,434 @@ function crearUsuario(datos) {
       rol,
     peaje:
       peaje ||
-      'TODOS'
+      'TODOS',
+    email:
+      String(datos.email || '').trim(),
+    telefono:
+      String(datos.telefono || '').trim(),
+    cargo:
+      String(datos.cargo || '').trim(),
+    foto:
+      fotoUsuario
+  };
+}
+
+
+function actualizarUsuario(datos) {
+
+  const ss =
+    getSpreadsheet_();
+
+  const sh =
+    prepararHojaUsuarios_(ss);
+
+  datos =
+    datos || {};
+
+  const usuario =
+    String(
+      datos.usuario ||
+      ''
+    ).trim();
+
+  if (!usuario) {
+    throw new Error(
+      'El usuario es obligatorio.'
+    );
+  }
+
+  const nombre =
+    String(
+      datos.nombre ||
+      ''
+    ).trim();
+
+  const rol =
+    String(
+      datos.rol ||
+      ''
+    )
+      .trim()
+      .toUpperCase();
+
+  const peaje =
+    String(
+      datos.peaje ||
+      ''
+    ).trim();
+
+  const estado =
+    String(
+      datos.estado ||
+      'ACTIVO'
+    )
+      .trim()
+      .toUpperCase();
+
+  if (!nombre) {
+    throw new Error(
+      'El nombre es obligatorio.'
+    );
+  }
+
+  if (
+    rol !== 'ADMIN' &&
+    rol !== 'ADMINISTRADOR' &&
+    rol !== 'INTERVENTORIA' &&
+    rol !== 'PEAJE'
+  ) {
+    throw new Error(
+      'Rol no válido.'
+    );
+  }
+
+  if (
+    estado !== 'ACTIVO' &&
+    estado !== 'INACTIVO'
+  ) {
+    throw new Error(
+      'Estado no válido.'
+    );
+  }
+
+  if (
+    rol === 'PEAJE' &&
+    !peaje
+  ) {
+    throw new Error(
+      'Debe indicar el peaje del usuario.'
+    );
+  }
+
+  const headers =
+    sh
+      .getRange(
+        1,
+        1,
+        1,
+        sh.getLastColumn()
+      )
+      .getValues()[0]
+      .map(function(header) {
+        return String(header || '').trim();
+      });
+
+  const col = function(name) {
+    const index =
+      headers.indexOf(name);
+
+    if (index === -1) {
+      throw new Error(
+        'Columna de usuario no configurada: ' +
+        name
+      );
+    }
+
+    return index + 1;
+  };
+
+  const datosHoja =
+    sh.getDataRange()
+      .getValues();
+
+  for (let i = 1; i < datosHoja.length; i++) {
+    if (
+      String(datosHoja[i][col('USUARIO') - 1] || '').trim().toLowerCase() ===
+      usuario.toLowerCase()
+    ) {
+      const row =
+        i + 1;
+
+      sh.getRange(row, col('NOMBRE')).setValue(nombre);
+      sh.getRange(row, col('ROL')).setValue(rol);
+      sh.getRange(row, col('PEAJE')).setValue(peaje || 'TODOS');
+      sh.getRange(row, col('ESTADO')).setValue(estado);
+      sh.getRange(row, col('EMAIL')).setValue(String(datos.email || '').trim());
+      sh.getRange(row, col('TELEFONO')).setValue(String(datos.telefono || '').trim());
+      sh.getRange(row, col('CARGO')).setValue(String(datos.cargo || '').trim());
+      const fotoUsuario =
+        String(datos.foto || '').trim();
+
+      sh.getRange(row, col('FOTO')).setValue(fotoUsuario);
+
+      guardarFotoUsuarioPersistente_(
+        usuario,
+        fotoUsuario
+      );
+
+      const nuevaContrasena =
+        String(
+          datos.nuevaContrasena ||
+          datos.password ||
+          ''
+        );
+
+      if (nuevaContrasena) {
+        if (nuevaContrasena.length < 6) {
+          throw new Error(
+            'La contraseña debe tener al menos 6 caracteres.'
+          );
+        }
+
+        sh.getRange(row, col('CONTRASENA'))
+          .setValue(
+            hashContrasena_(nuevaContrasena)
+          );
+      }
+
+      const perfilActualizado = {
+        ok: true,
+        mensaje:
+          'Perfil actualizado correctamente.',
+        usuario:
+          usuario,
+        nombre:
+          nombre,
+        rol:
+          rol,
+        peaje:
+          peaje ||
+          'TODOS',
+        estado:
+          estado,
+        email:
+          String(datos.email || '').trim(),
+        telefono:
+          String(datos.telefono || '').trim(),
+        cargo:
+          String(datos.cargo || '').trim(),
+        foto:
+          fotoUsuario
+      };
+
+      actualizarSesionCacheSiCorresponde_(
+        datos,
+        perfilActualizado
+      );
+
+      return perfilActualizado;
+    }
+  }
+
+  throw new Error(
+    'Usuario no encontrado.'
+  );
+}
+
+
+function fotoKeyUsuario_(
+  usuario
+) {
+
+  return 'ZIMA_FOTO_' +
+    String(usuario || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9_.-]/g, '_');
+}
+
+
+function guardarFotoUsuarioPersistente_(
+  usuario,
+  foto
+) {
+
+  const key =
+    fotoKeyUsuario_(
+      usuario
+    );
+
+  foto =
+    String(
+      foto || ''
+    ).trim();
+
+  try {
+
+    const props =
+      PropertiesService
+        .getScriptProperties();
+
+    if (foto) {
+      props.setProperty(
+        key,
+        foto
+      );
+    } else {
+      props.deleteProperty(
+        key
+      );
+    }
+
+  } catch (e) {}
+}
+
+
+function obtenerFotoUsuarioPersistente_(
+  usuario,
+  fotoHoja
+) {
+
+  fotoHoja =
+    String(
+      fotoHoja || ''
+    ).trim();
+
+  if (fotoHoja) {
+    return fotoHoja;
+  }
+
+  try {
+
+    return String(
+      PropertiesService
+        .getScriptProperties()
+        .getProperty(
+          fotoKeyUsuario_(
+            usuario
+          )
+        ) ||
+        ''
+    ).trim();
+
+  } catch (e) {
+
+    return '';
+  }
+}
+
+
+function actualizarSesionCacheSiCorresponde_(
+  datos,
+  perfil
+) {
+
+  const token =
+    String(
+      datos.token ||
+      datos.sessionToken ||
+      datos.sesion ||
+      ''
+    ).trim();
+
+  if (!token) {
+    return;
+  }
+
+  const sesionActual =
+    obtenerSesion_(
+      token
+    );
+
+  if (
+    !sesionActual ||
+    String(sesionActual.usuario || '').trim().toLowerCase() !==
+      String(perfil.usuario || '').trim().toLowerCase()
+  ) {
+    return;
+  }
+
+  const sesionNueva =
+    Object.assign(
+      {},
+      sesionActual,
+      {
+        usuario:
+          perfil.usuario,
+        nombre:
+          perfil.nombre,
+        rol:
+          perfil.rol,
+        peaje:
+          perfil.peaje,
+        estado:
+          perfil.estado,
+        email:
+          perfil.email || '',
+        telefono:
+          perfil.telefono || '',
+        cargo:
+          perfil.cargo || '',
+        foto:
+          perfil.foto || ''
+      }
+    );
+
+  CacheService
+    .getScriptCache()
+    .put(
+      ZIMA.SESSION_PREFIX + token,
+      JSON.stringify(sesionNueva),
+      ZIMA.SESSION_SECONDS
+    );
+}
+
+
+function obtenerPerfilUsuario_(params) {
+
+  const contexto =
+    obtenerContextoUsuario_(
+      params
+    );
+
+  if (!contexto.ok) {
+    return contexto;
+  }
+
+  const sesion =
+    contexto.sesion;
+
+  const usuarioHoja =
+    buscarUsuario_(
+      sesion.usuario
+    );
+
+  if (!usuarioHoja) {
+    return {
+      ok: false,
+      error:
+        'Usuario no encontrado.'
+    };
+  }
+
+  return {
+    ok: true,
+    usuario:
+      usuarioHoja.USUARIO ||
+      sesion.usuario,
+    nombre:
+      usuarioHoja.NOMBRE ||
+      sesion.nombre ||
+      usuarioHoja.USUARIO ||
+      '',
+    rol:
+      usuarioHoja.ROL ||
+      sesion.rol ||
+      '',
+    peaje:
+      usuarioHoja.PEAJE ||
+      sesion.peaje ||
+      '',
+    estado:
+      usuarioHoja.ESTADO ||
+      sesion.estado ||
+      '',
+    email:
+      usuarioHoja.EMAIL ||
+      '',
+    telefono:
+      usuarioHoja.TELEFONO ||
+      '',
+    cargo:
+      usuarioHoja.CARGO ||
+      '',
+    foto:
+      obtenerFotoUsuarioPersistente_(
+        usuarioHoja.USUARIO ||
+        sesion.usuario,
+        usuarioHoja.FOTO ||
+        ''
+      )
   };
 }
 
@@ -1243,6 +1786,134 @@ function listarUsuarios() {
       delete copia.CONTRASENA;
       return copia;
     });
+}
+
+
+/* ============================================================
+   LISTAR PEAJES
+   ============================================================ */
+
+function listarPeajes_(params) {
+
+  params =
+    params || {};
+
+  const contexto =
+    obtenerContextoUsuario_(
+      params
+    );
+
+  if (!contexto.ok) {
+    return contexto;
+  }
+
+  const sesion =
+    contexto.sesion;
+
+  const mapa = {};
+
+  const agregar = function(value) {
+
+    const nombre =
+      String(
+        value || ''
+      ).trim();
+
+    const key =
+      normalizarPeaje_(
+        nombre
+      );
+
+    if (
+      !key ||
+      key === 'TODOS' ||
+      key === 'ADMINISTRACION CENTRAL' ||
+      key === 'ADMINISTRACIÓN CENTRAL'
+    ) {
+      return;
+    }
+
+    if (!mapa[key]) {
+      mapa[key] =
+        nombre;
+    }
+  };
+
+  let planillas = [];
+
+  try {
+    planillas =
+      readAllRows_(
+        getPlanillasSheet_()
+      );
+  } catch (e) {
+    planillas = [];
+  }
+
+  if (
+    !esUsuarioGlobal_(
+      sesion
+    )
+  ) {
+
+    const peajeSesion =
+      normalizarPeaje_(
+        sesion.peaje
+      );
+
+    planillas =
+      planillas.filter(
+        function(row) {
+          return normalizarPeaje_(
+            row.peaje
+          ) === peajeSesion;
+        }
+      );
+  }
+
+  planillas.forEach(
+    function(row) {
+      agregar(
+        row.peaje
+      );
+    }
+  );
+
+  try {
+
+    listarUsuarios()
+      .forEach(
+        function(usuario) {
+
+          if (
+            esUsuarioGlobal_(
+              sesion
+            ) ||
+            normalizarPeaje_(
+              usuario.PEAJE
+            ) === normalizarPeaje_(
+              sesion.peaje
+            )
+          ) {
+            agregar(
+              usuario.PEAJE
+            );
+          }
+        }
+      );
+
+  } catch (e) {}
+
+  return {
+    ok: true,
+    peajes:
+      Object
+        .keys(mapa)
+        .sort()
+        .map(function(key) {
+          return mapa[key];
+        })
+  };
 }
 
 
@@ -1430,6 +2101,75 @@ function doGet(e) {
     }
 
     if (
+      action === 'crearusuario' ||
+      action === 'actualizarusuario' ||
+      action === 'cambiarcontrasenausuario' ||
+      action === 'cambiarestadousuario'
+    ) {
+
+      const contexto =
+        obtenerContextoUsuario_(
+          params
+        );
+
+      if (!contexto.ok) {
+        return jsonOutput_(
+          contexto,
+          callback
+        );
+      }
+
+      if (
+        !esUsuarioAdministrador_(
+          contexto.sesion
+        )
+      ) {
+        return jsonOutput_({
+          ok: false,
+          error:
+            'Solo un administrador puede modificar usuarios.'
+        }, callback);
+      }
+
+      if (action === 'crearusuario') {
+        return jsonOutput_(
+          crearUsuario(
+            params
+          ),
+          callback
+        );
+      }
+
+      if (action === 'actualizarusuario') {
+        return jsonOutput_(
+          actualizarUsuario(
+            params
+          ),
+          callback
+        );
+      }
+
+      if (action === 'cambiarcontrasenausuario') {
+        return jsonOutput_(
+          cambiarContrasenaUsuario(
+            params.usuario,
+            params.nuevaContrasena ||
+            params.password
+          ),
+          callback
+        );
+      }
+
+      return jsonOutput_(
+        cambiarEstadoUsuario(
+          params.usuario,
+          params.estado
+        ),
+        callback
+      );
+    }
+
+    if (
       action === 'sesion'
     ) {
 
@@ -1456,8 +2196,28 @@ function doGet(e) {
         peaje:
           contexto.sesion.peaje,
         estado:
-          contexto.sesion.estado
+          contexto.sesion.estado,
+        email:
+          contexto.sesion.email || '',
+        telefono:
+          contexto.sesion.telefono || '',
+        cargo:
+          contexto.sesion.cargo || '',
+        foto:
+          contexto.sesion.foto || ''
       }, callback);
+    }
+
+    if (
+      action === 'perfil'
+    ) {
+
+      return jsonOutput_(
+        obtenerPerfilUsuario_(
+          params
+        ),
+        callback
+      );
     }
 
     return jsonOutput_(
@@ -1593,6 +2353,39 @@ function doPost(e) {
 
     if (
       action ===
+      'actualizarusuario'
+    ) {
+
+      const contexto =
+        obtenerContextoUsuario_(
+          payload
+        );
+
+      if (!contexto.ok) {
+        return jsonOutput_(contexto);
+      }
+
+      if (
+        !esUsuarioAdministrador_(
+          contexto.sesion
+        )
+      ) {
+        return jsonOutput_({
+          ok: false,
+          error:
+            'Solo un administrador puede actualizar usuarios.'
+        });
+      }
+
+      return jsonOutput_(
+        actualizarUsuario(
+          payload
+        )
+      );
+    }
+
+    if (
+      action ===
       'cambiarcontrasenausuario'
     ) {
 
@@ -1714,6 +2507,12 @@ function apiGet(params) {
         params
       );
 
+    case 'peajes':
+
+      return listarPeajes_(
+        params
+      );
+
     case 'config':
 
       return obtenerConfiguracion();
@@ -1721,6 +2520,12 @@ function apiGet(params) {
     case 'sesion':
 
       return obtenerSesionRespuesta_(
+        params
+      );
+
+    case 'perfil':
+
+      return obtenerPerfilUsuario_(
         params
       );
 
@@ -1767,7 +2572,19 @@ function obtenerSesionRespuesta_(params) {
       contexto.sesion.peaje,
 
     estado:
-      contexto.sesion.estado
+      contexto.sesion.estado,
+
+    email:
+      contexto.sesion.email || '',
+
+    telefono:
+      contexto.sesion.telefono || '',
+
+    cargo:
+      contexto.sesion.cargo || '',
+
+    foto:
+      contexto.sesion.foto || ''
   };
 }
 
@@ -2156,6 +2973,14 @@ function actualizarPlanilla_(data) {
       sesion.usuario
     );
 
+    notificarCambioPlanilla_(
+      'ACTUALIZACION',
+      merged,
+      sesion,
+      'Planilla actualizada por ' +
+      sesion.usuario
+    );
+
     return {
 
       ok: true,
@@ -2264,6 +3089,9 @@ function eliminarPlanilla_(data) {
       };
     }
 
+    const fechaAnulacion =
+      new Date();
+
     sh
       .getRange(
         found.rowNumber,
@@ -2283,12 +3111,36 @@ function eliminarPlanilla_(data) {
         )
       )
       .setValue(
-        new Date()
+        fechaAnulacion
+      );
+
+    const anulada =
+      Object.assign(
+        {},
+        current,
+        {
+          estado:
+            'ANULADA',
+
+          updatedAt:
+            fechaAnulacion,
+
+          usuario:
+            sesion.usuario
+        }
       );
 
     registrarAuditoria_(
       'DELETE',
-      current,
+      anulada,
+      'Planilla anulada por ' +
+      sesion.usuario
+    );
+
+    notificarCambioPlanilla_(
+      'ANULACION',
+      anulada,
+      sesion,
       'Planilla anulada por ' +
       sesion.usuario
     );
@@ -3807,6 +4659,146 @@ function registrarAuditoria_(
     email
 
   ]);
+}
+
+
+/* ============================================================
+   NOTIFICACIONES DE SEGUIMIENTO
+   ============================================================ */
+
+function emailValido_(
+  value
+) {
+
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+    String(
+      value ||
+      ''
+    ).trim()
+  );
+}
+
+
+function obtenerEmailNotificacion_(
+  sesion
+) {
+
+  const emailSesion =
+    String(
+      sesion &&
+      sesion.email ||
+      ''
+    ).trim();
+
+  if (
+    emailValido_(
+      emailSesion
+    )
+  ) {
+    return emailSesion;
+  }
+
+  const emailGoogle =
+    obtenerUsuario_();
+
+  if (
+    emailValido_(
+      emailGoogle
+    )
+  ) {
+    return emailGoogle;
+  }
+
+  return '';
+}
+
+
+function notificarCambioPlanilla_(
+  accion,
+  row,
+  sesion,
+  detalle
+) {
+
+  try {
+
+    const destino =
+      obtenerEmailNotificacion_(
+        sesion
+      );
+
+    if (!destino) {
+      return;
+    }
+
+    const zona =
+      Session.getScriptTimeZone();
+
+    const fechaCambio =
+      Utilities.formatDate(
+        new Date(),
+        zona,
+        'yyyy-MM-dd HH:mm:ss'
+      );
+
+    const fechaPlanilla =
+      normalizeDateString_(
+        row.fecha
+      );
+
+    const asunto =
+      'ZIMA 360 - ' +
+      accion +
+      ' de planilla ' +
+      (
+        row.codigo ||
+        row.id ||
+        ''
+      );
+
+    const lineas = [
+      'Seguimiento ZIMA 360',
+      '',
+      'Accion: ' + accion,
+      'Detalle: ' + (detalle || ''),
+      'Fecha del cambio: ' + fechaCambio,
+      '',
+      'Planilla',
+      'Codigo: ' + (row.codigo || ''),
+      'ID: ' + (row.id || ''),
+      'Peaje: ' + (row.peaje || ''),
+      'Fecha: ' + fechaPlanilla,
+      'Estado: ' + (row.estado || ''),
+      'Total: ' + number_(row.total),
+      '',
+      'Usuario responsable',
+      'Usuario: ' + (sesion && sesion.usuario || ''),
+      'Nombre: ' + (sesion && sesion.nombre || ''),
+      'Rol: ' + (sesion && sesion.rol || ''),
+      '',
+      'Web App: ' + (obtenerWebAppUrl_() || '')
+    ];
+
+    MailApp.sendEmail({
+      to:
+        destino,
+
+      subject:
+        asunto,
+
+      body:
+        lineas.join('\n')
+    });
+
+  } catch (e) {
+
+    console.error(
+      'No fue posible enviar notificacion de planilla: ' +
+      errorMessage_(
+        e
+      )
+    );
+  }
 }
 
 

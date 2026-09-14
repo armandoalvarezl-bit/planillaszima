@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -25,7 +25,7 @@
 </style><style>
 
 /* ==========================================================
-   ZIMA 360 — estilos integrados y correcciones de layout
+   ZIMA 360 - estilos integrados y correcciones de layout
    ========================================================== */
 :root{
   --navy:#101827;--navy2:#1d2939;--ink:#17202b;--muted:#6b7280;
@@ -77,7 +77,8 @@ button,a{font:inherit}
 .icon-button:hover{background:#f2f4f6}
 .icon-button svg{width:17px;height:17px}
 .profile{display:flex;align-items:center;gap:9px}
-.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#e8edf2;color:#253242;font-size:10px;font-weight:900}
+.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#e8edf2;color:#253242;font-size:10px;font-weight:900;overflow:hidden}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block}
 .profile-text{display:grid;line-height:1.15}
 .profile-text strong{font-size:11px}.profile-text span{font-size:9px;color:#87909b;margin-top:3px}
 .profile-chevron{font-size:14px;color:#8a929c}
@@ -529,7 +530,7 @@ body{font-size:13px;-webkit-font-smoothing:antialiased}
 <style id="zima-ui-polish-v2">
 /* ==========================================================
    ZIMA 360 · AJUSTE VISUAL V2
-   SOLO PRESENTACIÓN — NO MODIFICA HTML, JS, API NI DATOS.
+   SOLO PRESENTACIÓN - NO MODIFICA HTML, JS, API NI DATOS.
    ========================================================== */
 :root{
   --z-side:238px;
@@ -548,7 +549,7 @@ body{font-size:13px;-webkit-font-smoothing:antialiased}
 html,body{background:var(--z-bg);color:var(--z-ink)}
 body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
-/* SIDEBAR — más sobria y de apariencia corporativa */
+/* SIDEBAR - más sobria y de apariencia corporativa */
 .sidebar{
   width:var(--z-side)!important;
   padding:18px 13px 15px!important;
@@ -618,7 +619,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   padding:22px var(--z-page) 28px!important;
 }
 
-/* CABECERA — menos "plantilla", más panel institucional */
+/* CABECERA - menos "plantilla", más panel institucional */
 .welcome-card{
   min-height:122px!important;
   padding:23px 26px!important;
@@ -645,7 +646,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .btn{height:36px!important;padding:0 13px!important;border-radius:8px!important;font-size:9.5px!important}
 .btn-primary{box-shadow:0 5px 12px rgba(246,197,0,.13)!important}
 
-/* INDICADORES — más aire y jerarquía */
+/* INDICADORES - más aire y jerarquía */
 .quick-grid{gap:12px!important;margin:15px 0!important}
 .metric-card{
   min-height:118px!important;
@@ -678,7 +679,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .chart-period{font-size:11px!important;font-weight:800!important}
 .chart-period svg{width:16px!important;height:16px!important}
 
-/* GRÁFICO — limpio, tipo dashboard empresarial */
+/* GRÁFICO - limpio, tipo dashboard empresarial */
 .chart-wrap{
   height:330px!important;
   padding:15px 17px 14px!important;
@@ -703,7 +704,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .bar-fill.current{box-shadow:0 5px 12px rgba(218,171,0,.20)!important}
 .bar-label{font-size:8px!important;padding-top:5px!important;color:#778392!important;font-weight:700!important}
 
-/* ACTIVIDAD — más compacta y refinada */
+/* ACTIVIDAD - más compacta y refinada */
 .side-panel{padding:17px!important}
 .side-title{font-size:13px!important;margin-bottom:10px!important;letter-spacing:-.15px!important}
 .login-card{
@@ -766,7 +767,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 <style>
 /* ==========================================================
-   ZIMA 360 · IDENTIDAD DEL MENÚ — AJUSTE FINAL
+   ZIMA 360 · IDENTIDAD DEL MENÚ - AJUSTE FINAL
    Solo presentación de logos; no altera ninguna lógica.
    ========================================================== */
 .brand-block{
@@ -899,7 +900,38 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 @media(max-width:950px){.sidebar{width:82px!important;padding:22px 10px 18px!important}.main-content{margin-left:82px!important;width:calc(100% - 82px)!important}}
 @media(max-width:700px){.sidebar{inset:auto 0 0!important;width:100%!important;height:68px!important;padding:8px 10px!important}.main-content{margin-left:0!important;width:100%!important;padding-bottom:68px!important}.nav-item.active{border-left:0!important;border-bottom:3px solid #f7c600!important;padding-left:6px!important}}
 </style>
+<style id="notification-panel-style">
+.notification-wrap{position:relative;display:grid;place-items:center}
+.notification-button{position:relative}
+.notification-button::after{content:"";position:absolute;right:8px;top:8px;width:7px;height:7px;border-radius:50%;background:#f4c20d;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,24,39,.06)}
+.notification-panel{position:absolute;top:44px;right:0;width:min(340px,calc(100vw - 32px));background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 18px 45px rgba(17,24,39,.16);padding:14px;z-index:60;display:none}
+.notification-panel.open{display:block}
+.notification-panel::before{content:"";position:absolute;right:12px;top:-7px;width:12px;height:12px;background:#fff;border-left:1px solid #e5e7eb;border-top:1px solid #e5e7eb;transform:rotate(45deg)}
+.notification-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 2px 12px;border-bottom:1px solid #eef0f2}
+.notification-head strong{font-size:12px;color:#17202b}
+.notification-head span{font-size:9px;font-weight:850;color:#9a7a00;letter-spacing:.7px;text-transform:uppercase}
+.notification-list{display:grid;gap:10px;padding-top:12px}
+.notification-item{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:flex-start}
+.notification-icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:#fff8d8;color:#9b7600;flex:0 0 32px}
+.notification-icon svg{width:16px;height:16px}
+.notification-copy strong{display:block;font-size:10px;color:#1f2937;margin-bottom:3px}
+.notification-copy span{display:block;font-size:9px;line-height:1.45;color:#7b8490}
+.notification-empty{padding:16px 8px;color:#7b8490;text-align:center;font-size:10px}
+@media(max-width:800px){.notification-button{display:grid!important}.notification-panel{right:-72px}}
+@media(max-width:520px){.notification-panel{right:-82px;width:calc(100vw - 24px)}}
+</style>
   <link rel="stylesheet" href="zima-ui-modern.css">
+<style id="notification-panel-final-override">
+.topbar .notification-panel{background:#fff!important;color:#17202b!important;overflow:visible!important}
+.topbar .notification-panel *{color:inherit}
+.topbar .notification-head strong{color:#17202b!important}
+.topbar .notification-head span{color:#9a7a00!important}
+.topbar .notification-copy strong{color:#1f2937!important}
+.topbar .notification-copy span,.topbar .notification-empty{color:#7b8490!important}
+.topbar .notification-icon{background:#fff8d8!important;color:#9b7600!important}
+.topbar .notification-icon svg{color:#9b7600!important;stroke:#9b7600!important}
+.topbar .notification-panel.open{display:block!important}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -930,6 +962,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <a class="nav-item active" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
         <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
+        <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
         
       </nav>
 
@@ -945,8 +978,18 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           <div class="breadcrumb">Inicio <span>/</span> Panel de control</div>
         </div>
         <div class="topbar-right">
-          <div class="connection"><span class="connection-dot"></span><span id="syncLabel">Conectando…</span></div>
-          <button class="icon-button" type="button" aria-label="Notificaciones"><i data-lucide="bell"></i></button>
+          <div class="connection"><span class="connection-dot"></span><span id="syncLabel">Conectando...</span></div>
+          <div class="notification-wrap">
+            <button class="icon-button notification-button" id="notificationButton" type="button" aria-label="Notificaciones" aria-expanded="false" aria-controls="notificationPanel">
+              <i data-lucide="bell"></i>
+            </button>
+            <div class="notification-panel" id="notificationPanel" role="menu" aria-label="Notificaciones del sistema">
+              <div class="notification-head"><strong>Notificaciones</strong><span id="notificationStatus">En línea</span></div>
+              <div class="notification-list" id="notificationList">
+                <div class="notification-empty">Cargando avisos...</div>
+              </div>
+            </div>
+          </div>
           <div class="profile">
             <div class="avatar">ZU</div>
             <div class="profile-text"><strong>Usuario ZIMA</strong><span>Administrador</span></div>
@@ -1041,7 +1084,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     /* Web App ACTUAL de ZIMA 360.
        Se fuerza esta URL para evitar que el navegador reutilice una URL antigua guardada. */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzcTUFKBSpOF5G1Nh3-B9yEkRkihYIik3npJDLXloSgIxbAJ5PYhnW1fvoQYySBEyaY7Q/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
 
     /* =========================================================
@@ -1096,6 +1139,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         const n=params.get('nombre') || params.get('name');
         const r=params.get('rol') || params.get('role');
         const p=params.get('peaje') || params.get('office');
+        const f=params.get('foto') || params.get('photo');
         const tokenUrl=params.get('token') || params.get('sessionToken') || '';
         const t=tokenUrl || obtenerTokenLocal();
 
@@ -1105,6 +1149,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             nombre:n || u || '',
             rol:r || 'PEAJE',
             peaje:p || '',
+            foto:f || '',
             estado:'ACTIVO',
             token:t || '',
             sessionToken:t || '',
@@ -1115,6 +1160,19 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
       /* 2) Sesiones JSON guardadas por el login. */
       const claves=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO'];
+      const fotoLocal=(function(){
+        try{
+          return localStorage.getItem('ZIMA360_FOTO') ||
+            sessionStorage.getItem('ZIMA360_FOTO') ||
+            localStorage.getItem('ZIMA_FOTO') ||
+            sessionStorage.getItem('ZIMA_FOTO') ||
+            localStorage.getItem('ZIMA_PHOTO') ||
+            sessionStorage.getItem('ZIMA_PHOTO') ||
+            '';
+        }catch(e){
+          return '';
+        }
+      })();
 
       for(const storage of [localStorage, sessionStorage]){
         for(const clave of claves){
@@ -1126,6 +1184,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
               data.usuario || data.user || data.nombre || data.name ||
               data.peaje || data.office || data.rol || data.role
             )){
+              if(fotoLocal && !(data.foto || data.FOTO || data.photo || data.PHOTO)){
+                data.foto=fotoLocal;
+              }
               return data;
             }
           }catch(e){}
@@ -1145,6 +1206,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const nombre=get('ZIMA360_NOMBRE') || get('ZIMA_USER_NAME') || get('ZIMA_NOMBRE');
       const rol=get('ZIMA360_ROL') || get('ZIMA_ROL') || get('ZIMA_ROLE');
       const peaje=get('ZIMA360_PEAJE') || get('ZIMA_PEAJE') || get('ZIMA_OFFICE');
+      const foto=get('ZIMA360_FOTO') || get('ZIMA_FOTO') || get('ZIMA_PHOTO');
 
       if(usuario || nombre || peaje){
         return {
@@ -1152,6 +1214,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           nombre:nombre || usuario,
           rol:rol || 'PEAJE',
           peaje:peaje || '',
+          foto:foto || '',
           estado:get('ZIMA360_ESTADO') || 'ACTIVO',
           loginAt:get('ZIMA360_LOGIN_AT') || get('ZIMA_LAST_LOGIN') || ''
         };
@@ -1165,6 +1228,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       name: RAW_SESSION?.nombre || RAW_SESSION?.NOMBRE || RAW_SESSION?.name || RAW_SESSION?.NAME || '',
       role: String(RAW_SESSION?.rol || RAW_SESSION?.ROL || RAW_SESSION?.role || RAW_SESSION?.ROLE || 'PEAJE').toUpperCase(),
       office: RAW_SESSION?.peaje || RAW_SESSION?.PEAJE || RAW_SESSION?.office || RAW_SESSION?.OFFICE || '',
+      foto: RAW_SESSION?.foto || RAW_SESSION?.FOTO || RAW_SESSION?.photo || RAW_SESSION?.PHOTO || '',
       estado: RAW_SESSION?.estado || RAW_SESSION?.ESTADO || 'ACTIVO',
       loginAt: RAW_SESSION?.loginAt || RAW_SESSION?.ULTIMO_INGRESO || '',
       token: RAW_SESSION?.token || RAW_SESSION?.sessionToken || RAW_SESSION?.SESSION_TOKEN || obtenerTokenLocal()
@@ -1176,6 +1240,10 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     function esAdministrador(){
       return ['ADMIN','INTERVENTORIA','ADMINISTRADOR'].includes(SESSION.role);
+    }
+
+    function esGranAdministrador(){
+      return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role);
     }
 
     function normalizarTexto(v){
@@ -1292,9 +1360,141 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       return partes.slice(0,2).map(x=>x.charAt(0).toUpperCase()).join('');
     }
 
+    function pintarAvatar(el,foto,nombre){
+      if(!el) return;
+      const src=String(foto||'').trim();
+      if(src){
+        el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'" onerror="this.remove();this.parentElement.textContent=\''+esc(iniciales(nombre)).replace(/'/g,'')+'\'">';
+      }else{
+        el.textContent=iniciales(nombre);
+      }
+    }
+
+    function guardarPerfilSesion(perfil){
+      perfil=perfil||{};
+      const src=String(perfil.foto||perfil.FOTO||perfil.photo||'').trim();
+      if(src) SESSION.foto=src;
+      if(perfil.nombre) SESSION.name=perfil.nombre;
+      if(perfil.rol) SESSION.role=perfil.rol;
+      if(perfil.peaje) SESSION.office=perfil.peaje;
+      try{
+        if(src) localStorage.setItem('ZIMA360_FOTO',src);
+        if(perfil.nombre) localStorage.setItem('ZIMA360_NOMBRE',perfil.nombre);
+        if(perfil.rol) localStorage.setItem('ZIMA360_ROL',perfil.rol);
+        if(perfil.peaje) localStorage.setItem('ZIMA360_PEAJE',perfil.peaje);
+        for(const key of ['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO']){
+          const raw=localStorage.getItem(key)||sessionStorage.getItem(key);
+          if(!raw || !raw.trim().startsWith('{')) continue;
+          try{
+            const data=JSON.parse(raw);
+            if(perfil.nombre) data.nombre=perfil.nombre;
+            if(perfil.rol) data.rol=perfil.rol;
+            if(perfil.peaje) data.peaje=perfil.peaje;
+            if(src){
+              data.foto=src;
+              data.FOTO=src;
+            }
+            localStorage.setItem(key,JSON.stringify(data));
+            sessionStorage.setItem(key,JSON.stringify(data));
+          }catch(e){}
+        }
+      }catch(e){}
+      const displayName=SESSION.name||SESSION.user||'Usuario ZIMA';
+      const office=SESSION.office||'';
+      if(src) pintarAvatar(document.querySelector('.avatar'),src,displayName);
+      const profileStrong=document.querySelector('.profile-text strong');
+      const profileSpan=document.querySelector('.profile-text span');
+      const branch=document.querySelector('.branch-name');
+      if(profileStrong) profileStrong.textContent=displayName;
+      if(profileSpan) profileSpan.textContent=SESSION.role + (office ? ' · '+office : '');
+      if(branch && office) branch.textContent=office;
+      document.querySelectorAll('.admin-only').forEach(function(item){
+        item.style.display=esGranAdministrador()?'flex':'none';
+      });
+    }
+
+    function guardarFotoSesion(foto){
+      const src=String(foto||'').trim();
+      if(!src) return;
+      guardarPerfilSesion({foto:src});
+    }
+
+    async function refrescarFotoPerfil(){
+      if(!SESSION.token) return;
+      try{
+        const perfil=await apiGet('perfil',{token:SESSION.token});
+        if(perfil && perfil.ok!==false){
+          guardarPerfilSesion(perfil);
+          return;
+        }
+      }catch(e){}
+      if(!esGranAdministrador()) return;
+      try{
+        let usuarios=[];
+        if(window.google && google.script && google.script.run){
+          usuarios=await onlineRun('listarUsuarios');
+        }else{
+          const data=await apiGet('usuarios',{token:SESSION.token});
+          usuarios=Array.isArray(data.usuarios)?data.usuarios:[];
+        }
+        usuarios=Array.isArray(usuarios)?usuarios:[];
+        const actual=usuarios.find(function(u){
+          return String(u.USUARIO||u.usuario||'').trim().toLowerCase() ===
+            String(SESSION.user||'').trim().toLowerCase();
+        });
+        const foto=actual && (actual.FOTO || actual.foto || actual.photo);
+        if(foto) guardarFotoSesion(foto);
+      }catch(e){}
+    }
+
     function setText(id, value){
       const el=document.getElementById(id);
       if(el) el.textContent=String(value ?? '');
+    }
+
+    function renderNotifications(data, status){
+      const list=document.getElementById('notificationList');
+      if(!list) return;
+      const rows=Array.isArray(data)?data:[];
+      const entregadas=rows.filter(x=>String(x.estado||'').toUpperCase()==='ENTREGADA').length;
+      const cerradas=rows.filter(x=>String(x.estado||'').toUpperCase()==='CERRADA').length;
+      const borradores=rows.filter(x=>String(x.estado||'').toUpperCase()==='BORRADOR').length;
+      const total=rows.reduce((sum,item)=>sum+Number(item.total||0),0);
+      setText('notificationStatus',status || (rows.length?'Actualizado':'Sin datos'));
+      list.innerHTML=[
+        {icon:'database',title:'Planillas sincronizadas',text:`${rows.length} registros disponibles para ${SESSION.office || 'este acceso'}.`},
+        {icon:'send',title:'Estados por revisar',text:`${entregadas} entregadas, ${cerradas} cerradas y ${borradores} en borrador.`},
+        {icon:'wallet',title:'Valor administrado',text:`Acumulado visible: ${money(total)} COP.`}
+      ].map(item=>`<div class="notification-item" role="menuitem">
+        <div class="notification-icon"><i data-lucide="${item.icon}"></i></div>
+        <div class="notification-copy"><strong>${esc(item.title)}</strong><span>${esc(item.text)}</span></div>
+      </div>`).join('');
+      if(window.lucide && typeof lucide.createIcons === 'function'){
+        lucide.createIcons({attrs:{"stroke-width":1.9}});
+      }
+    }
+
+    function setupNotifications(){
+      const button=document.getElementById('notificationButton');
+      const panel=document.getElementById('notificationPanel');
+      if(!button || !panel) return;
+      button.addEventListener('click',function(event){
+        event.stopPropagation();
+        const isOpen=panel.classList.toggle('open');
+        button.setAttribute('aria-expanded',String(isOpen));
+      });
+      panel.addEventListener('click',function(event){event.stopPropagation();});
+      document.addEventListener('click',function(){
+        panel.classList.remove('open');
+        button.setAttribute('aria-expanded','false');
+      });
+      document.addEventListener('keydown',function(event){
+        if(event.key==='Escape'){
+          panel.classList.remove('open');
+          button.setAttribute('aria-expanded','false');
+        }
+      });
+      renderNotifications([], 'Listo');
     }
 
     function setupSession(){
@@ -1326,7 +1526,10 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       if(branch) branch.textContent=office;
       if(profileStrong) profileStrong.textContent=displayName;
       if(profileSpan) profileSpan.textContent=SESSION.role + (office ? ' · '+office : '');
-      if(avatar) avatar.textContent=iniciales(displayName);
+      pintarAvatar(avatar,SESSION.foto,displayName);
+      document.querySelectorAll('.admin-only').forEach(function(item){
+        item.style.display=esGranAdministrador()?'flex':'none';
+      });
 
       // Mantener compatibilidad con las demás páginas.
       localStorage.setItem('ZIMA_USER_NAME',displayName);
@@ -1335,6 +1538,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       localStorage.setItem('ZIMA360_NOMBRE',displayName);
       localStorage.setItem('ZIMA360_ROL',SESSION.role);
       localStorage.setItem('ZIMA360_PEAJE',office);
+      if(SESSION.foto){
+        localStorage.setItem('ZIMA360_FOTO',SESSION.foto);
+      }
       localStorage.setItem('ZIMA360_ESTADO',SESSION.estado || 'ACTIVO');
 
       registrarIngreso();
@@ -1370,7 +1576,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const keys=[
         'ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO',
         'ZIMA360_USUARIO','ZIMA360_NOMBRE','ZIMA360_ROL','ZIMA360_PEAJE',
-        'ZIMA360_ESTADO','ZIMA360_LOGIN_AT','ZIMA_USER','ZIMA_USER_NAME',
+        'ZIMA360_FOTO','ZIMA360_ESTADO','ZIMA360_LOGIN_AT','ZIMA_USER','ZIMA_USER_NAME',
         'ZIMA_PEAJE','ZIMA_OFFICE','ZIMA_ROLE','ZIMA_ROL','ZIMA_LAST_LOGIN',
         'ZIMA_SESSION_TOKEN','ZIMA_API_URL'
       ];
@@ -1440,7 +1646,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       chart.innerHTML=values.map((value,i)=>{
         const height=value?Math.max((value/max)*100,4):0;
         return `<div class="bar-col" title="${labels[i]}: ${esc(money(value))}">
-          <div class="bar-value">${value?esc(compactMoney(value)):'—'}</div>
+          <div class="bar-value">${value?esc(compactMoney(value)):'-'}</div>
           <div class="bar-track"><div class="bar-fill ${i===new Date().getMonth()?'current':''}" style="--bar-height:${height}%"></div></div>
           <div class="bar-label">${labels[i]}</div>
         </div>`;
@@ -1475,11 +1681,12 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         setText('syncLabel','Sin sesión');
         msg.innerHTML='<div class="notice error">No se recibió el usuario logueado. Regrese al inicio de sesión.</div>';
         renderChart([]);
+        renderNotifications([], 'Sin sesión');
         return;
       }
       try{
-        setText('syncLabel','Sincronizando…');
-        msg.innerHTML='<div class="notice">Consultando información actualizada…</div>';
+        setText('syncLabel','Sincronizando...');
+        msg.innerHTML='<div class="notice">Consultando información actualizada...</div>';
         const data=await syncRows();
         const total=data.reduce((sum,item)=>sum+Number(item.total||0),0);
         const month=new Date().getMonth();
@@ -1494,6 +1701,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         setText('e',data.filter(x=>String(x.estado||'').toUpperCase()==='ENTREGADA').length);
         setText('c',data.filter(x=>String(x.estado||'').toUpperCase()==='CERRADA').length);
         renderChart(data);
+        renderNotifications(data, 'Actualizado');
         msg.innerHTML='';
         setText('syncLabel','Actualizado ahora');
       }catch(err){
@@ -1518,6 +1726,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           setText('e',data.filter(x=>String(x.estado||'').toUpperCase()==='ENTREGADA').length);
           setText('c',data.filter(x=>String(x.estado||'').toUpperCase()==='CERRADA').length);
           renderChart(data);
+          renderNotifications(data, 'Conectado');
           msg.innerHTML='';
           setText('syncLabel','Conectado');
           return;
@@ -1527,12 +1736,16 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         /* No mostrar mensajes técnicos de sesión/conexión en el dashboard. */
         msg.innerHTML='';
         renderChart([]);
+        renderNotifications([], 'Sin conexión');
       }
     }
 
+    setupNotifications();
     if(setupSession()){
+      refrescarFotoPerfil();
       cargar();
     }
   </script>
 </body>
 </html>
+

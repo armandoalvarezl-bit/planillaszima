@@ -1,0 +1,932 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZIMA 360 - Gran Administrador</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root{--navy:#101827;--top:#003747;--gold:#f7c600;--line:#e4e8ee;--bg:#f5f7fa;--ink:#172235;--muted:#6d7b8d;--green:#15803d;--red:#b42318;--white:#fff}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .shell{min-height:100vh;display:flex}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:293px;background:linear-gradient(180deg,#101827,#0d1726);color:#fff;padding:28px 16px 18px;display:flex;flex-direction:column}
+    .brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px;border-bottom:1px solid rgba(255,255,255,.1)}
+    .brand img{width:54px;height:54px;object-fit:contain}
+    .brand strong{display:block;font-size:19px}
+    .brand span{display:block;margin-top:4px;color:#9ca8b8;font-size:10px;letter-spacing:.1em}
+    .branch{margin:22px 4px;padding:14px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(255,255,255,.04)}
+    .branch small,.nav-title{display:block;color:#8b98aa;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .branch b{display:block;margin-top:6px;font-size:13px}
+    .nav{display:grid;gap:5px}
+    .nav-title{padding:0 10px 8px}
+    .nav a{min-height:54px;display:flex;align-items:center;gap:13px;padding:13px 14px;border-radius:13px;color:#c7d0db;text-decoration:none;font-size:13px;font-weight:750}
+    .nav a:hover{background:rgba(255,255,255,.07);color:#fff}
+    .nav a.active{background:rgba(255,255,255,.09);color:#fff;border-left:3px solid var(--gold)}
+    .nav a.active i{color:var(--gold)}
+    .nav i{width:20px;height:20px}
+    .side-foot{margin-top:auto;padding:15px 8px;border-top:1px solid rgba(255,255,255,.1);color:#8b98aa;font-size:11px}
+    .main{margin-left:293px;width:calc(100% - 293px);min-width:0}
+    .topbar{height:70px;background:linear-gradient(180deg,var(--top),#002b39);color:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 30px}
+    .breadcrumb{font-size:12px;color:#d5eef3}
+    .userbox{display:flex;align-items:center;gap:10px}
+    .avatar{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.14);font-size:11px;font-weight:900;overflow:hidden}
+    .avatar img,.photo-preview img,.user-photo img{width:100%;height:100%;object-fit:cover;display:block}
+    .logout{width:34px;height:34px;border:0;border-radius:9px;background:rgba(255,255,255,.08);color:#fff;display:grid;place-items:center}
+    .page{max-width:1500px;margin:0 auto;padding:28px 30px 36px}
+    .hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:20px}
+    .kicker{font-size:10px;color:#006077;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    h1{margin:6px 0 7px;font-size:26px;letter-spacing:-.4px}
+    .hero p{margin:0;color:var(--muted);font-size:13px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .btn{height:40px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#172235;padding:0 14px;font-size:12px;font-weight:850;display:inline-flex;align-items:center;gap:7px}
+    .btn.primary{background:var(--top);border-color:var(--top);color:#fff}
+    .btn.gold{background:var(--gold);border-color:var(--gold);color:#111827}
+    .btn.danger{background:#fff1f0;border-color:#ffd7d3;color:var(--red)}
+    .btn svg{width:16px;height:16px}
+    .grid{display:grid;grid-template-columns:360px minmax(0,1fr);gap:16px;align-items:start}
+    .left-stack{display:grid;gap:16px}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 24px rgba(16,24,39,.06)}
+    .panel-head{padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+    .panel-head h2{margin:4px 0 0;font-size:16px}
+    .panel-body{padding:18px}
+    .form{display:grid;gap:12px}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    label{font-size:11px;font-weight:850;color:#334155}
+    input,select{width:100%;height:40px;margin-top:6px;border:1px solid #d8e0ea;border-radius:8px;background:#fbfcfe;color:#172235;padding:0 10px;font-size:13px}
+    input:focus,select:focus{outline:0;border-color:#006077;box-shadow:0 0 0 3px rgba(0,55,71,.12);background:#fff}
+    .notice{display:none;margin-bottom:14px;padding:11px 12px;border-radius:8px;font-size:12px;line-height:1.4}
+    .notice.show{display:block}
+    .notice.ok{background:#effaf3;border:1px solid #c7ead2;color:#19703a}
+    .notice.error{background:#fff0f0;border:1px solid #f1caca;color:#a92727}
+    .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+    .metric{background:#fff;border:1px solid var(--line);border-radius:10px;padding:15px}
+    .metric span{font-size:10px;color:var(--muted);font-weight:850;text-transform:uppercase}
+    .metric strong{display:block;margin-top:8px;font-size:24px}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .search{max-width:340px}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse;min-width:760px}
+    th{background:#f8fafc;color:#64748b;font-size:10px;letter-spacing:.05em;text-align:left;text-transform:uppercase;padding:11px 12px;border-bottom:1px solid var(--line)}
+    td{padding:12px;border-bottom:1px solid #eef1f5;font-size:12px;white-space:nowrap}
+    tbody tr:hover td{background:#fcfdff}
+    .pill{display:inline-flex;align-items:center;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900}
+    .pill.ACTIVO{background:#eaf8ef;color:#13733a}
+    .pill.INACTIVO{background:#fff1f0;color:#b42318}
+    .role{font-weight:900;color:#0f5263}
+    .profile-strip{display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:11px;border:1px solid #eef1f5;border-radius:10px;background:#fbfcfe}
+    .photo-preview{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;background:#e8eef5;color:#253242;font-size:14px;font-weight:900;overflow:hidden;flex:0 0 54px}
+    .profile-strip strong{display:block;font-size:13px}
+    .profile-strip span{display:block;margin-top:3px;color:var(--muted);font-size:11px}
+    .user-cell{display:flex;align-items:center;gap:10px}
+    .user-photo{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#e8eef5;color:#253242;font-size:10px;font-weight:900;overflow:hidden;flex:0 0 32px}
+    .row-actions{display:flex;gap:6px}
+    .icon-btn{width:31px;height:31px;border:1px solid #dfe5ec;border-radius:7px;background:#fff;color:#334155;display:grid;place-items:center}
+    .icon-btn svg{width:15px;height:15px}
+    .empty{padding:28px;text-align:center;color:var(--muted)}
+    .locked{display:none;max-width:720px;margin:80px auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:28px;text-align:center}
+    .locked i{width:36px;height:36px;color:var(--red)}
+    @media(max-width:1050px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:560px){.split{grid-template-columns:1fr}}
+    @media(max-width:760px){.sidebar{inset:auto 0 0;width:100%;height:68px;padding:8px 10px;z-index:30}.brand,.branch,.side-foot,.nav-title{display:none}.nav{width:100%;height:100%;display:flex;gap:4px}.nav a{flex:1;justify-content:center;min-height:52px;padding:8px}.nav a span{display:none}.main{margin-left:0;width:100%;padding-bottom:68px}.topbar{padding:0 15px}.page{padding:20px 14px}.hero{display:block}.actions{margin-top:14px}.metrics{grid-template-columns:1fr}}
+  </style>
+  <link rel="stylesheet" href="zima-ui-modern.css">
+  <style id="granadmin-form-final-override">
+    body.granadmin-page{background:#f5f7fa!important;color:#172235!important}
+    .granadmin-page .main{background:#f5f7fa!important}
+    .granadmin-page .page{max-width:1500px!important;min-height:calc(100vh - 70px)!important;display:flex!important;flex-direction:column!important}
+    .granadmin-page .hero{align-items:flex-end!important}
+    .granadmin-page .grid{grid-template-columns:minmax(300px,340px) minmax(0,1fr)!important;gap:12px!important;align-items:stretch!important;flex:1!important;min-height:0!important}
+    .granadmin-page .left-stack{gap:12px!important}
+    .granadmin-page .panel{background:#fff!important;border:1px solid #e4e8ee!important;border-radius:12px!important;box-shadow:0 10px 28px rgba(16,24,39,.07)!important;overflow:hidden!important}
+    .granadmin-page .panel-head{padding:10px 12px 8px!important;background:#fff!important;border-bottom:1px solid #e8edf3!important}
+    .granadmin-page .panel-head h2{margin:4px 0 0!important;color:#172235!important;font-size:16px!important;letter-spacing:0!important}
+    .granadmin-page .panel-body{padding:10px!important}
+    .granadmin-page .kicker{color:#006077!important;font-size:10px!important;font-weight:900!important;letter-spacing:.12em!important;text-transform:uppercase!important}
+    .granadmin-page .form{display:grid!important;gap:7px!important;margin:0!important}
+    .granadmin-page .split{display:grid!important;grid-template-columns:1fr 1fr!important;gap:7px!important}
+    .granadmin-page .form label{display:grid!important;gap:4px!important;margin:0!important;padding:6px 8px!important;background:#f8fafc!important;border:1px solid #edf1f5!important;border-radius:8px!important;color:#334155!important;font-size:10px!important;font-weight:850!important;line-height:1.15!important;letter-spacing:0!important;text-transform:none!important}
+    .granadmin-page .form input,
+    .granadmin-page .form select{width:100%!important;height:32px!important;margin:0!important;padding:0 8px!important;background:#fff!important;border:1px solid #d8e0ea!important;border-radius:8px!important;color:#172235!important;font-size:12px!important;box-shadow:none!important;outline:0!important}
+    .granadmin-page .form input[type="file"]{height:auto!important;padding:5px 8px!important;line-height:1.2!important;font-size:11px!important}
+    .granadmin-page .field-help{display:block!important;color:#64748b!important;font-size:9px!important;font-weight:700!important;line-height:1.25!important;text-transform:none!important}
+    .granadmin-page .form input::placeholder{color:#94a3b8!important}
+    .granadmin-page .form input:focus,
+    .granadmin-page .form select:focus,
+    .granadmin-page .search:focus{border-color:#006077!important;box-shadow:0 0 0 3px rgba(0,55,71,.12)!important;background:#fff!important}
+    .granadmin-page #editUser[readonly]{background:#eef2f7!important;color:#64748b!important}
+    .granadmin-page .form .btn{width:100%!important;height:36px!important;justify-content:center!important;margin-top:0!important}
+    .granadmin-page .btn{border-radius:8px!important;font-size:12px!important;font-weight:850!important;letter-spacing:0!important;text-transform:none!important;box-shadow:none!important}
+    .granadmin-page .btn.primary{background:#003747!important;border-color:#003747!important;color:#fff!important}
+    .granadmin-page .btn.gold{background:#f7c600!important;border-color:#f7c600!important;color:#111827!important}
+    .granadmin-page .btn.danger{background:#fff1f0!important;border-color:#ffd7d3!important;color:#b42318!important}
+    .granadmin-page .profile-strip{display:flex!important;align-items:center!important;gap:8px!important;margin:0 0 7px!important;padding:8px!important;background:#fbfcfe!important;border:1px solid #eef1f5!important;border-radius:9px!important}
+    .granadmin-page .profile-strip.compact{margin:0!important;padding:7px!important}
+    .granadmin-page .photo-preview{width:40px!important;height:40px!important;border-radius:50%!important;flex:0 0 40px!important}
+    .granadmin-page .office-field.is-hidden{display:none!important}
+    .granadmin-page .metrics{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:12px!important;margin-bottom:16px!important}
+    .granadmin-page .metric{background:#fff!important;border:1px solid #e4e8ee!important;border-radius:10px!important;padding:15px!important;box-shadow:0 6px 18px rgba(16,24,39,.04)!important}
+    .granadmin-page .metric span{color:#6d7b8d!important;font-size:10px!important;font-weight:850!important;text-transform:uppercase!important}
+    .granadmin-page .metric strong{color:#172235!important;font-size:24px!important;letter-spacing:0!important}
+    .granadmin-page .toolbar{display:flex!important;gap:10px!important;align-items:center!important;justify-content:space-between!important;margin-bottom:12px!important}
+    .granadmin-page .search{width:100%!important;max-width:340px!important;height:40px!important;margin:0!important;padding:0 12px!important;background:#fff!important;border:1px solid #d8e0ea!important;border-radius:8px!important;color:#172235!important;box-shadow:none!important}
+    .granadmin-page .directory-panel{display:flex!important;flex-direction:column!important;min-height:calc(100vh - 300px)!important}
+    .granadmin-page .directory-panel .panel-head{flex:0 0 auto!important}
+    .granadmin-page .table-wrap{border:1px solid #eef1f5!important;border-radius:10px!important;overflow:auto!important;background:linear-gradient(180deg,#fff 0%,#fbfcfe 100%)!important}
+    .granadmin-page .directory-panel .table-wrap{flex:1!important;min-height:360px!important;border-left:0!important;border-right:0!important;border-bottom:0!important;border-radius:0!important}
+    .granadmin-page table{min-width:920px!important;border-collapse:collapse!important}
+    .granadmin-page th{background:#f8fafc!important;color:#64748b!important;font-size:10px!important;font-weight:900!important;letter-spacing:.05em!important;text-transform:uppercase!important}
+    .granadmin-page td{background:#fff!important;color:#172235!important;font-size:12px!important;border-bottom:1px solid #eef1f5!important}
+    .granadmin-page tbody tr:hover td{background:#fcfdff!important}
+    .granadmin-page .row-actions{display:flex!important;gap:6px!important}
+    .granadmin-page .icon-btn{width:31px!important;height:31px!important;border-radius:7px!important;background:#fff!important;border:1px solid #dfe5ec!important;color:#334155!important}
+    @media(max-width:1050px){
+      .granadmin-page .grid{grid-template-columns:1fr!important}
+      .granadmin-page .directory-panel{min-height:auto!important}
+      .granadmin-page .directory-panel .table-wrap{min-height:auto!important}
+      .granadmin-page .metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+    }
+    @media(max-width:560px){
+      .granadmin-page .split{grid-template-columns:1fr!important}
+      .granadmin-page .metrics{grid-template-columns:1fr!important}
+      .granadmin-page .toolbar{display:grid!important}
+      .granadmin-page .search{max-width:none!important}
+    }
+  </style>
+</head>
+<body class="granadmin-page">
+  <div class="shell" id="appShell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="img/logo.png" alt="ZIMA 360" onerror="this.style.display='none'">
+        <div><strong>ZIMA 360</strong><span>Gran admin</span></div>
+      </div>
+      <div class="branch"><small>Acceso actual</small><b id="sideUser">Usuario</b></div>
+      <nav class="nav" aria-label="Menu principal">
+        <div class="nav-title">Menu principal</div>
+        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
+        <a href="planilla.html"><i data-lucide="file-plus-2"></i><span>Nueva planilla</span></a>
+        <a href="historial.html"><i data-lucide="history"></i><span>Historial</span></a>
+        <a class="active" href="granadmin.html"><i data-lucide="shield"></i><span>Gran admin</span></a>
+      </nav>
+      <div class="side-foot">Control de usuarios y permisos</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb">Gran administrador / Usuarios del sistema</div>
+        <div class="userbox">
+          <div class="avatar" id="avatar">GA</div>
+          <div><strong id="topName">Gran Administrador</strong></div>
+          <button class="logout" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesion"><i data-lucide="log-out"></i></button>
+        </div>
+      </header>
+
+      <div class="locked" id="locked">
+        <i data-lucide="shield-alert"></i>
+        <h1>Acceso restringido</h1>
+        <p>Este panel solo esta disponible para usuarios con rol ADMIN o ADMINISTRADOR.</p>
+        <div class="actions" style="justify-content:center;margin-top:18px"><button class="btn primary" type="button" onclick="location.href='dashboard.html'">Volver al inicio</button></div>
+      </div>
+
+      <section class="page" id="adminPage">
+        <div class="hero">
+          <div>
+            <div class="kicker">Control maestro</div>
+            <h1>Gran administrador del sistema</h1>
+            <p>Gestiona usuarios, roles, peajes, estados de acceso y contraseñas operativas.</p>
+          </div>
+          <div class="actions">
+            <button class="btn" type="button" onclick="cargarUsuarios()"><i data-lucide="refresh-cw"></i>Actualizar</button>
+            <button class="btn primary" type="button" onclick="limpiarFormulario()"><i data-lucide="user-plus"></i>Nuevo usuario</button>
+          </div>
+        </div>
+
+        <div class="notice" id="notice"></div>
+
+        <section class="metrics">
+          <article class="metric"><span>Total usuarios</span><strong id="mTotal">0</strong></article>
+          <article class="metric"><span>Activos</span><strong id="mActivos">0</strong></article>
+          <article class="metric"><span>Admins</span><strong id="mAdmins">0</strong></article>
+          <article class="metric"><span>Peajes</span><strong id="mPeajes">0</strong></article>
+        </section>
+
+        <section class="grid">
+          <aside class="left-stack">
+            <section class="panel">
+              <div class="panel-head">
+                <div class="kicker">Crear acceso</div>
+                <h2>Usuario del sistema</h2>
+              </div>
+              <div class="panel-body">
+                <form class="form" id="userForm">
+                  <div class="split">
+                    <label>Usuario
+                      <input id="newUser" autocomplete="off" required>
+                    </label>
+                    <label>Nombre
+                      <input id="newName" autocomplete="off" required>
+                    </label>
+                  </div>
+                  <div class="split">
+                    <label>Rol
+                      <select id="newRole" required>
+                        <option value="PEAJE">PEAJE</option>
+                        <option value="INTERVENTORIA">INTERVENTORIA</option>
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                      </select>
+                    </label>
+                    <label class="office-field" id="newOfficeField">Peaje
+                      <select id="newOffice"></select>
+                    </label>
+                  </div>
+                  <div class="profile-strip compact">
+                    <div class="photo-preview" id="newPhotoPreview">--</div>
+                    <div><strong>Foto del nuevo usuario</strong><span>Se guarda al crear el usuario</span></div>
+                  </div>
+                  <div class="split">
+                    <label>Foto de perfil
+                      <input id="newPhotoFile" type="file" accept="image/*">
+                      <input id="newPhoto" type="hidden">
+                    </label>
+                    <label>Contraseña
+                      <input id="newPassword" type="password" minlength="6" required>
+                    </label>
+                  </div>
+                  <button class="btn gold" id="createUserBtn" type="submit"><i data-lucide="save"></i>Crear usuario</button>
+                </form>
+              </div>
+            </section>
+
+            <section class="panel" id="profilePanel">
+              <div class="panel-head">
+                <div class="kicker">Editar perfil</div>
+                <h2>Datos del usuario</h2>
+              </div>
+              <div class="panel-body">
+                <div class="profile-strip">
+                  <div class="photo-preview" id="editPhotoPreview">--</div>
+                  <div><strong id="editProfileTitle">Seleccione un usuario</strong><span id="editProfileMeta">Sin perfil cargado</span></div>
+                </div>
+                <form class="form" id="editForm">
+                  <div class="split">
+                    <label>Usuario
+                      <input id="editUser" readonly>
+                    </label>
+                    <label>Nombre
+                      <input id="editName" required>
+                    </label>
+                  </div>
+                  <div class="split">
+                    <label>Rol
+                      <select id="editRole" required>
+                        <option value="PEAJE">PEAJE</option>
+                        <option value="INTERVENTORIA">INTERVENTORIA</option>
+                        <option value="ADMIN">ADMIN</option>
+                        <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+                      </select>
+                    </label>
+                    <label>Estado
+                      <select id="editStatus" required>
+                        <option value="ACTIVO">ACTIVO</option>
+                        <option value="INACTIVO">INACTIVO</option>
+                      </select>
+                    </label>
+                  </div>
+                  <div class="split">
+                    <label class="office-field" id="editOfficeField">Peaje
+                      <select id="editOffice"></select>
+                    </label>
+                    <label>Cargo
+                      <input id="editCargo">
+                    </label>
+                  </div>
+                  <div class="split">
+                    <label>Email
+                      <input id="editEmail" type="email">
+                    </label>
+                    <label>Teléfono
+                      <input id="editPhone">
+                    </label>
+                  </div>
+                  <div class="split">
+                    <label>Foto
+                      <input id="editPhotoFile" type="file" accept="image/*">
+                      <input id="editPhoto" type="hidden">
+                    </label>
+                    <label>Nueva contraseña
+                      <input id="editPassword" type="password" minlength="6" placeholder="Opcional">
+                    </label>
+                  </div>
+                  <button class="btn danger" id="removeEditPhoto" type="button"><i data-lucide="image-off"></i>Quitar foto</button>
+                  <button class="btn primary" id="saveProfileBtn" type="submit"><i data-lucide="save"></i>Guardar perfil</button>
+                </form>
+              </div>
+            </section>
+          </aside>
+
+          <section class="panel directory-panel">
+            <div class="panel-head">
+              <div class="toolbar">
+                <div>
+                  <div class="kicker">Directorio</div>
+                  <h2>Usuarios registrados</h2>
+                </div>
+                <input class="search" id="search" placeholder="Buscar usuario, nombre, rol o peaje">
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Usuario</th><th>Nombre</th><th>Rol</th><th>Peaje</th><th>Contacto</th><th>Estado</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="usersBody">
+                  <tr><td class="empty" colspan="7">Cargando usuarios...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_URL='https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec';
+    let USUARIOS=[];
+    let PEAJES=[];
+
+    function getStore(key){try{return localStorage.getItem(key)||sessionStorage.getItem(key)||'';}catch(e){return '';}}
+    function leerSesion(){
+      const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO'];
+      for(const storage of [localStorage,sessionStorage]){
+        for(const key of keys){
+          try{const raw=storage.getItem(key);if(raw&&raw.trim().startsWith('{')) return JSON.parse(raw);}catch(e){}
+        }
+      }
+      return {
+        usuario:getStore('ZIMA360_USUARIO')||getStore('ZIMA_USER')||'',
+        nombre:getStore('ZIMA360_NOMBRE')||getStore('ZIMA_USER_NAME')||'',
+        rol:getStore('ZIMA360_ROL')||getStore('ZIMA_ROLE')||'',
+        peaje:getStore('ZIMA360_PEAJE')||getStore('ZIMA_PEAJE')||'',
+        foto:getStore('ZIMA360_FOTO')||'',
+        token:getStore('ZIMA_SESSION_TOKEN')||getStore('ZIMA360_SESSION_TOKEN')||''
+      };
+    }
+    const RAW=leerSesion();
+    const SESSION={
+      user:RAW.usuario||RAW.user||'',
+      name:RAW.nombre||RAW.name||RAW.usuario||RAW.user||'',
+      role:String(RAW.rol||RAW.role||'').toUpperCase(),
+      office:RAW.peaje||RAW.office||'',
+      token:RAW.token||RAW.sessionToken||getStore('ZIMA_SESSION_TOKEN')||getStore('ZIMA360_SESSION_TOKEN')||''
+    };
+    const FOTO_CACHE_KEY='ZIMA360_FOTOS_USUARIOS';
+
+    function isGranAdmin(){return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role);}
+    function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+    function setText(id,value){const el=document.getElementById(id);if(el)el.textContent=String(value??'');}
+    function notice(msg,type='ok'){const el=document.getElementById('notice');el.textContent=msg;el.className='notice show '+type;clearTimeout(notice.t);notice.t=setTimeout(()=>{el.className='notice';},4500);}
+    if(!window.ZimaUI){
+      window.ZimaUI={
+        busy:function(button,isBusy,label){
+          const el=typeof button==='string'?document.getElementById(button):button;
+          if(!el)return;
+          if(isBusy){
+            if(!el.dataset.originalText)el.dataset.originalText=el.innerHTML;
+            el.disabled=true;
+            el.classList.add('is-busy');
+            if(label)el.innerHTML='<span class="zima-spinner" aria-hidden="true"></span>'+esc(label);
+            return;
+          }
+          el.disabled=false;
+          el.classList.remove('is-busy');
+          if(el.dataset.originalText){
+            el.innerHTML=el.dataset.originalText;
+            delete el.dataset.originalText;
+            if(window.lucide)lucide.createIcons({attrs:{"stroke-width":1.9}});
+          }
+        }
+      };
+    }
+    function initials(name){return String(name||'GA').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase()||'GA';}
+    function photoHtml(url,name){
+      const src=String(url||'').trim();
+      if(src) return '<img src="'+esc(src)+'" alt="'+esc(name||'Usuario')+'" onerror="this.onerror=null;var p=this.parentElement;this.remove();if(p)p.textContent=\''+esc(initials(name)).replace(/'/g,'')+'\'">';
+      return esc(initials(name));
+    }
+    function setPhoto(target,url,name){
+      const el=typeof target==='string'?document.getElementById(target):target;
+      if(el) el.innerHTML=photoHtml(url,name);
+    }
+    function userKey(value){
+      return String(value||'').trim().toLowerCase();
+    }
+    function leerFotoCache(){
+      try{
+        return JSON.parse(localStorage.getItem(FOTO_CACHE_KEY)||'{}')||{};
+      }catch(e){
+        return {};
+      }
+    }
+    function guardarFotoCache(cache){
+      try{
+        localStorage.setItem(FOTO_CACHE_KEY,JSON.stringify(cache||{}));
+      }catch(e){}
+    }
+    function fotoCacheUsuario(usuario){
+      const key=userKey(usuario);
+      if(!key) return '';
+      return String(leerFotoCache()[key]||'').trim();
+    }
+    function recordarFotoUsuario(usuario,foto){
+      const key=userKey(usuario);
+      foto=String(foto||'').trim();
+      if(!key) return;
+      const cache=leerFotoCache();
+      if(foto) cache[key]=foto;
+      else delete cache[key];
+      guardarFotoCache(cache);
+    }
+    function comprimirFoto(file){
+      return new Promise((resolve,reject)=>{
+        if(!file){resolve('');return;}
+        if(!/^image\//.test(file.type||'')){reject(new Error('Seleccione un archivo de imagen.'));return;}
+        const reader=new FileReader();
+        reader.onerror=()=>reject(new Error('No se pudo leer la imagen.'));
+        reader.onload=()=>{
+          const img=new Image();
+          img.onerror=()=>reject(new Error('La imagen no se pudo cargar.'));
+          img.onload=()=>{
+            const limite=42000;
+            const intentos=[
+              {max:220,quality:.76},
+              {max:180,quality:.72},
+              {max:150,quality:.68},
+              {max:128,quality:.62},
+              {max:108,quality:.56},
+              {max:96,quality:.50},
+              {max:84,quality:.46}
+            ];
+            let mejor='';
+            for(const intento of intentos){
+              const ratio=Math.min(1,intento.max/img.width,intento.max/img.height);
+              const width=Math.max(1,Math.round(img.width*ratio));
+              const height=Math.max(1,Math.round(img.height*ratio));
+              const canvas=document.createElement('canvas');
+              canvas.width=width;
+              canvas.height=height;
+              const ctx=canvas.getContext('2d');
+              ctx.fillStyle='#ffffff';
+              ctx.fillRect(0,0,width,height);
+              ctx.drawImage(img,0,0,width,height);
+              mejor=canvas.toDataURL('image/jpeg',intento.quality);
+              if(mejor.length<=limite){
+                resolve(mejor);
+                return;
+              }
+            }
+            resolve(mejor);
+          };
+          img.src=reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+    async function seleccionarFoto(inputId,valueId,previewId,nameId){
+      const input=document.getElementById(inputId);
+      const value=document.getElementById(valueId);
+      const file=input&&input.files&&input.files[0];
+      if(!file){return;}
+      try{
+        const dataUrl=await comprimirFoto(file);
+        value.value=dataUrl;
+        const name=document.getElementById(nameId)?.value||document.getElementById('editUser')?.value||'Usuario';
+        setPhoto(previewId,dataUrl,name);
+        notice('Foto cargada. Presione Guardar perfil para dejarla en linea.');
+      }catch(error){
+        input.value='';
+        notice(error.message||'No se pudo cargar la foto.','error');
+      }
+    }
+
+    function sessionPayload(extra={}){
+      return {usuario:SESSION.user,rol:SESSION.role,peaje:SESSION.office,token:SESSION.token,sessionToken:SESSION.token,...extra};
+    }
+    function onlineRun(fn,arg){
+      return new Promise((resolve,reject)=>{
+        try{
+          if(!window.google||!google.script||!google.script.run){reject(new Error('google.script.run no disponible'));return;}
+          const runner=google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(new Error(String(e&&e.message||e||'Error del servidor'))));
+          if(Array.isArray(arg)) runner[fn].apply(runner,arg);
+          else runner[fn](arg);
+        }catch(error){reject(error);}
+      });
+    }
+    async function apiGet(action,params={}){
+      const payload=sessionPayload({action,...params});
+      if(window.google&&google.script&&google.script.run) return onlineRun('apiGet',payload);
+      const query=new URLSearchParams(payload);
+      const response=await fetch(API_URL+'?'+query.toString(),{method:'GET',cache:'no-store',redirect:'follow',headers:{Accept:'application/json'}});
+      const data=await response.json();
+      if(data.ok===false) throw new Error(data.error||data.mensaje||'Operación rechazada.');
+      return data;
+    }
+    function actualizarSesionLocal(datos){
+      datos=datos||{};
+      try{
+        localStorage.setItem('ZIMA360_FOTO',datos.foto||'');
+        localStorage.setItem('ZIMA360_NOMBRE',datos.nombre||'');
+        localStorage.setItem('ZIMA360_ROL',datos.rol||'');
+        localStorage.setItem('ZIMA360_PEAJE',datos.peaje||'');
+        localStorage.setItem('ZIMA360_EMAIL',datos.email||'');
+        localStorage.setItem('ZIMA360_TELEFONO',datos.telefono||'');
+        localStorage.setItem('ZIMA360_CARGO',datos.cargo||'');
+        ['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO'].forEach(key=>{
+          const raw=localStorage.getItem(key)||sessionStorage.getItem(key);
+          if(!raw || !raw.trim().startsWith('{')) return;
+          try{
+            const current=JSON.parse(raw);
+            const next=Object.assign({},current,{
+              nombre:datos.nombre||current.nombre,
+              rol:datos.rol||current.rol,
+              peaje:datos.peaje||current.peaje,
+              email:datos.email||current.email,
+              telefono:datos.telefono||current.telefono,
+              cargo:datos.cargo||current.cargo,
+              foto:datos.foto||'',
+              FOTO:datos.foto||''
+            });
+            localStorage.setItem(key,JSON.stringify(next));
+            sessionStorage.setItem(key,JSON.stringify(next));
+          }catch(e){}
+        });
+      }catch(e){}
+    }
+    function postViaHiddenForm(payload){
+      return new Promise((resolve,reject)=>{
+        const iframeName='zimaPostFrame_'+Date.now();
+        const iframe=document.createElement('iframe');
+        const form=document.createElement('form');
+        let settled=false;
+        const finish=(result)=>{
+          if(settled) return;
+          settled=true;
+          setTimeout(()=>{
+            try{form.remove();}catch(e){}
+            try{iframe.remove();}catch(e){}
+          },700);
+          resolve(result||{ok:true});
+        };
+        iframe.name=iframeName;
+        iframe.style.display='none';
+        iframe.onload=()=>finish({ok:true,mensaje:'Cambios enviados al servidor.'});
+        iframe.onerror=()=>reject(new Error('No se pudo enviar la información al servidor.'));
+        form.method='POST';
+        form.action=API_URL;
+        form.target=iframeName;
+        form.style.display='none';
+        Object.keys(payload).forEach(key=>{
+          const input=document.createElement('input');
+          input.type='hidden';
+          input.name=key;
+          input.value=payload[key]==null?'':String(payload[key]);
+          form.appendChild(input);
+        });
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        form.submit();
+        setTimeout(()=>finish({ok:true,mensaje:'Cambios enviados al servidor.'}),8000);
+      });
+    }
+    async function apiPost(action,params={}){
+      const payload=sessionPayload({action,...params});
+      if(window.google&&google.script&&google.script.run){
+        if(action==='crearusuario') return onlineRun('crearUsuario',payload);
+        if(action==='actualizarusuario') return onlineRun('actualizarUsuario',payload);
+        if(action==='cambiarestadousuario') return onlineRun('cambiarEstadoUsuario',[payload.usuario,payload.estado]);
+        if(action==='cambiarcontrasenausuario') return onlineRun('cambiarContrasenaUsuario',[payload.usuario,payload.nuevaContrasena||payload.password]);
+        return onlineRun('apiPost',payload);
+      }
+      let data;
+      try{
+        const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow'});
+        data=await response.json();
+      }catch(error){
+        if(payload.foto && JSON.stringify(payload).length>5000){
+          await postViaHiddenForm(payload);
+          return {ok:true,mensaje:'Perfil actualizado correctamente.',foto:payload.foto};
+        }
+        const query=new URLSearchParams(payload);
+        if(query.toString().length>6000){
+          await postViaHiddenForm(payload);
+          return {ok:true,mensaje:'Cambios enviados al servidor.',foto:payload.foto||''};
+        }
+        const response=await fetch(API_URL+'?'+query.toString(),{method:'GET',cache:'no-store',redirect:'follow',headers:{Accept:'application/json'}});
+        data=await response.json();
+      }
+      if(data.ok===false) throw new Error(data.error||data.mensaje||'Operación rechazada.');
+      return data;
+    }
+
+    function normalizarUsuario(row){
+      const usuario=row.USUARIO||row.usuario||row.USER||'';
+      let foto=String(row.FOTO||row.foto||row.photo||'').trim();
+      if(foto) recordarFotoUsuario(usuario,foto);
+      else foto=fotoCacheUsuario(usuario);
+      return {
+        usuario:usuario,
+        nombre:row.NOMBRE||row.nombre||row.NAME||'',
+        rol:String(row.ROL||row.rol||row.role||'').toUpperCase(),
+        peaje:row.PEAJE||row.peaje||row.office||'',
+        estado:String(row.ESTADO||row.estado||'ACTIVO').toUpperCase(),
+        email:row.EMAIL||row.email||'',
+        telefono:row.TELEFONO||row.telefono||row.phone||'',
+        cargo:row.CARGO||row.cargo||'',
+        foto:foto
+      };
+    }
+    function guardarUsuarioLocal(datos){
+      const usuario=userKey(datos&&datos.usuario);
+      if(!usuario) return;
+      const index=USUARIOS.findIndex(item=>userKey(item.usuario)===usuario);
+      const base=index>=0?USUARIOS[index]:{};
+      const next=Object.assign({},base,datos,{foto:String(datos.foto||'').trim()});
+      if(index>=0) USUARIOS[index]=next;
+      else USUARIOS.push(next);
+      recordarFotoUsuario(next.usuario,next.foto);
+      renderUsuarios();
+    }
+    function peajeKey(value){
+      return String(value||'').trim().replace(/\s+/g,' ').toUpperCase();
+    }
+    function esPeajeGlobal(value){
+      const key=peajeKey(value);
+      return !key||key==='TODOS'||key==='ADMINISTRACION CENTRAL'||key==='ADMINISTRACIÓN CENTRAL';
+    }
+    function refrescarPeajesLocales(){
+      const mapa={};
+      const agregar=value=>{
+        const nombre=String(value||'').trim();
+        const key=peajeKey(nombre);
+        if(!key||esPeajeGlobal(nombre)||mapa[key]) return;
+        mapa[key]=nombre;
+      };
+      PEAJES.forEach(agregar);
+      USUARIOS.forEach(u=>agregar(u.peaje));
+      if(SESSION.office&&!esPeajeGlobal(SESSION.office)) agregar(SESSION.office);
+      PEAJES=Object.keys(mapa).sort().map(key=>mapa[key]);
+    }
+    function llenarSelectPeaje(selectId,selected,includeTodos=false){
+      const select=document.getElementById(selectId);
+      if(!select) return;
+      const actual=String(selected||select.value||'').trim();
+      const opciones=[];
+      if(includeTodos) opciones.push('TODOS');
+      PEAJES.forEach(peaje=>opciones.push(peaje));
+      if(actual&&!opciones.some(item=>peajeKey(item)===peajeKey(actual))) opciones.push(actual);
+      select.innerHTML='<option value="">Seleccione peaje</option>'+opciones.map(peaje=>'<option value="'+esc(peaje)+'">'+esc(peaje)+'</option>').join('');
+      if(actual) select.value=actual;
+      if(!select.value&&PEAJES.length&&!includeTodos) select.value=PEAJES[0];
+      if(!select.value&&includeTodos) select.value='TODOS';
+    }
+    function llenarSelectsPeaje(){
+      llenarSelectPeaje('newOffice',document.getElementById('newOffice')?.value||'',false);
+      llenarSelectPeaje('editOffice',document.getElementById('editOffice')?.value||'',false);
+      sincronizarPeajePorRol('new');
+      sincronizarPeajePorRol('edit');
+    }
+    function sincronizarPeajePorRol(prefix){
+      const role=document.getElementById(prefix+'Role');
+      const field=document.getElementById(prefix+'OfficeField');
+      const select=document.getElementById(prefix+'Office');
+      if(!role||!field||!select) return;
+      const requierePeaje=role.value==='PEAJE';
+      field.classList.toggle('is-hidden',!requierePeaje);
+      select.required=requierePeaje;
+      if(requierePeaje){
+        llenarSelectPeaje(prefix+'Office',select.value,false);
+      }else{
+        llenarSelectPeaje(prefix+'Office','TODOS',true);
+        select.value='TODOS';
+      }
+    }
+    async function cargarPeajes(){
+      try{
+        const data=await apiGet('peajes');
+        PEAJES=(data.peajes||[]).filter(peaje=>!esPeajeGlobal(peaje));
+      }catch(error){
+        refrescarPeajesLocales();
+      }
+      refrescarPeajesLocales();
+      llenarSelectsPeaje();
+    }
+    function renderUsuarios(){
+      const q=String(document.getElementById('search').value||'').trim().toLowerCase();
+      const body=document.getElementById('usersBody');
+      const rows=USUARIOS.filter(u=>[u.usuario,u.nombre,u.rol,u.peaje,u.estado].join(' ').toLowerCase().includes(q));
+      setText('mTotal',USUARIOS.length);
+      setText('mActivos',USUARIOS.filter(u=>u.estado==='ACTIVO').length);
+      setText('mAdmins',USUARIOS.filter(u=>['ADMIN','ADMINISTRADOR'].includes(u.rol)).length);
+      setText('mPeajes',USUARIOS.filter(u=>u.rol==='PEAJE').length);
+      if(!rows.length){body.innerHTML='<tr><td class="empty" colspan="7">No hay usuarios para mostrar.</td></tr>';return;}
+      body.innerHTML=rows.map(u=>{
+        const next=u.estado==='ACTIVO'?'INACTIVO':'ACTIVO';
+        const encoded=encodeURIComponent(u.usuario);
+        return `<tr>
+          <td><div class="user-cell"><div class="user-photo">${photoHtml(u.foto,u.nombre||u.usuario)}</div><strong>${esc(u.usuario)}</strong></div></td>
+          <td>${esc(u.nombre)}</td>
+          <td><span class="role">${esc(u.rol)}</span></td>
+          <td>${esc(u.peaje||'TODOS')}</td>
+          <td>${esc(u.email||u.telefono||'--')}</td>
+          <td><span class="pill ${esc(u.estado)}">${esc(u.estado)}</span></td>
+          <td><div class="row-actions">
+            <button class="icon-btn" type="button" title="Editar perfil" onclick="editarUsuario('${encoded}')"><i data-lucide="pencil"></i></button>
+            <button class="icon-btn" type="button" title="Cambiar estado" onclick="cambiarEstado('${encoded}','${next}')"><i data-lucide="${u.estado==='ACTIVO'?'user-x':'user-check'}"></i></button>
+            <button class="icon-btn" type="button" title="Cambiar contraseña" onclick="enfocarPassword('${encoded}')"><i data-lucide="key-round"></i></button>
+          </div></td>
+        </tr>`;
+      }).join('');
+      if(window.lucide) lucide.createIcons({attrs:{"stroke-width":1.9}});
+    }
+    async function cargarUsuarios(){
+      try{
+        const body=document.getElementById('usersBody');
+        body.innerHTML='<tr><td class="empty" colspan="7">Consultando usuarios...</td></tr>';
+        const data=await apiGet('usuarios');
+        USUARIOS=(data.usuarios||[]).map(normalizarUsuario);
+        await cargarPeajes();
+        renderUsuarios();
+      }catch(error){
+        document.getElementById('usersBody').innerHTML='<tr><td class="empty" colspan="7">'+esc(error.message||error)+'</td></tr>';
+        notice(error.message||'No se pudieron cargar los usuarios.','error');
+      }
+    }
+    async function cambiarEstado(usuario,estado){
+      usuario=decodeURIComponent(usuario);
+      const accion=estado==='ACTIVO'?'activar':'inactivar';
+      if(!confirm('¿Desea '+accion+' el usuario "'+usuario+'"?')){
+        notice('Cambio de estado cancelado.');
+        return;
+      }
+      try{
+        notice('Actualizando estado de '+usuario+'...');
+        await apiPost('cambiarestadousuario',{usuario,estado});
+        notice('Estado actualizado correctamente.');
+        await cargarUsuarios();
+      }catch(error){notice(error.message||'No se pudo cambiar el estado.','error');}
+    }
+    function editarUsuario(usuario){
+      usuario=decodeURIComponent(usuario);
+      const u=USUARIOS.find(item=>String(item.usuario).toLowerCase()===usuario.toLowerCase());
+      if(!u){notice('Usuario no encontrado en la tabla.','error');return;}
+      document.getElementById('editUser').value=u.usuario;
+      document.getElementById('editName').value=u.nombre;
+      document.getElementById('editRole').value=u.rol||'PEAJE';
+      document.getElementById('editStatus').value=u.estado||'ACTIVO';
+      llenarSelectPeaje('editOffice',u.peaje||'',u.rol!=='PEAJE');
+      sincronizarPeajePorRol('edit');
+      document.getElementById('editEmail').value=u.email||'';
+      document.getElementById('editPhone').value=u.telefono||'';
+      document.getElementById('editCargo').value=u.cargo||'';
+      document.getElementById('editPhoto').value=u.foto||'';
+      document.getElementById('editPhotoFile').value='';
+      document.getElementById('editPassword').value='';
+      setText('editProfileTitle',u.nombre||u.usuario);
+      setText('editProfileMeta',(u.rol||'SIN ROL')+' - '+(u.peaje||'TODOS'));
+      setPhoto('editPhotoPreview',u.foto,u.nombre||u.usuario);
+      document.getElementById('editName').focus();
+    }
+    function enfocarPassword(usuario){
+      editarUsuario(usuario);
+      document.getElementById('editPassword').focus();
+    }
+    async function guardarPerfil(event){
+      event.preventDefault();
+      const payload={
+        usuario:document.getElementById('editUser').value.trim(),
+        nombre:document.getElementById('editName').value.trim(),
+        rol:document.getElementById('editRole').value,
+        estado:document.getElementById('editStatus').value,
+        peaje:document.getElementById('editOffice').value.trim(),
+        email:document.getElementById('editEmail').value.trim(),
+        telefono:document.getElementById('editPhone').value.trim(),
+        cargo:document.getElementById('editCargo').value.trim(),
+        foto:document.getElementById('editPhoto').value.trim(),
+        nuevaContrasena:document.getElementById('editPassword').value
+      };
+      if(!payload.usuario){notice('Seleccione un usuario para editar.','error');return;}
+      if(payload.rol==='PEAJE'&&!payload.peaje){notice('Para rol PEAJE debes indicar el peaje.','error');return;}
+      if(payload.nuevaContrasena&&payload.nuevaContrasena.length<6){notice('La contraseña debe tener al menos 6 caracteres.','error');return;}
+      try{
+        ZimaUI.busy('saveProfileBtn',true,'Guardando cambios...');
+        notice('Guardando cambios del perfil...');
+        const resultado=await apiPost('actualizarusuario',payload);
+        guardarUsuarioLocal({
+          usuario:payload.usuario,
+          nombre:payload.nombre,
+          rol:payload.rol,
+          peaje:payload.peaje,
+          estado:payload.estado,
+          email:payload.email,
+          telefono:payload.telefono,
+          cargo:payload.cargo,
+          foto:payload.foto
+        });
+        if(payload.usuario.toLowerCase()===String(SESSION.user||'').toLowerCase()){
+          RAW.foto=payload.foto;
+          RAW.nombre=payload.nombre;
+          SESSION.name=payload.nombre;
+          SESSION.role=payload.rol;
+          SESSION.office=payload.peaje;
+          actualizarSesionLocal(payload);
+          setPhoto('avatar',payload.foto,payload.nombre||payload.usuario);
+          setText('topName',payload.nombre||payload.usuario);
+          setText('sideUser',(payload.nombre||payload.usuario)+' - '+(payload.rol||'SIN ROL'));
+        }
+        notice(resultado&&resultado.foto?'Perfil actualizado. Foto guardada en línea.':'Perfil actualizado correctamente.');
+        document.getElementById('editPassword').value='';
+        await new Promise(resolve=>setTimeout(resolve,700));
+        await cargarUsuarios();
+        editarUsuario(encodeURIComponent(payload.usuario));
+      }catch(error){notice(error.message||'No se pudo guardar el perfil.','error');}
+      finally{ZimaUI.busy('saveProfileBtn',false);}
+    }
+    function limpiarFormulario(){
+      document.getElementById('userForm').reset();
+      document.getElementById('newRole').value='PEAJE';
+      llenarSelectPeaje('newOffice','',false);
+      sincronizarPeajePorRol('new');
+      document.getElementById('newPhoto').value='';
+      setPhoto('newPhotoPreview','',document.getElementById('newName').value||document.getElementById('newUser').value||'Usuario');
+      document.getElementById('newUser').focus();
+    }
+    async function crearUsuario(event){
+      event.preventDefault();
+      const payload={
+        usuario:document.getElementById('newUser').value.trim(),
+        nombre:document.getElementById('newName').value.trim(),
+        rol:document.getElementById('newRole').value,
+        peaje:document.getElementById('newOffice').value.trim(),
+        password:document.getElementById('newPassword').value,
+        foto:document.getElementById('newPhoto').value.trim()
+      };
+      if(payload.rol==='PEAJE'&&!payload.peaje){notice('Para rol PEAJE debes indicar el peaje.','error');return;}
+      try{
+        ZimaUI.busy('createUserBtn',true,'Creando usuario...');
+        notice('Creando usuario...');
+        await apiPost('crearusuario',payload);
+        guardarUsuarioLocal({
+          usuario:payload.usuario,
+          nombre:payload.nombre,
+          rol:payload.rol,
+          peaje:payload.peaje||'TODOS',
+          estado:'ACTIVO',
+          email:'',
+          telefono:'',
+          cargo:'',
+          foto:payload.foto
+        });
+        notice('Usuario creado correctamente.');
+        limpiarFormulario();
+        await cargarUsuarios();
+      }catch(error){notice(error.message||'No se pudo crear el usuario.','error');}
+      finally{ZimaUI.busy('createUserBtn',false);}
+    }
+    function cerrarSesion(){
+      ['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','ZIMA360_USUARIO','ZIMA360_NOMBRE','ZIMA360_ROL','ZIMA360_PEAJE','ZIMA360_FOTO','ZIMA360_EMAIL','ZIMA360_TELEFONO','ZIMA360_CARGO','ZIMA_SESSION_TOKEN','ZIMA360_SESSION_TOKEN'].forEach(k=>{try{localStorage.removeItem(k);sessionStorage.removeItem(k);}catch(e){}});
+      location.href='login.html';
+    }
+    function init(){
+      setText('topName',SESSION.name||SESSION.user||'Gran Administrador');
+      setText('sideUser',(SESSION.name||SESSION.user||'Usuario')+' - '+(SESSION.role||'SIN ROL'));
+      setPhoto('avatar',RAW.foto||RAW.photo||'',SESSION.name||SESSION.user);
+      document.getElementById('userForm').addEventListener('submit',crearUsuario);
+      document.getElementById('editForm').addEventListener('submit',guardarPerfil);
+      document.getElementById('newRole').addEventListener('change',function(){sincronizarPeajePorRol('new');});
+      document.getElementById('editRole').addEventListener('change',function(){sincronizarPeajePorRol('edit');});
+      document.getElementById('newPhotoFile').addEventListener('change',function(){seleccionarFoto('newPhotoFile','newPhoto','newPhotoPreview','newName');});
+      document.getElementById('editPhotoFile').addEventListener('change',function(){seleccionarFoto('editPhotoFile','editPhoto','editPhotoPreview','editName');});
+      document.getElementById('removeEditPhoto').addEventListener('click',function(){
+        document.getElementById('editPhoto').value='';
+        document.getElementById('editPhotoFile').value='';
+        setPhoto('editPhotoPreview','',document.getElementById('editName').value||document.getElementById('editUser').value||'Usuario');
+      });
+      document.getElementById('search').addEventListener('input',renderUsuarios);
+      if(!isGranAdmin()){
+        document.getElementById('adminPage').style.display='none';
+        document.getElementById('locked').style.display='block';
+        return;
+      }
+      cargarUsuarios();
+    }
+    if(window.lucide) lucide.createIcons({attrs:{"stroke-width":1.9}});
+    init();
+  </script>
+</body>
+</html>
+
+
