@@ -698,7 +698,6 @@
     <a class="nav-item" href="planilla.html"><span class="nav-icon"><i class="bi bi-file-earmark-plus"></i></span><span>Nueva planilla</span></a>
     <a class="nav-item active" href="historial.html"><span class="nav-icon"><i class="bi bi-clock-history"></i></span><span>Historial</span></a>
     <a class="nav-item" href="informes.html"><span class="nav-icon"><i class="bi bi-clipboard-data"></i></span><span>Informes</span></a>
-    <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i class="bi bi-shield-check"></i></span><span>Gran admin</span></a>
   </nav>
 
   <div class="sidebar-bottom">
@@ -806,7 +805,7 @@
     function pintarAvatar(el,foto,nombre){ if(!el)return; const src=String(foto||'').trim(); if(src){ el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'" onerror="this.remove();this.parentElement.textContent=\''+esc(iniciales(nombre)).replace(/'/g,'')+'\'">'; }else{ el.textContent=iniciales(nombre); } }
     function guardarPerfilSesion(perfil){ perfil=perfil||{}; const foto=String(perfil.foto||perfil.FOTO||perfil.photo||'').trim(); if(perfil.nombre)SESSION.name=perfil.nombre; if(perfil.rol)SESSION.role=perfil.rol; if(perfil.peaje)SESSION.peaje=perfil.peaje; SESSION.foto=foto; setupSession(); }
     async function refrescarPerfil(){ try{ const data=await apiGet('perfil'); if(data&&data.ok!==false)guardarPerfilSesion(data); }catch(e){} }
-    function esGranAdministradorSesion(){ const rol=String(SESSION.role||'').trim().toUpperCase(); return rol==='ADMIN'||rol==='ADMINISTRADOR'; }
+    function esGranAdministradorSesion(){ const rol=String(SESSION.role||'').trim().toUpperCase(); const peaje=String(SESSION.peaje||'').trim().toUpperCase(); const peajeGlobal=peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL'; return (rol==='ADMIN'||rol==='ADMINISTRADOR')&&peajeGlobal; }
     function mostrarMenuAdmin(){ document.querySelectorAll('.admin-only').forEach(item=>{ item.style.display=esGranAdministradorSesion()?'flex':'none'; }); }
     function setupSession(){ const name=SESSION.name || SESSION.user; const peaje=SESSION.peaje || 'Administración central'; const h=document.getElementById('headerUser'), p=document.getElementById('headerPeaje'), a=document.getElementById('headerAvatar'), sp=document.getElementById('sidebarPeaje'); if(h) h.textContent=name; if(p) p.textContent=peaje; if(sp) sp.textContent=peaje; pintarAvatar(a,SESSION.foto,name); }
     function abrirModalSesion(){ cerrarSesion(); }
@@ -854,7 +853,7 @@
     function cerrarPdf() { const frame = $('pdfFrame'); ZimaUI.closeModal('pdfModal'); if (frame) frame.src = 'about:blank'; currentPreviewId=''; const loading=$('pdfLoading'); if(loading)loading.hidden=true; }
     function cerrarPdfDesdeFondo(e) { if (e.target && e.target.id === 'pdfModal') cerrarPdf(); }
     async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando...'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }
-    setupSession(); mostrarMenuAdmin(); refrescarPerfil().then(mostrarMenuAdmin); $('buscar').addEventListener('input', render); $('estado').addEventListener('change', render); $('fecha').addEventListener('change', render); cargar();
+    setupSession(); mostrarMenuAdmin(); refrescarPerfil().then(function(){mostrarMenuAdmin();render();}); $('buscar').addEventListener('input', render); $('estado').addEventListener('change', render); $('fecha').addEventListener('change', render); cargar();
   </script>
 </body>
 

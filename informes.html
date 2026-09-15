@@ -323,7 +323,9 @@
       $('sidebarPeaje').textContent=SESSION.peaje;
       $('printUsuario').textContent=SESSION.name;
       pintarAvatar($('avatar'),SESSION.foto,SESSION.name||SESSION.user);
-      document.querySelectorAll('.admin-only').forEach(el=>{el.style.display=['ADMIN','ADMINISTRADOR'].includes(SESSION.role)?'flex':'none';});
+      const peaje=String(SESSION.peaje||'').trim().toUpperCase();
+      const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
+      document.querySelectorAll('.admin-only').forEach(el=>{el.style.display=(['ADMIN','ADMINISTRADOR'].includes(SESSION.role)&&peajeGlobal)?'flex':'none';});
     }
 
     function iniciales(nombre){

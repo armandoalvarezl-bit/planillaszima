@@ -388,7 +388,11 @@
     };
     const FOTO_CACHE_KEY='ZIMA360_FOTOS_USUARIOS';
 
-    function isGranAdmin(){return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role);}
+    function isGranAdmin(){
+      const peaje=String(SESSION.office||'').trim().toUpperCase();
+      const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
+      return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role)&&peajeGlobal;
+    }
     function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
     function setText(id,value){const el=document.getElementById(id);if(el)el.textContent=String(value??'');}
     function notice(msg,type='ok'){const el=document.getElementById('notice');el.textContent=msg;el.className='notice show '+type;clearTimeout(notice.t);notice.t=setTimeout(()=>{el.className='notice';},4500);}

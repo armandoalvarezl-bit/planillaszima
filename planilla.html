@@ -1078,8 +1078,11 @@ function zimaSessionParams(){
   };
 }
 function esGranAdministradorSesion(){
-  const rol=String(zimaSessionParams().rol||'').trim().toUpperCase();
-  return rol==='ADMIN'||rol==='ADMINISTRADOR';
+  const ses=zimaSessionParams();
+  const rol=String(ses.rol||'').trim().toUpperCase();
+  const peaje=String(ses.peaje||'').trim().toUpperCase();
+  const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
+  return (rol==='ADMIN'||rol==='ADMINISTRADOR') && peajeGlobal;
 }
 function mostrarMenuAdmin(){
   document.querySelectorAll('.admin-only').forEach(item=>{
@@ -1180,7 +1183,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     const totalVisual=$('totalVisual');
     const letrasInput=$('letras');
     const msg=$('msg');
-    const CAMPOS_FIJOS=['codigo','peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','concepto','obsValor','letras','tula','billetes','observaciones','entregadoNombre','entregadoFirma','revisadoNombre','revisadoFirma'];
+    const CAMPOS_FIJOS=['peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','concepto','obsValor','letras','tula','billetes','observaciones','entregadoNombre','entregadoFirma','revisadoNombre','revisadoFirma'];
     const DATOS_PEAJE={
       fragua:{
         ciudad:'Fragua',

@@ -1299,7 +1299,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     }
 
     function esGranAdministrador(){
-      return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role);
+      const peaje=String(SESSION.office||'').trim().toUpperCase();
+      const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
+      return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role) && peajeGlobal;
     }
 
     function normalizarTexto(v){
