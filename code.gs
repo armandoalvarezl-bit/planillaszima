@@ -7,6 +7,7 @@ const ZIMA = {
   SHEET_AUDITORIA: 'AUDITORIA',
   SHEET_CONFIG: 'CONFIG',
   SHEET_USUARIOS: 'USUARIOS',
+  SHEET_SOPORTE: 'SOPORTE',
 
   SESSION_PREFIX: 'ZIMA_SESSION_',
   SESSION_SECONDS: 21600, // 6 horas
@@ -53,6 +54,21 @@ const ZIMA = {
     'TELEFONO',
     'CARGO',
     'FOTO'
+  ],
+
+  SOPORTE_HEADERS: [
+    'timestamp',
+    'tipo',
+    'titulo',
+    'mensaje',
+    'pagina',
+    'usuario',
+    'nombre',
+    'rol',
+    'peaje',
+    'navegador',
+    'captura',
+    'estado'
   ]
 };
 
@@ -116,6 +132,9 @@ function setupSistema() {
   const usuarios =
     prepararHojaUsuarios_(ss);
 
+  const soporte =
+    prepararHojaSoporte_(ss);
+
   const configActual =
     leerConfigMap_(
       config
@@ -131,6 +150,7 @@ function setupSistema() {
     ['HOJA_AUDITORIA', ZIMA.SHEET_AUDITORIA],
     ['HOJA_CONFIG', ZIMA.SHEET_CONFIG],
     ['HOJA_USUARIOS', ZIMA.SHEET_USUARIOS],
+    ['HOJA_SOPORTE', ZIMA.SHEET_SOPORTE],
     ['WEB_APP_URL', obtenerWebAppUrl_() || ''],
     [
       'CORREOS_NOTIFICACION',
@@ -164,7 +184,8 @@ function setupSistema() {
       planillas: planillas.getName(),
       auditoria: auditoria.getName(),
       config: config.getName(),
-      usuarios: usuarios.getName()
+      usuarios: usuarios.getName(),
+      soporte: soporte.getName()
     }
   };
 }
@@ -501,6 +522,47 @@ function prepararHojaUsuarios_(ss) {
       currentHeaders.push(header);
     }
   });
+
+  return sh;
+}
+
+
+function prepararHojaSoporte_(ss) {
+
+  let sh =
+    ss.getSheetByName(
+      ZIMA.SHEET_SOPORTE
+    );
+
+  if (!sh) {
+    sh = ss.insertSheet(
+      ZIMA.SHEET_SOPORTE
+    );
+  }
+
+  if (sh.getLastRow() === 0) {
+    sh
+      .getRange(
+        1,
+        1,
+        1,
+        ZIMA.SOPORTE_HEADERS.length
+      )
+      .setValues([
+        ZIMA.SOPORTE_HEADERS
+      ]);
+
+    sh.setFrozenRows(1);
+
+    sh
+      .getRange(
+        1,
+        1,
+        1,
+        ZIMA.SOPORTE_HEADERS.length
+      )
+      .setFontWeight('bold');
+  }
 
   return sh;
 }
@@ -2387,6 +2449,43 @@ function doGet(e) {
     }
 
     if (
+      action === 'soportes' ||
+      action === 'listasoporte'
+    ) {
+
+      const contexto =
+        obtenerContextoUsuario_(
+          params
+        );
+
+      if (!contexto.ok) {
+        return jsonOutput_(
+          contexto,
+          callback
+        );
+      }
+
+      if (
+        !esUsuarioAdministrador_(
+          contexto.sesion
+        )
+      ) {
+        return jsonOutput_({
+          ok: false,
+          error:
+            'Solo un administrador puede consultar soporte.'
+        }, callback);
+      }
+
+      return jsonOutput_(
+        listarSoporte_(
+          params
+        ),
+        callback
+      );
+    }
+
+    if (
       action === 'crearusuario' ||
       action === 'actualizarusuario' ||
       action === 'cambiarcontrasenausuario' ||
@@ -2848,6 +2947,13 @@ function apiGet(params) {
     case 'perfil':
 
       return obtenerPerfilUsuario_(
+        params
+      );
+
+    case 'soportes':
+    case 'listasoporte':
+
+      return listarSoporte_(
         params
       );
 
@@ -5172,6 +5278,35 @@ function registrarSoporte_(
       ''
     ).trim();
 
+  try {
+    const sh =
+      prepararHojaSoporte_(
+        getSpreadsheet_()
+      );
+
+    sh.appendRow([
+      new Date(),
+      tipo,
+      titulo,
+      mensaje,
+      pagina,
+      sesion.usuario || '',
+      sesion.nombre || '',
+      sesion.rol || '',
+      sesion.peaje || '',
+      navegador,
+      captura,
+      'ABIERTO'
+    ]);
+  } catch (e) {
+    console.error(
+      'No fue posible guardar el soporte en hoja: ' +
+      errorMessage_(
+        e
+      )
+    );
+  }
+
   const asunto =
     'ZIMA 360 - Soporte ' +
     tipo.toUpperCase() +
@@ -5256,6 +5391,93 @@ function registrarSoporte_(
       destinatarios.join(','),
     fecha:
       fecha
+  };
+}
+
+
+function listarSoporte_(
+  params
+) {
+
+  params =
+    params ||
+    {};
+
+  const contexto =
+    obtenerContextoUsuario_(
+      params
+    );
+
+  if (!contexto.ok) {
+    return contexto;
+  }
+
+  if (
+    !esUsuarioAdministrador_(
+      contexto.sesion
+    )
+  ) {
+    return {
+      ok: false,
+      error:
+        'Solo un administrador puede consultar soporte.'
+    };
+  }
+
+  const sh =
+    prepararHojaSoporte_(
+      getSpreadsheet_()
+    );
+
+  const lastRow =
+    sh.getLastRow();
+
+  if (lastRow < 2) {
+    return {
+      ok: true,
+      rows: [],
+      total: 0
+    };
+  }
+
+  const values =
+    sh
+      .getRange(
+        2,
+        1,
+        lastRow - 1,
+        ZIMA.SOPORTE_HEADERS.length
+      )
+      .getValues();
+
+  const rows =
+    values
+      .map(function(row, index) {
+        const item = {
+          rowNumber:
+            index + 2
+        };
+
+        ZIMA.SOPORTE_HEADERS.forEach(function(header, colIndex) {
+          const value =
+            row[colIndex];
+
+          item[header] =
+            value instanceof Date
+              ? value.toISOString()
+              : value;
+        });
+
+        return item;
+      })
+      .reverse();
+
+  return {
+    ok: true,
+    rows:
+      rows,
+    total:
+      rows.length
   };
 }
 

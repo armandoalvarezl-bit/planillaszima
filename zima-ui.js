@@ -412,13 +412,29 @@
       sessionToken: session.token
     };
 
+    const signature = [
+      payload.tipo,
+      payload.mensaje,
+      payload.pagina
+    ].join('|').slice(0, 500);
+
+    try {
+      const lastSignature = sessionStorage.getItem('ZIMA_SUPPORT_LAST_SIGNATURE') || '';
+      const lastTime = Number(sessionStorage.getItem('ZIMA_SUPPORT_LAST_TIME') || 0);
+      if (lastSignature === signature && Date.now() - lastTime < 60000) {
+        return Promise.resolve({ ok: true, skipped: true });
+      }
+      sessionStorage.setItem('ZIMA_SUPPORT_LAST_SIGNATURE', signature);
+      sessionStorage.setItem('ZIMA_SUPPORT_LAST_TIME', String(Date.now()));
+    } catch (e) {}
+
     try {
       localStorage.setItem('ZIMA_SUPPORT_LAST', JSON.stringify(payload));
     } catch (e) {}
 
     const sending = sendSupportReport(payload);
 
-    if (options.redirect !== false && !/soporte\.html/i.test(location.pathname)) {
+    if (options.redirect === true && !/soporte\.html/i.test(location.pathname)) {
       setTimeout(function () {
         const target = 'soporte.html?auto=1';
         if (!/soporte\.html/i.test(location.pathname)) window.location.href = target;

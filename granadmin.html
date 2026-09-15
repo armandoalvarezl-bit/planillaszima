@@ -86,6 +86,9 @@
     .icon-btn{width:31px;height:31px;border:1px solid #dfe5ec;border-radius:7px;background:#fff;color:#334155;display:grid;place-items:center}
     .icon-btn svg{width:15px;height:15px}
     .empty{padding:28px;text-align:center;color:var(--muted)}
+    .support-panel{margin-top:16px}
+    .support-message{max-width:260px;white-space:normal;line-height:1.4;color:#334155}
+    .support-capture{max-width:340px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#64748b;font-family:Consolas,monospace;font-size:11px}
     .locked{display:none;max-width:720px;margin:80px auto;background:#fff;border:1px solid var(--line);border-radius:12px;padding:28px;text-align:center}
     .locked i{width:36px;height:36px;color:var(--red)}
     @media(max-width:1050px){.grid{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}
@@ -142,6 +145,7 @@
     .granadmin-page tbody tr:hover td{background:#fcfdff!important}
     .granadmin-page .row-actions{display:flex!important;gap:6px!important}
     .granadmin-page .icon-btn{width:31px!important;height:31px!important;border-radius:7px!important;background:#fff!important;border:1px solid #dfe5ec!important;color:#334155!important}
+    .granadmin-page .support-panel{margin-top:16px!important}
     @media(max-width:1050px){
       .granadmin-page .grid{grid-template-columns:1fr!important}
       .granadmin-page .directory-panel{min-height:auto!important}
@@ -212,7 +216,7 @@
           <article class="metric"><span>Total usuarios</span><strong id="mTotal">0</strong></article>
           <article class="metric"><span>Activos</span><strong id="mActivos">0</strong></article>
           <article class="metric"><span>Admins</span><strong id="mAdmins">0</strong></article>
-          <article class="metric"><span>Peajes</span><strong id="mPeajes">0</strong></article>
+          <article class="metric"><span>Soporte</span><strong id="mSoporte">0</strong></article>
         </section>
 
         <section class="grid">
@@ -352,6 +356,28 @@
             </div>
           </section>
         </section>
+
+        <section class="panel support-panel">
+          <div class="panel-head">
+            <div class="toolbar">
+              <div>
+                <div class="kicker">Mesa de ayuda</div>
+                <h2>Reportes de soporte</h2>
+              </div>
+              <button class="btn" type="button" onclick="cargarSoporte()"><i data-lucide="refresh-cw"></i>Actualizar soporte</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Fecha</th><th>Tipo</th><th>Asunto</th><th>Mensaje</th><th>Usuario</th><th>Pagina</th><th>Estado</th><th>Captura</th></tr>
+              </thead>
+              <tbody id="supportBody">
+                <tr><td class="empty" colspan="8">Cargando reportes...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </section>
     </main>
   </div>
@@ -361,6 +387,7 @@
     const API_URL='https://script.google.com/macros/s/AKfycbxrA58PXId5baP3sOXKJ2U71erwjfTC4SbRmNQ7p63KoSKLa--P3yFM1eWP1-GVf_XV7g/exec';
     let USUARIOS=[];
     let PEAJES=[];
+    let SOPORTE=[];
 
     function getStore(key){try{return localStorage.getItem(key)||sessionStorage.getItem(key)||'';}catch(e){return '';}}
     function leerSesion(){
@@ -738,7 +765,7 @@
       setText('mTotal',USUARIOS.length);
       setText('mActivos',USUARIOS.filter(u=>u.estado==='ACTIVO').length);
       setText('mAdmins',USUARIOS.filter(u=>['ADMIN','ADMINISTRADOR'].includes(u.rol)).length);
-      setText('mPeajes',USUARIOS.filter(u=>u.rol==='PEAJE').length);
+      setText('mSoporte',SOPORTE.length);
       if(!rows.length){body.innerHTML='<tr><td class="empty" colspan="7">No hay usuarios para mostrar.</td></tr>';return;}
       body.innerHTML=rows.map(u=>{
         const next=u.estado==='ACTIVO'?'INACTIVO':'ACTIVO';
@@ -759,6 +786,57 @@
       }).join('');
       if(window.lucide) lucide.createIcons({attrs:{"stroke-width":1.9}});
     }
+    function formatDateTime(value){
+      const d=new Date(value);
+      if(isNaN(d.getTime())) return String(value||'--');
+      return d.toLocaleString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    }
+    function supportHost(value){
+      try{
+        const url=new URL(String(value||''),location.href);
+        return url.pathname.split('/').pop()||url.hostname;
+      }catch(e){
+        return String(value||'--');
+      }
+    }
+    function renderSoporte(){
+      const body=document.getElementById('supportBody');
+      setText('mSoporte',SOPORTE.length);
+      if(!body) return;
+      if(!SOPORTE.length){
+        body.innerHTML='<tr><td class="empty" colspan="8">No hay reportes de soporte todavia.</td></tr>';
+        return;
+      }
+      body.innerHTML=SOPORTE.map(item=>`<tr>
+        <td>${esc(formatDateTime(item.timestamp))}</td>
+        <td><span class="role">${esc(item.tipo||'manual')}</span></td>
+        <td>${esc(item.titulo||'Reporte')}</td>
+        <td><div class="support-message">${esc(item.mensaje||'--')}</div></td>
+        <td>${esc(item.nombre||item.usuario||'--')}</td>
+        <td>${esc(supportHost(item.pagina))}</td>
+        <td><span class="pill ACTIVO">${esc(item.estado||'ABIERTO')}</span></td>
+        <td><div class="support-capture" title="${esc(item.captura||'')}">${esc(item.captura||'--')}</div></td>
+      </tr>`).join('');
+    }
+    async function cargarSoporte(){
+      const body=document.getElementById('supportBody');
+      try{
+        if(body) body.innerHTML='<tr><td class="empty" colspan="8">Consultando reportes...</td></tr>';
+        let data;
+        try{
+          data=await apiGet('soportes');
+        }catch(firstError){
+          data=await apiGet('listasoporte');
+        }
+        SOPORTE=data.rows||[];
+        renderSoporte();
+      }catch(error){
+        const msg=String(error&&error.message||error||'');
+        const legacy=/GET no soportada|no soportad/i.test(msg);
+        if(body) body.innerHTML='<tr><td class="empty" colspan="8">'+esc(legacy?'El backend publicado aun no tiene activado el listado de soporte. Actualiza code.gs en Apps Script y vuelve a desplegar la Web App.':msg)+'</td></tr>';
+        notice(error.message||'No se pudieron cargar los reportes de soporte.','error');
+      }
+    }
     async function cargarUsuarios(){
       try{
         const body=document.getElementById('usersBody');
@@ -767,6 +845,7 @@
         USUARIOS=(data.usuarios||[]).map(normalizarUsuario);
         await cargarPeajes();
         renderUsuarios();
+        await cargarSoporte();
       }catch(error){
         document.getElementById('usersBody').innerHTML='<tr><td class="empty" colspan="7">'+esc(error.message||error)+'</td></tr>';
         notice(error.message||'No se pudieron cargar los usuarios.','error');
