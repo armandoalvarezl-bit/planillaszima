@@ -2324,6 +2324,19 @@ function doGet(e) {
     }
 
     if (
+      action === 'soporte' ||
+      action === 'reportarsoporte'
+    ) {
+
+      return jsonOutput_(
+        registrarSoporte_(
+          params
+        ),
+        callback
+      );
+    }
+
+    if (
       action === 'save' ||
       action === 'create' ||
       action === 'update' ||
@@ -2599,6 +2612,18 @@ function doPost(e) {
           payload.sessionToken ||
           payload.sesion ||
           ''
+        )
+      );
+    }
+
+    if (
+      action === 'soporte' ||
+      action === 'reportarsoporte'
+    ) {
+
+      return jsonOutput_(
+        registrarSoporte_(
+          payload
         )
       );
     }
@@ -2921,6 +2946,13 @@ function apiPost(data) {
     case 'delete':
 
       return eliminarPlanilla_(
+        data
+      );
+
+    case 'soporte':
+    case 'reportarsoporte':
+
+      return registrarSoporte_(
         data
       );
 
@@ -5011,6 +5043,220 @@ function registrarAuditoria_(
     email
 
   ]);
+}
+
+
+/* ============================================================
+   SOPORTE EN LINEA
+   ============================================================ */
+
+function recortarSoporte_(
+  value,
+  max
+) {
+
+  value =
+    String(
+      value == null
+        ? ''
+        : value
+    );
+
+  max =
+    max ||
+    6000;
+
+  if (value.length <= max) {
+    return value;
+  }
+
+  return value.substring(0, max) +
+    '\n...[recortado]';
+}
+
+
+function registrarSoporte_(
+  data
+) {
+
+  data =
+    data ||
+    {};
+
+  let contexto =
+    null;
+
+  try {
+    contexto =
+      obtenerContextoUsuario_(
+        data
+      );
+  } catch (e) {
+    contexto =
+      null;
+  }
+
+  const sesion =
+    contexto &&
+    contexto.ok
+      ? contexto.sesion
+      : {
+        usuario:
+          data.usuario ||
+          data.user ||
+          '',
+
+        nombre:
+          data.nombre ||
+          data.name ||
+          '',
+
+        rol:
+          data.rol ||
+          data.role ||
+          '',
+
+        peaje:
+          data.peaje ||
+          ''
+      };
+
+  const fecha =
+    Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      'yyyy-MM-dd HH:mm:ss'
+    );
+
+  const tipo =
+    String(
+      data.tipo ||
+      data.type ||
+      'manual'
+    ).trim();
+
+  const titulo =
+    String(
+      data.titulo ||
+      data.title ||
+      'Solicitud de soporte'
+    ).trim();
+
+  const mensaje =
+    recortarSoporte_(
+      data.mensaje ||
+      data.message ||
+      data.error ||
+      ''
+    );
+
+  const captura =
+    recortarSoporte_(
+      data.captura ||
+      data.capture ||
+      data.detalle ||
+      ''
+    );
+
+  const pagina =
+    String(
+      data.pagina ||
+      data.page ||
+      ''
+    ).trim();
+
+  const navegador =
+    String(
+      data.navegador ||
+      data.userAgent ||
+      ''
+    ).trim();
+
+  const asunto =
+    'ZIMA 360 - Soporte ' +
+    tipo.toUpperCase() +
+    ' - ' +
+    titulo;
+
+  const html =
+    '<div style="font-family:Arial,sans-serif;color:#172033;line-height:1.45">' +
+    '<div style="border-left:5px solid #f4c20d;padding:4px 0 4px 14px;margin-bottom:16px">' +
+    '<div style="font-size:12px;color:#6b7280;font-weight:bold;letter-spacing:1px;text-transform:uppercase">ZIMA 360</div>' +
+    '<div style="font-size:20px;font-weight:800;color:#111827">Reporte de soporte en linea</div>' +
+    '</div>' +
+    '<table style="border-collapse:collapse;width:100%;max-width:760px">' +
+    filaHtmlPlanillaPdf_('Fecha', fecha) +
+    filaHtmlPlanillaPdf_('Tipo', tipo) +
+    filaHtmlPlanillaPdf_('Titulo', titulo) +
+    filaHtmlPlanillaPdf_('Mensaje', mensaje) +
+    filaHtmlPlanillaPdf_('Pagina', pagina) +
+    filaHtmlPlanillaPdf_('Usuario', sesion.usuario || '') +
+    filaHtmlPlanillaPdf_('Nombre', sesion.nombre || '') +
+    filaHtmlPlanillaPdf_('Rol', sesion.rol || '') +
+    filaHtmlPlanillaPdf_('Peaje', sesion.peaje || '') +
+    filaHtmlPlanillaPdf_('Navegador', navegador) +
+    '</table>' +
+    '<p style="margin:18px 0 8px;color:#4b5563"><b>Captura tecnica del error</b></p>' +
+    '<pre style="white-space:pre-wrap;background:#f6f8fb;border:1px solid #d8dee8;padding:12px;border-radius:6px;max-width:760px">' +
+    htmlEscape_(
+      captura ||
+      'Sin captura tecnica.'
+    ) +
+    '</pre>' +
+    '</div>';
+
+  const texto =
+    [
+      'ZIMA 360 - Reporte de soporte',
+      'Fecha: ' + fecha,
+      'Tipo: ' + tipo,
+      'Titulo: ' + titulo,
+      'Mensaje: ' + mensaje,
+      'Pagina: ' + pagina,
+      'Usuario: ' + (sesion.usuario || ''),
+      'Nombre: ' + (sesion.nombre || ''),
+      'Rol: ' + (sesion.rol || ''),
+      'Peaje: ' + (sesion.peaje || ''),
+      'Navegador: ' + navegador,
+      '',
+      'Captura tecnica:',
+      captura
+    ].join('\n');
+
+  const destinatarios =
+    obtenerEmailsUsuariosNotificacion_(
+      sesion
+    );
+
+  if (!destinatarios.length) {
+    return {
+      ok: false,
+      error:
+        'No hay correos de soporte configurados.'
+    };
+  }
+
+  MailApp.sendEmail({
+    to:
+      destinatarios.join(','),
+
+    subject:
+      asunto.substring(0, 240),
+
+    body:
+      texto,
+
+    htmlBody:
+      html
+  });
+
+  return {
+    ok: true,
+    enviadoA:
+      destinatarios.join(','),
+    fecha:
+      fecha
+  };
 }
 
 

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ZIMA 360 - Soporte</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="zima-ui-modern.css">
+  <style>
+    :root{--sidebar-w:293px;--yellow:#f7c600;--ink:#111827;--muted:#667085;--line:#dbe3ec}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,Arial,sans-serif;background:#f2f5f8;color:var(--ink)}
+    .sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-w);background:linear-gradient(180deg,#101827 0%,#0d1726 100%);color:#fff;padding:28px 16px 18px;display:flex;flex-direction:column;z-index:10}
+    .brand-block{display:flex;align-items:center;gap:12px;min-height:98px;padding:0 7px 22px;border-bottom:1px solid rgba(255,255,255,.09)}
+    .brand-logo-pair{display:flex;align-items:center;gap:8px;flex:0 0 auto}.brand-symbol{width:66px;height:66px;border-radius:16px;background:var(--yellow);display:grid;place-items:center;overflow:hidden}.brand-symbol img{width:100%;height:100%;object-fit:contain;padding:4px}.brand-ani{width:48px;height:62px;display:grid;place-items:center;overflow:hidden;border-left:1px solid rgba(255,255,255,.13);padding-left:8px}.brand-ani img{width:39px;height:56px;object-fit:contain}
+    .brand-name{font-size:23px;font-weight:850;letter-spacing:-.7px;line-height:1.02}.brand-caption{margin-top:7px;color:#aeb8c8;font-size:11px;font-weight:650}
+    .branch-card{margin:24px 7px 28px;padding:18px 17px;border:1px solid rgba(255,255,255,.10);border-radius:16px;background:#172232}.branch-label,.nav-title{font-size:9px;letter-spacing:1.2px;color:#8490a0;font-weight:800}.branch-name{margin-top:7px;font-size:14px;font-weight:800}
+    .main-nav{display:grid;gap:5px}.nav-title{padding:0 12px 10px}.nav-item{display:flex;align-items:center;gap:13px;min-height:54px;padding:13px 14px;border-radius:13px;color:#c7d0db;text-decoration:none;font-size:14px;font-weight:750}.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}.nav-item.active{background:rgba(255,255,255,.09);color:#fff;border-left:3px solid var(--yellow);padding-left:11px}.nav-item.active .nav-icon{color:var(--yellow)}.nav-icon{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:0 0 22px}
+    .sidebar-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.09);padding:18px 12px 0;color:#7f8a98;font-size:10px}.secure-line{display:flex;align-items:center;gap:7px;color:#b8d6c3;font-weight:750}.secure-dot{width:7px;height:7px;border-radius:50%;background:#4ade80}.version{margin-top:8px}
+    .main{margin-left:var(--sidebar-w);min-height:100vh}.topbar{height:72px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 24px;box-shadow:0 8px 24px rgba(15,23,42,.05)}.topbar strong{font-size:18px}.topbar span{display:block;margin-top:4px;color:var(--muted);font-size:12px;font-weight:700}
+    .page{width:min(1180px,100%);margin:0 auto;padding:24px}.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:18px;align-items:stretch;margin-bottom:18px}.hero-main,.panel{background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 14px 35px rgba(15,23,42,.07)}.hero-main{padding:26px}.kicker{font-size:10px;letter-spacing:1.4px;color:#7b8492;font-weight:900}.hero h1{margin:8px 0 8px;font-size:30px;line-height:1.05;letter-spacing:0}.hero p{margin:0;color:#526071;line-height:1.55}.status-card{padding:20px;display:grid;gap:14px}.status-line{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px;border-bottom:1px solid #edf1f5}.status-line:last-child{border-bottom:0;padding-bottom:0}.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid #b7e5c8;background:#effaf3;color:#167443;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:850}.dot{width:8px;height:8px;border-radius:50%;background:#22c55e}
+    .grid{display:grid;grid-template-columns:.95fr 1.05fr;gap:18px}.panel{padding:20px}.panel h2{margin:0 0 12px;font-size:18px}.field{display:grid;gap:7px;margin-bottom:12px}.field label{font-size:12px;font-weight:850;color:#334155}.field input,.field select,.field textarea{width:100%;border:1px solid #cfd8e3;border-radius:6px;padding:11px 12px;font:inherit;font-size:13px;background:#fff}.field textarea{min-height:150px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid rgba(0,59,73,.16);border-color:#0f766e}
+    .actions{display:flex;gap:9px;justify-content:flex-end;flex-wrap:wrap}.btn{min-height:40px;border:1px solid #cfd8e3;background:#fff;color:#111827;border-radius:7px;padding:0 14px;font-weight:850;cursor:pointer;display:inline-flex;align-items:center;gap:8px}.btn.primary{background:#0f766e;border-color:#0f766e;color:#fff}.btn.dark{background:#111827;border-color:#111827;color:#fff}.btn:hover{filter:brightness(.98);transform:translateY(-1px)}
+    .capture{background:#0f172a;color:#dbeafe;border-radius:8px;padding:14px;min-height:280px;max-height:440px;overflow:auto;font:12px/1.5 Consolas,monospace;white-space:pre-wrap}.notice{margin-bottom:12px;padding:12px 13px;border-radius:7px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-weight:750}.notice.error{background:#fef2f2;color:#b42318;border-color:#fecaca}.notice.success{background:#ecfdf3;color:#167443;border-color:#bbf7d0}
+    @media(max-width:950px){.sidebar{width:82px;padding:22px 10px 18px}.brand-copy,.branch-card,.nav-title,.sidebar-bottom,.nav-item span:not(.nav-icon){display:none}.brand-block{justify-content:center;padding-left:0;padding-right:0}.main{margin-left:82px}.hero,.grid{grid-template-columns:1fr}}
+    @media(max-width:700px){.sidebar{inset:auto 0 0;width:100%;height:68px;padding:8px 10px;flex-direction:row}.brand-block,.sidebar-bottom{display:none}.main-nav{width:100%;display:flex;gap:4px}.nav-item{flex:1;justify-content:center;min-height:52px;padding:8px}.nav-item.active{border-left:0;border-bottom:3px solid var(--yellow);padding-left:8px}.main{margin-left:0;padding-bottom:68px}.topbar{padding:0 14px}.page{padding:16px 14px}.hero-main{padding:20px}.hero h1{font-size:24px}.actions{display:grid}.btn{justify-content:center;width:100%}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand-block">
+      <div class="brand-logo-pair" aria-label="Identidad institucional">
+        <div class="brand-symbol"><img src="logo-zima.png" alt="ZIMA"></div>
+        <div class="brand-ani"><img src="logo-ani.png" alt="ANI"></div>
+      </div>
+      <div class="brand-copy">
+        <div class="brand-name">ZIMA <strong>360</strong></div>
+        <div class="brand-caption">Gestion empresarial</div>
+      </div>
+    </div>
+    <div class="branch-card">
+      <div class="branch-label">SOPORTE</div>
+      <div class="branch-name">Mesa de ayuda</div>
+    </div>
+    <nav class="main-nav" aria-label="Menu principal">
+      <div class="nav-title">MENU PRINCIPAL</div>
+      <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
+      <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
+      <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
+      <a class="nav-item" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
+      <a class="nav-item active" href="soporte.html"><span class="nav-icon"><i data-lucide="life-buoy"></i></span><span>Soporte</span></a>
+      <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="secure-line"><span class="secure-dot"></span> En linea</div>
+      <div class="version">ZIMA 360 - v1.0</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div><strong>Soporte en linea</strong><span>Reporte automatico y manual de novedades</span></div>
+      <button class="btn" type="button" onclick="location.href='dashboard.html'"><i data-lucide="arrow-left"></i> Volver</button>
+    </header>
+
+    <div class="page">
+      <section class="hero">
+        <div class="hero-main">
+          <div class="kicker">MESA DE AYUDA</div>
+          <h1>Estamos listos para revisar el fallo.</h1>
+          <p>Si el sistema detecto un error, ya dejo una captura tecnica guardada aqui y trato de enviarla al correo de soporte. Tambien puedes completar el reporte y enviarlo de nuevo.</p>
+        </div>
+        <div class="panel status-card">
+          <div class="status-line"><strong>Estado</strong><span class="pill"><span class="dot"></span> Disponible</span></div>
+          <div class="status-line"><strong>Destino</strong><span id="supportTarget">Correo configurado</span></div>
+          <div class="status-line"><strong>Ultimo reporte</strong><span id="lastStatus">Sin revisar</span></div>
+        </div>
+      </section>
+
+      <div id="msg" aria-live="polite"></div>
+
+      <section class="grid">
+        <form class="panel" id="supportForm">
+          <h2>Enviar reporte</h2>
+          <div class="field">
+            <label for="supportTitle">Asunto</label>
+            <input id="supportTitle" required value="Fallo en ZIMA 360">
+          </div>
+          <div class="field">
+            <label for="supportType">Tipo</label>
+            <select id="supportType">
+              <option value="manual">Reporte manual</option>
+              <option value="automatico">Error automatico</option>
+              <option value="conexion">Conexion / internet</option>
+              <option value="datos">Datos o planilla</option>
+              <option value="impresion">Impresion / PDF</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="supportMessage">Que estaba pasando</label>
+            <textarea id="supportMessage" required placeholder="Describe que estabas haciendo y que fallo..."></textarea>
+          </div>
+          <div class="actions">
+            <button class="btn" type="button" id="copyBtn"><i data-lucide="copy"></i> Copiar captura</button>
+            <button class="btn primary" type="submit" id="sendBtn"><i data-lucide="send"></i> Enviar soporte</button>
+          </div>
+        </form>
+
+        <div class="panel">
+          <h2>Captura tecnica</h2>
+          <pre class="capture" id="captureBox">Cargando captura tecnica...</pre>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="zima-ui.js"></script>
+  <script>
+    const API_URL='https://script.google.com/macros/s/AKfycbxrA58PXId5baP3sOXKJ2U71erwjfTC4SbRmNQ7p63KoSKLa--P3yFM1eWP1-GVf_XV7g/exec';
+    try{localStorage.setItem('ZIMA_API_URL',API_URL);}catch(e){}
+
+    const $=id=>document.getElementById(id);
+
+    function notice(message,type){
+      if(window.ZimaUI) return ZimaUI.notice('msg',message,type);
+      $('msg').innerHTML=message?'<div class="notice '+(type||'')+'">'+message+'</div>':'';
+    }
+
+    function leerUltimoReporte(){
+      try{return JSON.parse(localStorage.getItem('ZIMA_SUPPORT_LAST')||'null')||null;}catch(e){return null;}
+    }
+
+    function capturaActual(){
+      const last=leerUltimoReporte();
+      if(last&&last.captura) return last.captura;
+      if(window.ZimaUI&&ZimaUI.reportSupport){
+        const payload={
+          action:'soporte',
+          tipo:'manual',
+          titulo:'Reporte manual',
+          mensaje:'Reporte abierto desde soporte',
+          pagina:location.href,
+          navegador:navigator.userAgent,
+          captura:[
+            'Fecha local: '+new Date().toISOString(),
+            'Pagina: '+location.href,
+            'Titulo pagina: '+document.title,
+            'Navegador: '+navigator.userAgent,
+            'Viewport: '+innerWidth+'x'+innerHeight,
+            'Online: '+(navigator.onLine?'si':'no')
+          ].join('\n')
+        };
+        try{localStorage.setItem('ZIMA_SUPPORT_LAST',JSON.stringify(payload));}catch(e){}
+        return payload.captura;
+      }
+      return 'Sin captura tecnica disponible.';
+    }
+
+    async function enviarReporte(event){
+      event.preventDefault();
+      const title=$('supportTitle').value.trim();
+      const message=$('supportMessage').value.trim();
+      if(!title||!message){notice('Completa el asunto y el detalle.','error');return;}
+      const payload={
+        titulo:title,
+        tipo:$('supportType').value,
+        mensaje:message,
+        captura:$('captureBox').textContent,
+        redirect:false
+      };
+      ZimaUI.busy('sendBtn',true,'Enviando...');
+      notice('');
+      try{
+        if(window.ZimaUI&&ZimaUI.reportSupport){
+          await ZimaUI.reportSupport(new Error(message),payload);
+        }
+        $('lastStatus').textContent='Enviado ahora';
+        notice('Reporte enviado al correo de soporte.','success');
+      }catch(error){
+        notice('No se pudo confirmar el envio. La captura quedo guardada para reenviar.','error');
+      }finally{
+        ZimaUI.busy('sendBtn',false);
+      }
+    }
+
+    function init(){
+      const last=leerUltimoReporte();
+      const capture=capturaActual();
+      $('captureBox').textContent=capture;
+      if(last){
+        $('supportTitle').value=last.titulo||'Fallo en ZIMA 360';
+        $('supportType').value=last.tipo||'automatico';
+        $('supportMessage').value=last.mensaje||last.message||'El sistema detecto un fallo automaticamente.';
+        $('lastStatus').textContent=new URLSearchParams(location.search).get('auto')?'Enviado automaticamente':'Guardado';
+      }else{
+        $('supportMessage').value='Necesito ayuda con esta pantalla.';
+      }
+      $('supportForm').addEventListener('submit',enviarReporte);
+      $('copyBtn').addEventListener('click',async()=>{
+        try{await navigator.clipboard.writeText($('captureBox').textContent);notice('Captura copiada.','success');}
+        catch(e){notice('No se pudo copiar automaticamente.','error');}
+      });
+      if(window.lucide)lucide.createIcons({attrs:{'stroke-width':1.9}});
+    }
+
+    document.addEventListener('DOMContentLoaded',init);
+  </script>
+</body>
+</html>
