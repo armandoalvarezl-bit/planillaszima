@@ -1,0 +1,458 @@
+﻿<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ZIMA 360 | Informes mensuales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="zima-ui-modern.css">
+  <style>
+    :root{--side:293px;--navy:#101827;--gold:#f7c600;--bg:#f5f7fa;--ink:#172235;--muted:#6d7b8d;--line:#e4e8ee;--white:#fff;--green:#15803d;--red:#b42318}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Arial,sans-serif}
+    .app{min-height:100vh}
+    .sidebar{position:fixed;inset:0 auto 0 0;width:var(--side);background:linear-gradient(180deg,#101827,#0d1726);color:#fff;padding:28px 16px 18px;display:flex;flex-direction:column;z-index:10}
+    .brand-block{display:flex;align-items:center;gap:12px;padding:0 8px 24px}
+    .brand-logo{width:44px;height:44px;border-radius:10px;background:#fff;display:grid;place-items:center;overflow:hidden}
+    .brand-logo img{width:38px;height:38px;object-fit:contain}
+    .brand-copy strong{display:block;font-family:Manrope,sans-serif;font-size:18px}
+    .brand-copy span,.branch-label,.nav-title,.sidebar-bottom{color:#8490a0;font-size:10px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase}
+    .branch-card{border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:12px;margin-bottom:18px}
+    .branch-name{font-weight:800;margin-top:4px}
+    .main-nav{display:grid;gap:5px}
+    .nav-title{padding:0 12px 10px}
+    .nav-item{display:flex;align-items:center;gap:13px;min-height:54px;padding:13px 14px;border-radius:8px;color:#c7d0db;text-decoration:none;font-size:14px;font-weight:700}
+    .nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+    .nav-item.active{background:rgba(255,255,255,.09);color:#fff;border-left:3px solid var(--gold);padding-left:11px}
+    .nav-item.active .nav-icon{color:var(--gold)}
+    .nav-icon{width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center}
+    .nav-icon svg{width:19px;height:19px}
+    .sidebar-bottom{margin-top:auto;border-top:1px solid rgba(255,255,255,.09);padding:17px 12px 0}
+    .main{margin-left:var(--side);min-height:100vh}
+    .topbar{height:74px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:5}
+    .breadcrumb{font-size:13px;color:var(--muted);font-weight:700}
+    .status{display:flex;align-items:center;gap:8px;color:#475569;font-size:13px;font-weight:700}
+    .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
+    .session-user{display:flex;align-items:center;gap:10px}
+    .avatar{width:38px;height:38px;border-radius:50%;background:#111827;color:#fff;display:grid;place-items:center;font-weight:800;overflow:hidden}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+    .user-meta strong,.user-meta span{display:block}
+    .user-meta strong{font-size:13px}.user-meta span{font-size:11px;color:var(--muted)}
+    .icon-btn{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:8px;display:grid;place-items:center;cursor:pointer}
+    .page{padding:28px}
+    .hero{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:22px}
+    .kicker{font-size:11px;font-weight:900;letter-spacing:1.2px;color:#64748b}
+    h1{font-family:Manrope,sans-serif;font-size:34px;line-height:1.1;margin:5px 0 6px}
+    p{margin:0;color:#667085}
+    .actions,.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .btn,.field{height:42px;border:1px solid var(--line);border-radius:8px;background:#fff;color:#172235;font-weight:800;padding:0 13px}
+    .btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+    .btn.primary{background:#101827;color:#fff;border-color:#101827}
+    .btn.gold{background:var(--gold);border-color:var(--gold);color:#111827}
+    .field{min-width:180px}
+    .metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:18px}
+    .metric{background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px}
+    .metric span{display:block;color:#64748b;font-size:12px;font-weight:800;text-transform:uppercase}
+    .metric strong{display:block;font-size:24px;margin-top:8px}
+    .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+    .panel{background:#fff;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+    .panel-head strong{font-family:Manrope,sans-serif;font-size:18px}
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:12px 14px;border-bottom:1px solid var(--line);font-size:13px;text-align:left;white-space:nowrap}
+    th{background:#f8fafc;color:#475569;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+    td.money{text-align:right;font-weight:800}
+    .badge{display:inline-flex;align-items:center;border-radius:999px;padding:5px 9px;background:#eef2f7;color:#334155;font-size:11px;font-weight:900}
+    .badge.entregada{background:#e8f7ee;color:#166534}.badge.cerrada{background:#eaf1ff;color:#1d4ed8}.badge.anulada{background:#feecec;color:#991b1b}
+    .empty{padding:28px;text-align:center;color:#64748b}
+    .notice{margin:0 0 16px;padding:12px 14px;border-radius:8px;background:#fff7d6;border:1px solid #f6d86a;color:#6b5200;font-weight:700}
+    .notice.error{background:#fff1f1;border-color:#f5b5b5;color:#8a1f1f}
+    .footer{display:flex;gap:12px;color:#98a2b3;font-size:12px;margin-top:18px}
+    .print-cover{display:none}
+    @media(max-width:1000px){.sidebar{width:82px;padding:22px 10px}.brand-copy,.branch-card,.nav-title,.sidebar-bottom,.nav-item span:not(.nav-icon){display:none}.main{margin-left:82px}.metrics,.grid{grid-template-columns:1fr}}
+    @media(max-width:700px){.sidebar{inset:auto 0 0;width:100%;height:68px;padding:8px 10px;flex-direction:row}.brand-block,.sidebar-bottom{display:none}.main-nav{width:100%;display:flex;gap:4px}.nav-item{flex:1;justify-content:center;min-height:52px;padding:8px}.main{margin-left:0;padding-bottom:68px}.topbar{padding:0 14px}.user-meta{display:none}.page{padding:20px 14px}.hero{display:block}.actions{margin-top:14px}.metrics{grid-template-columns:1fr 1fr}}
+    @media print{
+      @page{size:letter;margin:12mm}
+      *{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+      body{background:#fff;color:#111827;font-size:10px}
+      .sidebar,.topbar,.hero,.actions,.filters,.notice,.footer{display:none!important}
+      .main{margin:0;min-height:auto}
+      .page{padding:0;background:#fff}
+      .print-cover{display:block;border:1px solid #111827;margin-bottom:10mm}
+      .print-head{display:grid;grid-template-columns:34mm 1fr 40mm;align-items:center;border-bottom:1px solid #111827;min-height:24mm}
+      .print-logo{display:grid;place-items:center;border-right:1px solid #111827;height:24mm}
+      .print-logo img{width:23mm;height:18mm;object-fit:contain}
+      .print-title{text-align:center;padding:3mm 5mm}
+      .print-title strong{display:block;font-size:15px;font-family:Arial,sans-serif}
+      .print-title span{display:block;font-size:10px;margin-top:2mm;text-transform:uppercase;letter-spacing:.4px}
+      .print-code{height:24mm;border-left:1px solid #111827;display:grid;place-items:center;text-align:center;font-weight:800}
+      .print-meta{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #111827}
+      .print-meta div{padding:3mm;border-right:1px solid #111827}
+      .print-meta div:last-child{border-right:0}
+      .print-meta span{display:block;font-size:8px;color:#475569;text-transform:uppercase;font-weight:800}
+      .print-summary{display:grid;grid-template-columns:repeat(4,1fr)}
+      .print-summary div{padding:4mm 3mm;border-right:1px solid #111827}
+      .print-summary div:last-child{border-right:0}
+      .print-summary span{display:block;font-size:8px;text-transform:uppercase;color:#475569;font-weight:800}
+      .print-summary strong{font-size:13px}
+      .metrics{display:none}
+      .grid{display:block}
+      .panel{border:1px solid #111827;border-radius:0;margin:0 0 7mm;break-inside:avoid;overflow:visible}
+      .panel-head{padding:3mm 4mm;border-bottom:1px solid #111827}
+      .panel-head strong{font-size:12px;font-family:Arial,sans-serif}
+      .panel-head span{font-size:9px}
+      .table-wrap{overflow:visible}
+      th,td{padding:2.2mm 2.5mm;border-bottom:1px solid #cbd5e1;font-size:8.5px;white-space:normal}
+      th{background:#eef2f7;color:#111827;font-size:7.5px}
+      td.money{text-align:right}
+      .badge{border:1px solid #94a3b8;background:#fff!important;color:#111827!important;border-radius:2px;padding:1mm 1.5mm;font-size:7.5px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand-block">
+        <div class="brand-logo"><img src="logo-zima.png" alt="ZIMA"></div>
+        <div class="brand-copy"><strong>ZIMA 360</strong><span>GestiÃ³n de planillas</span></div>
+      </div>
+      <div class="branch-card">
+        <div class="branch-label">Peaje activo</div>
+        <div class="branch-name" id="sidebarPeaje">AdministraciÃ³n central</div>
+      </div>
+      <nav class="main-nav" aria-label="NavegaciÃ³n principal">
+        <div class="nav-title">MENÃš PRINCIPAL</div>
+        <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
+        <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
+        <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
+        <a class="nav-item active" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
+        <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
+      </nav>
+      <div class="sidebar-bottom">ZIMA 360 Â· v1.0</div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="breadcrumb"><b>Informes</b> / Recaudo mensual</div>
+        <div class="session-user">
+          <div class="status"><span class="dot"></span><span id="syncLabel">Conectando...</span></div>
+          <div class="avatar" id="avatar">ZU</div>
+          <div class="user-meta"><strong id="headerUser">Usuario ZIMA</strong><span id="headerPeaje">AdministraciÃ³n central</span></div>
+          <button class="icon-btn zima-logout-button" type="button" title="Cerrar sesion" aria-label="Cerrar sesion" onclick="cerrarSesion()"><i data-lucide="log-out"></i></button>
+        </div>
+      </header>
+
+      <div class="page">
+        <section class="hero">
+          <div>
+            <div class="kicker">INFORME MENSUAL</div>
+            <h1>Recaudo desglosado</h1>
+            <p id="periodoTexto">Consulta de montos recaudados por mes, peaje y estado.</p>
+          </div>
+          <div class="actions">
+            <input class="field" id="mes" type="month">
+            <button class="btn primary" id="refreshBtn" type="button" onclick="cargar()"><i data-lucide="refresh-cw"></i> Actualizar</button>
+            <button class="btn" type="button" onclick="exportarCSV()"><i data-lucide="download"></i> CSV</button>
+            <button class="btn gold" type="button" onclick="window.print()"><i data-lucide="printer"></i> Imprimir</button>
+          </div>
+        </section>
+
+        <div id="msg"></div>
+
+        <section class="print-cover" aria-hidden="true">
+          <div class="print-head">
+            <div class="print-logo"><img src="logo-zima.png" alt="ZIMA"></div>
+            <div class="print-title">
+              <strong>INFORME MENSUAL DE RECAUDO</strong>
+              <span>Montos recaudados y valores declarados por planilla</span>
+            </div>
+            <div class="print-code">ZIMA 360<br><span id="printPeriodo">--</span></div>
+          </div>
+          <div class="print-meta">
+            <div><span>Periodo</span><strong id="printPeriodoMeta">--</strong></div>
+            <div><span>Generado por</span><strong id="printUsuario">Usuario ZIMA</strong></div>
+            <div><span>Fecha generaciÃ³n</span><strong id="printFecha">--</strong></div>
+          </div>
+          <div class="print-summary">
+            <div><span>Total recaudado</span><strong id="pTotal">$ 0</strong></div>
+            <div><span>Valor en tula</span><strong id="pTula">$ 0</strong></div>
+            <div><span>Planillas</span><strong id="pPlanillas">0</strong></div>
+            <div><span>Entregadas</span><strong id="pEntregadas">0</strong></div>
+          </div>
+        </section>
+
+        <section class="metrics">
+          <article class="metric"><span>Total recaudado</span><strong id="mTotal">$ 0</strong></article>
+          <article class="metric"><span>Valor en tula</span><strong id="mTula">$ 0</strong></article>
+          <article class="metric"><span>Planillas</span><strong id="mPlanillas">0</strong></article>
+          <article class="metric"><span>Entregadas</span><strong id="mEntregadas">0</strong></article>
+        </section>
+
+        <section class="grid">
+          <div class="panel">
+            <div class="panel-head"><strong>Desglose por peaje</strong><span id="countPeajes">0 peajes</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Peaje</th><th>Planillas</th><th>Total</th><th>Tula</th><th>Billetes</th><th>Entregadas</th><th>Cerradas</th></tr></thead>
+                <tbody id="tablaPeajes"><tr><td colspan="7" class="empty">Sin datos para el mes seleccionado.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><strong>Desglose por estado</strong><span id="countEstados">0 estados</span></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Estado</th><th>Planillas</th><th>Total</th></tr></thead>
+                <tbody id="tablaEstados"><tr><td colspan="3" class="empty">Sin datos.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" style="margin-top:18px">
+          <div class="panel-head"><strong>Detalle del mes</strong><span id="countDetalle">0 registros</span></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>CÃ³digo</th><th>Fecha</th><th>Peaje</th><th>Entregado por</th><th>Recibe</th><th>Estado</th><th>Total</th><th>Tula</th><th>Billetes</th></tr></thead>
+              <tbody id="tablaDetalle"><tr><td colspan="9" class="empty">Cargando informe...</td></tr></tbody>
+            </table>
+          </div>
+        </section>
+
+        <footer class="footer"><span>ZIMA 360</span><span>Informes de recaudo</span><span>Â© 2026</span></footer>
+      </div>
+    </main>
+  </div>
+
+  <script src="zima-ui.js"></script>
+  <script>
+    const API_URL='https://script.google.com/macros/s/AKfycbzEhLbhnhjHuaVhye61qGCLFg7Gpa9wNELXQcEEgOmU9jNf7mb08kduBm4GDxwHyHxf6w/exec';
+    try{localStorage.setItem('ZIMA_API_URL',API_URL);}catch(e){}
+    const $=id=>document.getElementById(id);
+    let allRows=[];
+    let monthRows=[];
+
+    function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+    function money(v){const n=Number(v)||0;return '$ '+Math.round(n).toLocaleString('es-CO');}
+    function numberValue(v){if(typeof v==='number')return isFinite(v)?v:0;const s=String(v??'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.');const n=Number(s);return isFinite(n)?n:0;}
+    function normalizarEstado(v){const e=String(v||'').trim().toUpperCase();return e==='ENTREGADO'?'ENTREGADA':e;}
+    function fechaMes(v){if(!v)return '';const s=String(v);if(/^\d{4}-\d{2}/.test(s))return s.slice(0,7);const d=new Date(s);return isNaN(d.getTime())?'':String(d.getFullYear()).padStart(4,'0')+'-'+String(d.getMonth()+1).padStart(2,'0');}
+    function periodoLegible(ym){if(!ym)return '';const [y,m]=ym.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('es-CO',{month:'long',year:'numeric'});}
+    function badge(estado){const e=normalizarEstado(estado)||'SIN ESTADO';return '<span class="badge '+e.toLowerCase()+'">'+esc(e)+'</span>';}
+
+    function leerSesionLocal(){
+      const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','usuarioSesion','usuario','ZIMA_USER'];
+      for(const storage of [localStorage,sessionStorage]){
+        for(const key of keys){
+          try{
+            const raw=storage.getItem(key);
+            if(!raw||raw==='ACTIVA')continue;
+            if(raw.trim().startsWith('{'))return JSON.parse(raw);
+            return {usuario:raw};
+          }catch(e){}
+        }
+      }
+      return {};
+    }
+
+    function tokenLocal(){
+      return localStorage.getItem('ZIMA_SESSION_TOKEN')||
+        localStorage.getItem('ZIMA360_SESSION_TOKEN')||
+        localStorage.getItem('ZIMA_TOKEN')||
+        sessionStorage.getItem('ZIMA_SESSION_TOKEN')||'';
+    }
+
+    function zimaSessionParams(){
+      const s=leerSesionLocal();
+      const token=s.token||s.sessionToken||s.sesion||tokenLocal();
+      return {usuario:s.usuario||s.username||s.user||'',rol:s.rol||s.role||'',peaje:s.peaje||s.office||'',token:token,sessionToken:token,sesion:token};
+    }
+
+    const SESSION=(()=>{
+      const s=leerSesionLocal();
+      return {
+        user:s.usuario||s.user||localStorage.getItem('ZIMA_USER')||'',
+        name:s.nombre||s.name||localStorage.getItem('ZIMA_USER_NAME')||s.usuario||'Usuario ZIMA',
+        role:String(s.rol||s.role||localStorage.getItem('ZIMA_ROL')||'PEAJE').toUpperCase(),
+        peaje:s.peaje||s.office||localStorage.getItem('ZIMA_PEAJE')||'AdministraciÃ³n central',
+        foto:s.foto||s.FOTO||s.photo||''
+      };
+    })();
+
+    function onlineRun(fn,arg){
+      return new Promise((resolve,reject)=>{
+        try{
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(e=>reject(new Error(e&&e.message||String(e))))[fn](arg);
+        }catch(e){reject(e);}
+      });
+    }
+
+    function jsonp(params={}){
+      return new Promise((resolve,reject)=>{
+        const cb='__zima_informes_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+        const script=document.createElement('script');
+        const q=new URLSearchParams({...params,callback:cb});
+        const timer=setTimeout(()=>{cleanup();reject(new Error('Tiempo agotado al conectar.'));},25000);
+        function cleanup(){clearTimeout(timer);try{delete window[cb];}catch(e){window[cb]=undefined;}script.remove();}
+        window[cb]=data=>{cleanup();resolve(data);};
+        script.onerror=()=>{cleanup();reject(new Error('No fue posible consultar el Web App.'));};
+        script.src=API_URL+'?'+q.toString();
+        document.head.appendChild(script);
+      });
+    }
+
+    async function apiGet(action,params={}){
+      const payload={action,...zimaSessionParams(),...params};
+      if(window.google&&google.script&&google.script.run)return onlineRun('apiGet',payload);
+      try{
+        const r=await fetch(API_URL+'?'+new URLSearchParams(payload),{method:'GET',redirect:'follow',cache:'no-store',headers:{Accept:'application/json'}});
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        return JSON.parse(await r.text());
+      }catch(e){
+        return jsonp(payload);
+      }
+    }
+
+    function setupSession(){
+      $('headerUser').textContent=SESSION.name;
+      $('headerPeaje').textContent=SESSION.peaje;
+      $('sidebarPeaje').textContent=SESSION.peaje;
+      $('printUsuario').textContent=SESSION.name;
+      pintarAvatar($('avatar'),SESSION.foto,SESSION.name||SESSION.user);
+      document.querySelectorAll('.admin-only').forEach(el=>{el.style.display=['ADMIN','ADMINISTRADOR'].includes(SESSION.role)?'flex':'none';});
+    }
+
+    function iniciales(nombre){
+      const partes=String(nombre||'Usuario ZIMA').trim().split(/\s+/).filter(Boolean);
+      return partes.length?partes.slice(0,2).map(x=>x.charAt(0).toUpperCase()).join(''):'ZU';
+    }
+
+    function pintarAvatar(el,foto,nombre){
+      if(!el)return;
+      const src=String(foto||'').trim();
+      if(src){
+        const fallback=iniciales(nombre).replace(/'/g,'');
+        el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'" onerror="this.remove();this.parentElement.textContent=\''+fallback+'\'">';
+      }else{
+        el.textContent=iniciales(nombre);
+      }
+    }
+
+    function guardarPerfilSesion(perfil){
+      perfil=perfil||{};
+      const foto=String(perfil.foto||perfil.FOTO||perfil.photo||'').trim();
+      if(perfil.nombre)SESSION.name=perfil.nombre;
+      if(perfil.rol)SESSION.role=String(perfil.rol).toUpperCase();
+      if(perfil.peaje)SESSION.peaje=perfil.peaje;
+      SESSION.foto=foto;
+      setupSession();
+    }
+
+    async function refrescarPerfil(){
+      try{
+        const perfil=await apiGet('perfil');
+        if(perfil&&perfil.ok!==false)guardarPerfilSesion(perfil);
+      }catch(e){}
+    }
+
+    function agrupar(rows,campo){
+      const map={};
+      rows.forEach(r=>{
+        const key=campo==='estado'?(normalizarEstado(r.estado)||'SIN ESTADO'):(String(r[campo]||'Sin dato').trim()||'Sin dato');
+        if(!map[key])map[key]={key,planillas:0,total:0,tula:0,billetes:0,entregadas:0,cerradas:0};
+        map[key].planillas++;
+        map[key].total+=numberValue(r.total);
+        map[key].tula+=numberValue(r.tula);
+        map[key].billetes+=numberValue(r.billetes);
+        if(normalizarEstado(r.estado)==='ENTREGADA')map[key].entregadas++;
+        if(normalizarEstado(r.estado)==='CERRADA')map[key].cerradas++;
+      });
+      return Object.values(map).sort((a,b)=>b.total-a.total||a.key.localeCompare(b.key));
+    }
+
+    function render(){
+      const ym=$('mes').value;
+      monthRows=allRows.filter(r=>fechaMes(r.fecha)===ym&&normalizarEstado(r.estado)!=='ANULADA');
+      const total=monthRows.reduce((s,r)=>s+numberValue(r.total),0);
+      const tula=monthRows.reduce((s,r)=>s+numberValue(r.tula),0);
+      const entregadas=monthRows.filter(r=>normalizarEstado(r.estado)==='ENTREGADA').length;
+      const periodo=periodoLegible(ym);
+      $('periodoTexto').textContent='Informe de '+periodo+'. Montos recaudados y declarados por planilla.';
+      $('mTotal').textContent=money(total);
+      $('mTula').textContent=money(tula);
+      $('mPlanillas').textContent=monthRows.length;
+      $('mEntregadas').textContent=entregadas;
+      $('printPeriodo').textContent=ym;
+      $('printPeriodoMeta').textContent=periodo;
+      $('printFecha').textContent=new Date().toLocaleString('es-CO');
+      $('pTotal').textContent=money(total);
+      $('pTula').textContent=money(tula);
+      $('pPlanillas').textContent=monthRows.length;
+      $('pEntregadas').textContent=entregadas;
+
+      const peajes=agrupar(monthRows,'peaje');
+      $('countPeajes').textContent=peajes.length+' peajes';
+      $('tablaPeajes').innerHTML=peajes.length?peajes.map(p=>'<tr><td>'+esc(p.key)+'</td><td>'+p.planillas+'</td><td class="money">'+money(p.total)+'</td><td class="money">'+money(p.tula)+'</td><td class="money">'+money(p.billetes)+'</td><td>'+p.entregadas+'</td><td>'+p.cerradas+'</td></tr>').join(''):'<tr><td colspan="7" class="empty">Sin datos para el mes seleccionado.</td></tr>';
+
+      const estados=agrupar(monthRows,'estado');
+      $('countEstados').textContent=estados.length+' estados';
+      $('tablaEstados').innerHTML=estados.length?estados.map(e=>'<tr><td>'+badge(e.key)+'</td><td>'+e.planillas+'</td><td class="money">'+money(e.total)+'</td></tr>').join(''):'<tr><td colspan="3" class="empty">Sin datos.</td></tr>';
+
+      const detalle=[...monthRows].sort((a,b)=>String(a.fecha||'').localeCompare(String(b.fecha||'')));
+      $('countDetalle').textContent=detalle.length+' registros';
+      $('tablaDetalle').innerHTML=detalle.length?detalle.map(r=>'<tr><td>'+esc(r.codigo||r.id||'')+'</td><td>'+esc(String(r.fecha||'').slice(0,10))+'</td><td>'+esc(r.peaje||'')+'</td><td>'+esc(r.entregadoNombre||'')+'</td><td>'+esc(r.recibe||'')+'</td><td>'+badge(r.estado)+'</td><td class="money">'+money(numberValue(r.total))+'</td><td class="money">'+money(numberValue(r.tula))+'</td><td class="money">'+money(numberValue(r.billetes))+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">Sin datos para el mes seleccionado.</td></tr>';
+    }
+
+    async function cargar(){
+      try{
+        $('syncLabel').textContent='Sincronizando...';
+        $('msg').innerHTML='<div class="notice">Consultando planillas registradas...</div>';
+        const data=await apiGet('list');
+        if(!data.ok)throw new Error(data.error||data.mensaje||'No se pudieron consultar las planillas.');
+        allRows=data.rows||[];
+        render();
+        $('msg').innerHTML='';
+        $('syncLabel').textContent='Conectado';
+      }catch(e){
+        $('syncLabel').textContent='Sin conexiÃ³n';
+        $('msg').innerHTML='<div class="notice error">'+esc(e.message)+'</div>';
+        render();
+      }
+    }
+
+    function exportarCSV(){
+      const headers=['codigo','fecha','peaje','entregadoNombre','recibe','estado','total','tula','billetes'];
+      const lines=[headers.join(',')].concat(monthRows.map(r=>headers.map(h=>'"'+String(r[h]??'').replace(/"/g,'""')+'"').join(',')));
+      const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='informe-zima-'+$('mes').value+'.csv';
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }
+
+    function cerrarSesion(){
+      return ZimaUI.confirmLogout({
+        detail:(SESSION.name||SESSION.user||'Usuario ZIMA') + (SESSION.peaje ? ' - ' + SESSION.peaje : '')
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      const now=new Date();
+      $('mes').value=String(now.getFullYear()).padStart(4,'0')+'-'+String(now.getMonth()+1).padStart(2,'0');
+      setupSession();
+      $('mes').addEventListener('change',render);
+      refrescarPerfil();
+      cargar();
+      if(window.lucide)lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
+

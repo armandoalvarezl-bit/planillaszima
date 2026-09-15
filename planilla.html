@@ -743,6 +743,11 @@ body{font-family:Inter,Arial,sans-serif}
 .nav-item.active .nav-icon{color:#f7c600!important}
 @media(max-width:950px){.sidebar{width:82px!important;padding:22px 10px 18px!important}.main{margin-left:82px!important;width:calc(100% - 82px)!important}}
 @media(max-width:700px){.sidebar{inset:auto 0 0!important;width:100%!important;height:68px!important;padding:8px 10px!important}.main{margin-left:0!important;width:100%!important;padding-bottom:68px!important}.nav-item.active{border-left:0!important;border-bottom:3px solid #f7c600!important;padding-left:6px!important}}
+input.locked-field,textarea.locked-field{
+  background:#f6f8fb!important;
+  color:#475569!important;
+  cursor:not-allowed;
+}
 </style>
   <link rel="stylesheet" href="zima-ui-modern.css">
  </head>
@@ -775,6 +780,7 @@ body{font-family:Inter,Arial,sans-serif}
         <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
         <a class="nav-item active" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
+        <a class="nav-item" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
         <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
         
       </nav>
@@ -1040,7 +1046,7 @@ body{font-family:Inter,Arial,sans-serif}
 
   <script src="zima-ui.js"></script>
   <script>
-   const API_URL='https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec';
+   const API_URL='https://script.google.com/macros/s/AKfycbzEhLbhnhjHuaVhye61qGCLFg7Gpa9wNELXQcEEgOmU9jNf7mb08kduBm4GDxwHyHxf6w/exec';
 try{localStorage.setItem('ZIMA_API_URL',API_URL);}catch(_){}
 
 function zimaSession(){
@@ -1155,11 +1161,17 @@ async function apiPost(data){
 function money(n){return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(n||0))}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
 function go(p){location.href=p}
+function textoNotificacion(r){
+  if(!r||!r.notificacion)return '';
+  if(r.notificacion.enviado)return ' Correo enviado a: <b>'+esc(r.notificacion.destinatarios||'')+'</b>.';
+  return ' No se envió correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.';
+}
 async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.error||'No se pudieron consultar las planillas');return r.rows||[]}
   </script>
   <script>
   const queryParams=new URLSearchParams(location.search);
   let id=queryParams.get('id');
+  let estadoActual='APROBADO';
   const openPreviewOnLoad=queryParams.get('preview')==='1';
   const embeddedPreview=queryParams.get('embed')==='1';
   if(embeddedPreview) document.documentElement.classList.add('embedded-preview');
@@ -1168,6 +1180,61 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     const totalVisual=$('totalVisual');
     const letrasInput=$('letras');
     const msg=$('msg');
+    const CAMPOS_FIJOS=['codigo','peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','concepto','obsValor','letras','tula','billetes','observaciones','entregadoNombre','entregadoFirma','revisadoNombre','revisadoFirma'];
+    const DATOS_PEAJE={
+      fragua:{
+        ciudad:'Fragua',
+        lugarRecibo:'PEAJE FRAGUA',
+        entregadoNombre:'Marliza Tiziana Herazo Londoño'
+      },
+      zaragoza:{
+        ciudad:'Zaragoza',
+        lugarRecibo:'PEAJE ZARAGOZA',
+        entregadoNombre:'Adriana Espitia'
+      }
+    };
+
+    function clavePeaje(value){
+      return String(value||'')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g,'')
+        .toLowerCase();
+    }
+
+    function datosFijosPorPeaje(peaje){
+      const key=clavePeaje(peaje);
+      if(key.includes('zaragoza'))return DATOS_PEAJE.zaragoza;
+      if(key.includes('fragua'))return DATOS_PEAJE.fragua;
+      return null;
+    }
+
+    function bloquearCamposFijos(){
+      CAMPOS_FIJOS.forEach(campo=>{
+        const el=$(campo);
+        if(!el)return;
+        el.readOnly=true;
+        el.classList.add('locked-field');
+        el.setAttribute('aria-readonly','true');
+      });
+    }
+
+    function aplicarDatosFijosPlanilla(){
+      const ses=zimaSessionParams();
+      const peajeActual=String(($('peaje')&&$('peaje').value)||ses.peaje||'').trim();
+      if($('peaje') && !id && peajeActual)$('peaje').value=peajeActual;
+      if($('razon'))$('razon').value='CENTRO EFECTIVO';
+      if($('moneda'))$('moneda').value='COP - Peso colombiano';
+      if($('lugarEntrega'))$('lugarEntrega').value='CENTRO EFECTIVO';
+      if($('recibe'))$('recibe').value='TransBank';
+      if($('concepto'))$('concepto').value='Valor tula';
+      const fijo=datosFijosPorPeaje(peajeActual);
+      if(fijo){
+        if($('ciudad'))$('ciudad').value=fijo.ciudad;
+        if($('lugarRecibo'))$('lugarRecibo').value=fijo.lugarRecibo;
+        if($('entregadoNombre'))$('entregadoNombre').value=fijo.entregadoNombre;
+      }
+      if($('billetes'))$('billetes').value=formatCOP(0);
+    }
 
     function actualizarAccionesAdmin(){
       const saveBtn=$('saveBtn');
@@ -1198,20 +1265,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           $('peaje').value=peaje;
         }
 
-        // La ciudad corresponde al peaje con el que está logueado el usuario.
-        // Fragua -> Fragua | Zaragoza -> Zaragoza.
-        if($('ciudad')){
-          const nombre=peaje.toLowerCase();
-          let ciudad=peaje;
-          if(nombre.includes('zaragoza')) ciudad='Zaragoza';
-          else if(nombre.includes('fragua')) ciudad='Fragua';
-          $('ciudad').value=ciudad;
-        }
-
-        // El lugar de recibo para las planillas nuevas siempre es Centro Efectivo.
-        if($('lugarRecibo')){
-          $('lugarRecibo').value='CENTRO EFECTIVO';
-        }
+        aplicarDatosFijosPlanilla();
       }catch(_){
         // Si no hay sesión disponible, se mantiene el comportamiento actual.
       }
@@ -1219,6 +1273,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
 
     $('fecha').value=new Date().toISOString().slice(0,10);
     inicializarPeajeSesion();
+    bloquearCamposFijos();
 
     function parseMoney(value){
       const digits=String(value??'').replace(/\D/g,'');
@@ -1237,6 +1292,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       const valor=parseMoney(totalInput.value);
       totalVisual.textContent=formatCOP(valor);
       letrasInput.value=numeroALetrasPesos(valor);
+      if($('tula'))$('tula').value=formatCOP(valor);
+      if($('billetes'))$('billetes').value=formatCOP(0);
     }
 
     [totalInput,$('tula'),$('billetes')].forEach(el=>{
@@ -1260,6 +1317,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         if(el===totalInput){
           totalVisual.textContent=formatCOP(v);
           letrasInput.value=numeroALetrasPesos(v);
+          if($('tula'))$('tula').value=formatCOP(v);
+          if($('billetes'))$('billetes').value=formatCOP(0);
         }
       });
 
@@ -1269,6 +1328,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         if(el===totalInput){
           totalVisual.textContent=formatCOP(v);
           letrasInput.value=numeroALetrasPesos(v);
+          if($('tula'))$('tula').value=formatCOP(v);
+          if($('billetes'))$('billetes').value=formatCOP(0);
         }
       });
     });
@@ -1304,6 +1365,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     }
 
     function datos(){
+      aplicarDatosFijosPlanilla();
+      actualizar();
       const ids=['codigo','peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','fecha','concepto','obsValor','observaciones','entregadoNombre','entregadoFirma','revisadoNombre','revisadoFirma'];
       const d={};
       ids.forEach(x=>d[x]=$(x).value.trim());
@@ -1314,18 +1377,26 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       return d;
     }
 
+    function normalizarEstado(v){
+      const e=String(v||'').trim().toUpperCase();
+      return e==='ENTREGADO'?'ENTREGADA':e;
+    }
+
     async function cargar(){
       actualizarAccionesAdmin();
       if(!id){actualizar();return}
       try{
         const r=await apiGet('get',{id});
         if(!r.ok)throw Error(r.error);
+        estadoActual=normalizarEstado(r.row.estado)||'APROBADO';
         Object.keys(r.row).forEach(k=>{
           const e=$(k);
           if(!e)return;
           if(['total','tula','billetes'].includes(k))e.value=formatCOP(parseMoney(r.row[k]));
           else e.value=r.row[k]??'';
         });
+        aplicarDatosFijosPlanilla();
+        bloquearCamposFijos();
         actualizar();
         actualizarAccionesAdmin();
         if(openPreviewOnLoad) setTimeout(abrirVistaPrevia,250);
@@ -1347,11 +1418,12 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         window.__zimaSavingPlanilla=true;
         ZimaUI.busy('saveBtn',true,editando?'Actualizando...':'Guardando...');
         ZimaUI.notice(msg,editando?'Actualizando la planilla...':'Guardando la planilla...');
-        const r=await apiPost({action:id?'update':'save',id,...d,estado:'APROBADO'});
+        const r=await apiPost({action:id?'update':'save',id,...d,estado:editando?(estadoActual||'APROBADO'):'APROBADO'});
         if(!r.ok)throw Error(r.error);
         id=r.row.id;
+        estadoActual=normalizarEstado(r.row.estado)||estadoActual||'APROBADO';
         actualizarAccionesAdmin();
-        msg.innerHTML='<div class="notice success">'+(editando?'Planilla actualizada':'Planilla guardada')+' correctamente. Código: <b>'+esc(r.row.codigo)+'</b></div>';
+        msg.innerHTML='<div class="notice success">'+(editando?'Planilla actualizada':'Planilla guardada')+' correctamente. Código: <b>'+esc(r.row.codigo)+'</b>.'+(editando?textoNotificacion(r):'')+'</div>';
       }catch(e){
         ZimaUI.notice(msg,e.message,'error');
       }finally{
@@ -1377,7 +1449,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         ZimaUI.notice(msg,'Anulando la planilla...');
         const r=await apiPost({action:'delete',id});
         if(!r.ok)throw Error(r.error||r.message||'No fue posible anular la planilla.');
-        msg.innerHTML='<div class="notice success">Planilla anulada correctamente. Se notificó el cambio por correo si el usuario tiene email configurado.</div>';
+        msg.innerHTML='<div class="notice success">Planilla anulada correctamente.'+textoNotificacion(r)+'</div>';
       }catch(e){
         ZimaUI.notice(msg,e.message,'error');
       }finally{
@@ -1548,5 +1620,6 @@ document.addEventListener('DOMContentLoaded',function(){
 </script>
 </body>
 </html>
+
 
 

@@ -204,6 +204,61 @@
       font-size: 11px;
     }
 
+    .announcement-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 18, 38, .76);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .announcement-modal.open {
+      display: flex;
+    }
+
+    .announcement-dialog {
+      width: min(820px, 100%);
+      position: relative;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 28px 90px rgba(0,0,0,.38);
+      overflow: hidden;
+    }
+
+    .announcement-dialog img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: min(82vh, 820px);
+      object-fit: contain;
+      background: #eef6ff;
+    }
+
+    .announcement-close {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(255,255,255,.72);
+      border-radius: 50%;
+      background: rgba(11,31,66,.82);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-size: 24px;
+      line-height: 1;
+      box-shadow: 0 10px 24px rgba(8,18,36,.22);
+    }
+
+    .announcement-close:hover {
+      background: #061426;
+    }
+
     @media (max-width: 480px) {
       .login-card {
         padding: 32px 24px 27px;
@@ -212,6 +267,21 @@
 
       .logo {
         width: 185px;
+      }
+
+      .announcement-modal {
+        padding: 12px;
+      }
+
+      .announcement-dialog {
+        border-radius: 12px;
+      }
+
+      .announcement-close {
+        top: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
       }
     }
   </style>
@@ -332,6 +402,13 @@
     </div>
   </div>
 
+  <div class="announcement-modal" id="announcementModal" aria-hidden="true">
+    <div class="announcement-dialog" role="dialog" aria-modal="true" aria-label="Anuncio ZIMA 360">
+      <button class="announcement-close" type="button" id="announcementClose" aria-label="Cerrar anuncio">×</button>
+      <img src="img/anuncio-renovacion-zima360.png" alt="ZIMA 360 nos renovamos. Nueva plataforma, mas intuitiva y facil de usar.">
+    </div>
+  </div>
+
 
 <script>
 
@@ -340,7 +417,7 @@
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec";
+  "https://script.google.com/macros/s/AKfycbzEhLbhnhjHuaVhye61qGCLFg7Gpa9wNELXQcEEgOmU9jNf7mb08kduBm4GDxwHyHxf6w/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);
@@ -374,6 +451,15 @@ const loginSuccessModal =
 
 const loginSuccessText =
   document.getElementById("loginSuccessText");
+
+const announcementModal =
+  document.getElementById("announcementModal");
+
+const announcementClose =
+  document.getElementById("announcementClose");
+
+let anuncioCallback =
+  null;
 
 
 /* ============================================================
@@ -446,6 +532,107 @@ function mostrarAccesoCorrecto(datos) {
   }
 
 }
+
+function esAdminLogin(datos) {
+
+  const rol =
+    String(
+      datos &&
+      (
+        datos.rol ||
+        datos.ROL ||
+        datos.role ||
+        ""
+      )
+    )
+      .trim()
+      .toUpperCase();
+
+  return rol === "ADMIN" || rol === "ADMINISTRADOR";
+
+}
+
+
+function irDashboard() {
+
+  window.location.href =
+    "dashboard.html";
+
+}
+
+
+function abrirAnuncioRenovacion(callback) {
+
+  anuncioCallback =
+    typeof callback === "function"
+      ? callback
+      : null;
+
+  if (!announcementModal) {
+    if (anuncioCallback) {
+      anuncioCallback();
+    }
+    return;
+  }
+
+  announcementModal.classList.add("open");
+  announcementModal.setAttribute("aria-hidden", "false");
+
+}
+
+
+function cerrarAnuncioRenovacion() {
+
+  if (announcementModal) {
+    announcementModal.classList.remove("open");
+    announcementModal.setAttribute("aria-hidden", "true");
+  }
+
+  const callback =
+    anuncioCallback;
+
+  anuncioCallback =
+    null;
+
+  if (callback) {
+    callback();
+  }
+
+}
+
+
+if (announcementClose) {
+  announcementClose.addEventListener(
+    "click",
+    cerrarAnuncioRenovacion
+  );
+}
+
+
+if (announcementModal) {
+  announcementModal.addEventListener(
+    "click",
+    function(event) {
+      if (event.target === announcementModal) {
+        cerrarAnuncioRenovacion();
+      }
+    }
+  );
+}
+
+
+document.addEventListener(
+  "keydown",
+  function(event) {
+    if (
+      event.key === "Escape" &&
+      announcementModal &&
+      announcementModal.classList.contains("open")
+    ) {
+      cerrarAnuncioRenovacion();
+    }
+  }
+);
 
 
 /* ============================================================
@@ -789,15 +976,25 @@ loginForm.addEventListener(
           "ACCESO CORRECTO";
 
 
-        setTimeout(
-          function () {
+        if (esAdminLogin(resultado)) {
 
-            window.location.href =
-              "dashboard.html";
+          setTimeout(
+            irDashboard,
+            700
+          );
 
-          },
-          700
-        );
+        } else {
+
+          setTimeout(
+            function () {
+              abrirAnuncioRenovacion(
+                irDashboard
+              );
+            },
+            350
+          );
+
+        }
 
 
         return;
@@ -893,5 +1090,6 @@ window.addEventListener(
 
 </body>
 </html>
+
 
 

@@ -105,6 +105,29 @@ button,a{font:inherit}
 .btn-primary{background:var(--yellow);border-color:var(--yellow);color:#111827}.btn-primary:hover{background:#ffd83d}
 #msg{min-height:0}.notice{margin:12px 0;padding:10px 12px;border-radius:8px;background:#f0f7ff;border:1px solid #dbeafe;color:#315d8b;font-size:10px}
 .notice.error{background:#fff2f1;border-color:#f3d0cd;color:#9b3028}
+.profile-modal{position:fixed;inset:0;background:rgba(16,24,39,.54);display:none;align-items:center;justify-content:center;padding:20px;z-index:80}
+.profile-modal.open{display:flex}
+.profile-dialog{width:min(520px,100%);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 70px rgba(17,24,39,.22);overflow:hidden}
+.profile-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px;border-bottom:1px solid var(--line)}
+.profile-dialog-head h2{margin:0;font-size:18px;letter-spacing:-.2px}
+.profile-dialog-head p{margin:5px 0 0;color:#6b7280;font-size:12px;line-height:1.45}
+.profile-close{width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#687381;display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
+.profile-close:hover{background:#f8fafb;color:#111827}
+.profile-form{padding:18px 22px 22px;display:grid;gap:13px}
+.profile-field{display:grid;gap:6px}
+.profile-field label{font-size:10px;font-weight:850;color:#4b5563;text-transform:uppercase;letter-spacing:.04em}
+.profile-field input{height:42px;border:1px solid #dce2e8;border-radius:9px;padding:0 12px;font-size:13px;color:#17202b;background:#fff;outline:none}
+.profile-field input[type=file]{height:auto;padding:10px;background:#f8fafb}
+.profile-field input:focus{border-color:#d4ad00;box-shadow:0 0 0 3px rgba(247,198,0,.15)}
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.profile-photo-row{display:flex;align-items:center;gap:12px}
+.profile-photo-preview{width:54px;height:54px;border-radius:50%;background:#eef1f4;color:#253242;display:grid;place-items:center;font-size:13px;font-weight:900;overflow:hidden;flex:0 0 54px}
+.profile-photo-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.profile-photo-row .profile-field{flex:1}
+.profile-form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:4px}
+.profile-error{min-height:16px;color:#9b3028;font-size:11px}
+.profile-secondary{height:42px;border:1px solid var(--line);background:#fff;color:#374151;border-radius:9px;padding:0 14px;font-size:12px;font-weight:800;cursor:pointer}
+.profile-secondary:hover{background:#f8fafb}
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
 .metric-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:17px 18px;box-shadow:0 5px 20px rgba(17,24,39,.035)}
 .metric-card.highlight{border-color:#f0df8b;background:linear-gradient(180deg,#fff 0%,#fffdf5 100%)}
@@ -142,7 +165,7 @@ button,a{font:inherit}
 .footer{display:flex;justify-content:space-between;margin-top:18px;color:#9aa2ac;font-size:8.5px}.footer span:first-child{font-weight:850;color:#68717c}
 @media(max-width:1150px){.sidebar{width:82px;padding:20px 10px}.brand-block{justify-content:center;padding-left:0;padding-right:0}.brand-block .brand-copy,.branch-card,.nav-title,.nav-item span:not(.nav-icon),.sidebar-bottom{display:none}.main-content{margin-left:82px;width:calc(100% - 82px)}.dashboard-grid{grid-template-columns:1fr}.side-panel{display:none}}
 @media(max-width:800px){.topbar{padding:0 17px}.profile-text,.profile-chevron,.icon-button{display:none}.page{padding:18px 15px 28px}.welcome-card{padding:24px;align-items:flex-start;flex-direction:column}.welcome-card h1{font-size:23px}.welcome-actions{width:100%}.btn{flex:1;justify-content:center}.quick-grid{grid-template-columns:repeat(2,1fr)}.chart-wrap{height:300px;grid-template-columns:58px 1fr}.bar-chart{gap:5px}}
-@media(max-width:520px){.quick-grid{grid-template-columns:1fr}.footer{display:none}.connection{display:none}.welcome-actions{flex-direction:column}.brand-ani{display:none}}
+@media(max-width:520px){.quick-grid{grid-template-columns:1fr}.footer{display:none}.connection{display:none}.welcome-actions{flex-direction:column}.brand-ani{display:none}.profile-grid{grid-template-columns:1fr}.profile-photo-row{align-items:flex-start}.profile-form-actions{flex-direction:column}.profile-secondary,.profile-form-actions .btn{width:100%;justify-content:center}}
 
 </style>
 
@@ -962,6 +985,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <a class="nav-item active" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
         <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
+        <a class="nav-item" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
         <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
         
       </nav>
@@ -993,7 +1017,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           <div class="profile">
             <div class="avatar">ZU</div>
             <div class="profile-text"><strong>Usuario ZIMA</strong><span>Administrador</span></div>
-            <button class="profile-logout" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesión" title="Cerrar sesión">
+            <button class="profile-logout zima-logout-button" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesión" title="Cerrar sesión">
               <i data-lucide="log-out"></i>
             </button>
           </div>
@@ -1066,6 +1090,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             <div class="quick-action-wrap">
               <button class="quick-action" type="button" onclick="go('planilla.html')"><span class="qa-icon"><i data-lucide="file-plus-2"></i></span><span><strong>Crear planilla</strong><small>Registrar una nueva operación</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
               <button class="quick-action" type="button" onclick="go('historial.html')"><span class="qa-icon"><i data-lucide="search"></i></span><span><strong>Consultar historial</strong><small>Buscar registros anteriores</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
+              <button class="quick-action" type="button" onclick="go('informes.html')"><span class="qa-icon"><i data-lucide="bar-chart-3"></i></span><span><strong>Informes mensuales</strong><small>Desglosar recaudo por mes</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
               <button class="quick-action" type="button" onclick="cargar()"><span class="qa-icon"><i data-lucide="refresh-cw"></i></span><span><strong>Sincronizar</strong><small>Actualizar información en línea</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
             </div>
             <div class="service-card"><div class="service-icon"><i data-lucide="shield-check"></i></div><div><strong>Servicio operativo</strong><p>La plataforma está disponible y lista para trabajar.</p></div></div>
@@ -1077,6 +1102,51 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     </main>
   </div>
 
+  <div class="profile-modal" id="profileModal" aria-hidden="true">
+    <div class="profile-dialog" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+      <div class="profile-dialog-head">
+        <div>
+          <h2 id="profileTitle">Actualiza tus datos</h2>
+          <p>Estos datos se guardan en la hoja USUARIOS y se usan en todas las pantallas.</p>
+        </div>
+        <button class="profile-close" type="button" id="profileClose" aria-label="Cerrar"><i data-lucide="x"></i></button>
+      </div>
+      <form class="profile-form" id="profileForm">
+        <div class="profile-field">
+          <label for="profileNombre">Nombre completo</label>
+          <input id="profileNombre" name="nombre" autocomplete="name" required>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-field">
+            <label for="profileEmail">Correo</label>
+            <input id="profileEmail" name="email" type="email" autocomplete="email">
+          </div>
+          <div class="profile-field">
+            <label for="profileTelefono">Telefono</label>
+            <input id="profileTelefono" name="telefono" autocomplete="tel">
+          </div>
+        </div>
+        <div class="profile-field">
+          <label for="profileCargo">Cargo</label>
+          <input id="profileCargo" name="cargo" autocomplete="organization-title">
+        </div>
+        <div class="profile-photo-row">
+          <div class="profile-photo-preview" id="profileFotoPreview">ZU</div>
+          <div class="profile-field">
+            <label for="profileFoto">Foto de perfil</label>
+            <input id="profileFoto" name="foto" type="file" accept="image/*">
+          </div>
+        </div>
+        <div class="profile-error" id="profileError"></div>
+        <div class="profile-form-actions">
+          <button class="profile-secondary" type="button" id="profileLater">Luego</button>
+          <button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Guardar datos</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="zima-ui.js"></script>
   <script>
     if (window.lucide && typeof lucide.createIcons === 'function') {
       lucide.createIcons({attrs:{"stroke-width":1.9}});
@@ -1084,7 +1154,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     /* Web App ACTUAL de ZIMA 360.
        Se fuerza esta URL para evitar que el navegador reutilice una URL antigua guardada. */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzEhLbhnhjHuaVhye61qGCLFg7Gpa9wNELXQcEEgOmU9jNf7mb08kduBm4GDxwHyHxf6w/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
 
     /* =========================================================
@@ -1160,20 +1230,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
       /* 2) Sesiones JSON guardadas por el login. */
       const claves=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO'];
-      const fotoLocal=(function(){
-        try{
-          return localStorage.getItem('ZIMA360_FOTO') ||
-            sessionStorage.getItem('ZIMA360_FOTO') ||
-            localStorage.getItem('ZIMA_FOTO') ||
-            sessionStorage.getItem('ZIMA_FOTO') ||
-            localStorage.getItem('ZIMA_PHOTO') ||
-            sessionStorage.getItem('ZIMA_PHOTO') ||
-            '';
-        }catch(e){
-          return '';
-        }
-      })();
-
       for(const storage of [localStorage, sessionStorage]){
         for(const clave of claves){
           try{
@@ -1184,9 +1240,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
               data.usuario || data.user || data.nombre || data.name ||
               data.peaje || data.office || data.rol || data.role
             )){
-              if(fotoLocal && !(data.foto || data.FOTO || data.photo || data.PHOTO)){
-                data.foto=fotoLocal;
-              }
               return data;
             }
           }catch(e){}
@@ -1206,7 +1259,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const nombre=get('ZIMA360_NOMBRE') || get('ZIMA_USER_NAME') || get('ZIMA_NOMBRE');
       const rol=get('ZIMA360_ROL') || get('ZIMA_ROL') || get('ZIMA_ROLE');
       const peaje=get('ZIMA360_PEAJE') || get('ZIMA_PEAJE') || get('ZIMA_OFFICE');
-      const foto=get('ZIMA360_FOTO') || get('ZIMA_FOTO') || get('ZIMA_PHOTO');
 
       if(usuario || nombre || peaje){
         return {
@@ -1214,7 +1266,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           nombre:nombre || usuario,
           rol:rol || 'PEAJE',
           peaje:peaje || '',
-          foto:foto || '',
+          foto:'',
           estado:get('ZIMA360_ESTADO') || 'ACTIVO',
           loginAt:get('ZIMA360_LOGIN_AT') || get('ZIMA_LAST_LOGIN') || ''
         };
@@ -1229,10 +1281,14 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       role: String(RAW_SESSION?.rol || RAW_SESSION?.ROL || RAW_SESSION?.role || RAW_SESSION?.ROLE || 'PEAJE').toUpperCase(),
       office: RAW_SESSION?.peaje || RAW_SESSION?.PEAJE || RAW_SESSION?.office || RAW_SESSION?.OFFICE || '',
       foto: RAW_SESSION?.foto || RAW_SESSION?.FOTO || RAW_SESSION?.photo || RAW_SESSION?.PHOTO || '',
+      email: RAW_SESSION?.email || RAW_SESSION?.EMAIL || '',
+      telefono: RAW_SESSION?.telefono || RAW_SESSION?.TELEFONO || '',
+      cargo: RAW_SESSION?.cargo || RAW_SESSION?.CARGO || '',
       estado: RAW_SESSION?.estado || RAW_SESSION?.ESTADO || 'ACTIVO',
       loginAt: RAW_SESSION?.loginAt || RAW_SESSION?.ULTIMO_INGRESO || '',
       token: RAW_SESSION?.token || RAW_SESSION?.sessionToken || RAW_SESSION?.SESSION_TOKEN || obtenerTokenLocal()
     };
+    let PROFILE_FOTO_DATA = SESSION.foto || '';
 
     function tieneSesion(){
       return Boolean(SESSION.user || SESSION.name);
@@ -1338,6 +1394,119 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       return data;
     }
 
+    async function apiPost(action,params={}){
+      const payload={action:String(action||'save'),...params};
+
+      if(window.google && google.script && google.script.run){
+        const data=await onlineRun('apiPost',payload);
+        if(data && data.ok===false) throw new Error(data.error || data.mensaje || 'El servidor rechazó la operación.');
+        return data;
+      }
+
+      try{
+        const r=await fetch(API_URL,{
+          method:'POST',
+          redirect:'follow',
+          mode:'cors',
+          cache:'no-store',
+          credentials:'omit',
+          headers:{'Content-Type':'text/plain;charset=utf-8','Accept':'application/json'},
+          body:JSON.stringify(payload)
+        });
+        if(!r.ok) throw new Error('HTTP '+r.status);
+        const text=await r.text();
+        let data;
+        try{ data=JSON.parse(text); }
+        catch(e){ throw new Error('La Web App no devolvió JSON válido.'); }
+        if(!data || typeof data!=='object') throw new Error('Respuesta inválida de la Web App.');
+        if(data.ok===false) throw new Error(data.error || data.mensaje || 'El servidor rechazó la operación.');
+        return data;
+      }catch(fetchError){
+        const payloadText=JSON.stringify(payload);
+        if(payloadText.length>6000){
+          await postViaHiddenForm(payload);
+          return {
+            ok:true,
+            mensaje:'Cambios enviados al servidor.',
+            nombre:payload.nombre||'',
+            email:payload.email||'',
+            telefono:payload.telefono||'',
+            cargo:payload.cargo||'',
+            foto:payload.foto||''
+          };
+        }
+        const data=await zimaJsonp(payload);
+        if(data && data.ok===false) throw new Error(data.error || data.mensaje || 'El servidor rechazó la operación.');
+        return data;
+      }
+    }
+
+    function zimaJsonp(params={}){
+      return new Promise(function(resolve,reject){
+        const callback='__zima_dashboard_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+        const script=document.createElement('script');
+        const query=new URLSearchParams({...params,callback});
+        const timer=setTimeout(function(){
+          cleanup();
+          reject(new Error('Tiempo agotado al conectar con el Web App.'));
+        },25000);
+        function cleanup(){
+          clearTimeout(timer);
+          try{delete window[callback];}catch(e){window[callback]=undefined;}
+          script.remove();
+        }
+        window[callback]=function(data){
+          cleanup();
+          resolve(data);
+        };
+        script.onerror=function(){
+          cleanup();
+          reject(new Error('No fue posible acceder al Web App de ZIMA 360.'));
+        };
+        script.src=API_URL+'?'+query.toString();
+        document.head.appendChild(script);
+      });
+    }
+
+    function postViaHiddenForm(payload){
+      return new Promise(function(resolve,reject){
+        const iframeName='zimaDashboardPost_'+Date.now();
+        const iframe=document.createElement('iframe');
+        const form=document.createElement('form');
+        let settled=false;
+        const finish=function(){
+          if(settled) return;
+          settled=true;
+          setTimeout(function(){
+            try{form.remove();}catch(e){}
+            try{iframe.remove();}catch(e){}
+          },700);
+          resolve({ok:true});
+        };
+        iframe.name=iframeName;
+        iframe.style.display='none';
+        iframe.onload=finish;
+        iframe.onerror=function(){
+          reject(new Error('No se pudo enviar la información al servidor.'));
+        };
+        form.method='POST';
+        form.action=API_URL;
+        form.target=iframeName;
+        form.style.display='none';
+        Object.keys(payload).forEach(function(key){
+          const input=document.createElement('input');
+          input.type='hidden';
+          input.name=key;
+          input.value=payload[key]==null?'':String(payload[key]);
+          form.appendChild(input);
+        });
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        form.submit();
+        setTimeout(finish,8000);
+      });
+    }
+
     function money(n){
       return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(n||0));
     }
@@ -1352,7 +1521,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
     function go(page){location.href=page;}
-    function statusClass(v){return ['BORRADOR','ENTREGADA','CERRADA'].includes(v)?v:'BORRADOR';}
+    function normalizarEstado(v){const e=String(v||'').trim().toUpperCase();return e==='ENTREGADO'?'ENTREGADA':e;}
+    function statusClass(v){const e=normalizarEstado(v);return ['BORRADOR','APROBADO','ENTREGADA','CERRADA','ANULADA'].includes(e)?e:'BORRADOR';}
 
     function iniciales(nombre){
       const partes=String(nombre||'Usuario ZIMA').trim().split(/\s+/).filter(Boolean);
@@ -1373,35 +1543,16 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     function guardarPerfilSesion(perfil){
       perfil=perfil||{};
       const src=String(perfil.foto||perfil.FOTO||perfil.photo||'').trim();
-      if(src) SESSION.foto=src;
+      SESSION.foto=src;
       if(perfil.nombre) SESSION.name=perfil.nombre;
       if(perfil.rol) SESSION.role=perfil.rol;
       if(perfil.peaje) SESSION.office=perfil.peaje;
-      try{
-        if(src) localStorage.setItem('ZIMA360_FOTO',src);
-        if(perfil.nombre) localStorage.setItem('ZIMA360_NOMBRE',perfil.nombre);
-        if(perfil.rol) localStorage.setItem('ZIMA360_ROL',perfil.rol);
-        if(perfil.peaje) localStorage.setItem('ZIMA360_PEAJE',perfil.peaje);
-        for(const key of ['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO']){
-          const raw=localStorage.getItem(key)||sessionStorage.getItem(key);
-          if(!raw || !raw.trim().startsWith('{')) continue;
-          try{
-            const data=JSON.parse(raw);
-            if(perfil.nombre) data.nombre=perfil.nombre;
-            if(perfil.rol) data.rol=perfil.rol;
-            if(perfil.peaje) data.peaje=perfil.peaje;
-            if(src){
-              data.foto=src;
-              data.FOTO=src;
-            }
-            localStorage.setItem(key,JSON.stringify(data));
-            sessionStorage.setItem(key,JSON.stringify(data));
-          }catch(e){}
-        }
-      }catch(e){}
+      SESSION.email=String(perfil.email||perfil.EMAIL||'').trim();
+      SESSION.telefono=String(perfil.telefono||perfil.TELEFONO||'').trim();
+      SESSION.cargo=String(perfil.cargo||perfil.CARGO||'').trim();
       const displayName=SESSION.name||SESSION.user||'Usuario ZIMA';
       const office=SESSION.office||'';
-      if(src) pintarAvatar(document.querySelector('.avatar'),src,displayName);
+      pintarAvatar(document.querySelector('.avatar'),src,displayName);
       const profileStrong=document.querySelector('.profile-text strong');
       const profileSpan=document.querySelector('.profile-text span');
       const branch=document.querySelector('.branch-name');
@@ -1419,12 +1570,153 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       guardarPerfilSesion({foto:src});
     }
 
-    async function refrescarFotoPerfil(){
+    function perfilPeajeIncompleto(perfil){
+      perfil=perfil||SESSION;
+      const rol=String(perfil.rol||perfil.role||SESSION.role||'').trim().toUpperCase();
+      if(rol!=='PEAJE') return false;
+      return !String(perfil.email||perfil.EMAIL||SESSION.email||'').trim() ||
+        !String(perfil.telefono||perfil.TELEFONO||SESSION.telefono||'').trim() ||
+        !String(perfil.cargo||perfil.CARGO||SESSION.cargo||'').trim();
+    }
+
+    function abrirPerfilModal(){
+      const modal=document.getElementById('profileModal');
+      if(!modal) return;
+      const set=function(id,value){
+        const el=document.getElementById(id);
+        if(el) el.value=value||'';
+      };
+      set('profileNombre',SESSION.name||SESSION.user||'');
+      set('profileEmail',SESSION.email||'');
+      set('profileTelefono',SESSION.telefono||'');
+      set('profileCargo',SESSION.cargo||'');
+      PROFILE_FOTO_DATA=SESSION.foto||'';
+      const fotoInput=document.getElementById('profileFoto');
+      if(fotoInput) fotoInput.value='';
+      pintarAvatar(document.getElementById('profileFotoPreview'),PROFILE_FOTO_DATA,SESSION.name||SESSION.user);
+      setText('profileError','');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+    }
+
+    function cerrarPerfilModal(){
+      const modal=document.getElementById('profileModal');
+      if(!modal) return;
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    }
+
+    function leerArchivoFotoPerfil(file){
+      return new Promise(function(resolve,reject){
+        if(!file){
+          resolve(PROFILE_FOTO_DATA||'');
+          return;
+        }
+        if(!/^image\//.test(file.type||'')){
+          reject(new Error('Seleccione una imagen válida.'));
+          return;
+        }
+        if(file.size > 6 * 1024 * 1024){
+          reject(new Error('La foto no debe pesar más de 6 MB.'));
+          return;
+        }
+        const reader=new FileReader();
+        reader.onerror=function(){reject(new Error('No fue posible leer la foto.'));};
+        reader.onload=function(){
+          const img=new Image();
+          img.onerror=function(){reject(new Error('No fue posible procesar la foto.'));};
+          img.onload=function(){
+            const render=function(max,quality){
+              const scale=Math.min(1,max/Math.max(img.width,img.height));
+              const canvas=document.createElement('canvas');
+              canvas.width=Math.max(1,Math.round(img.width*scale));
+              canvas.height=Math.max(1,Math.round(img.height*scale));
+              const ctx=canvas.getContext('2d');
+              ctx.drawImage(img,0,0,canvas.width,canvas.height);
+              return canvas.toDataURL('image/jpeg',quality);
+            };
+            let data=render(320,0.76);
+            if(data.length>45000) data=render(240,0.68);
+            if(data.length>45000) data=render(180,0.6);
+            if(data.length>49000){
+              reject(new Error('La foto sigue muy pesada. Pruebe con otra imagen.'));
+              return;
+            }
+            resolve(data);
+          };
+          img.src=String(reader.result||'');
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function setupPerfilModal(){
+      const form=document.getElementById('profileForm');
+      const close=document.getElementById('profileClose');
+      const later=document.getElementById('profileLater');
+      const fotoInput=document.getElementById('profileFoto');
+      if(close) close.addEventListener('click',cerrarPerfilModal);
+      if(later) later.addEventListener('click',cerrarPerfilModal);
+      if(fotoInput){
+        fotoInput.addEventListener('change',async function(){
+          const errorEl=document.getElementById('profileError');
+          try{
+            if(errorEl) errorEl.textContent='';
+            PROFILE_FOTO_DATA=await leerArchivoFotoPerfil(fotoInput.files && fotoInput.files[0]);
+            pintarAvatar(document.getElementById('profileFotoPreview'),PROFILE_FOTO_DATA,document.getElementById('profileNombre').value||SESSION.name||SESSION.user);
+          }catch(error){
+            fotoInput.value='';
+            if(errorEl) errorEl.textContent=error && error.message ? error.message : 'No fue posible cargar la foto.';
+          }
+        });
+      }
+      if(!form) return;
+      form.addEventListener('submit',async function(event){
+        event.preventDefault();
+        const errorEl=document.getElementById('profileError');
+        const submit=form.querySelector('button[type="submit"]');
+        try{
+          PROFILE_FOTO_DATA=await leerArchivoFotoPerfil(document.getElementById('profileFoto').files && document.getElementById('profileFoto').files[0]);
+        }catch(error){
+          if(errorEl) errorEl.textContent=error && error.message ? error.message : 'No fue posible cargar la foto.';
+          return;
+        }
+        const payload={
+          token:SESSION.token,
+          nombre:document.getElementById('profileNombre').value.trim(),
+          email:document.getElementById('profileEmail').value.trim(),
+          telefono:document.getElementById('profileTelefono').value.trim(),
+          cargo:document.getElementById('profileCargo').value.trim(),
+          foto:PROFILE_FOTO_DATA
+        };
+        if(!payload.nombre){
+          if(errorEl) errorEl.textContent='El nombre es obligatorio.';
+          return;
+        }
+        try{
+          if(errorEl) errorEl.textContent='';
+          if(submit) submit.disabled=true;
+          const perfil=await apiPost('actualizarperfil',payload);
+          guardarPerfilSesion(perfil);
+          cerrarPerfilModal();
+          await refrescarFotoPerfil(false);
+        }catch(error){
+          if(errorEl) errorEl.textContent=error && error.message ? error.message : 'No fue posible guardar los datos.';
+        }finally{
+          if(submit) submit.disabled=false;
+        }
+      });
+    }
+
+    async function refrescarFotoPerfil(mostrarAviso=true){
       if(!SESSION.token) return;
       try{
         const perfil=await apiGet('perfil',{token:SESSION.token});
         if(perfil && perfil.ok!==false){
           guardarPerfilSesion(perfil);
+          if(mostrarAviso && perfilPeajeIncompleto(perfil)){
+            abrirPerfilModal();
+          }
           return;
         }
       }catch(e){}
@@ -1456,9 +1748,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const list=document.getElementById('notificationList');
       if(!list) return;
       const rows=Array.isArray(data)?data:[];
-      const entregadas=rows.filter(x=>String(x.estado||'').toUpperCase()==='ENTREGADA').length;
-      const cerradas=rows.filter(x=>String(x.estado||'').toUpperCase()==='CERRADA').length;
-      const borradores=rows.filter(x=>String(x.estado||'').toUpperCase()==='BORRADOR').length;
+      const entregadas=rows.filter(x=>normalizarEstado(x.estado)==='ENTREGADA').length;
+      const cerradas=rows.filter(x=>normalizarEstado(x.estado)==='CERRADA').length;
+      const borradores=rows.filter(x=>normalizarEstado(x.estado)==='BORRADOR').length;
       const total=rows.reduce((sum,item)=>sum+Number(item.total||0),0);
       setText('notificationStatus',status || (rows.length?'Actualizado':'Sin datos'));
       list.innerHTML=[
@@ -1531,18 +1823,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         item.style.display=esGranAdministrador()?'flex':'none';
       });
 
-      // Mantener compatibilidad con las demás páginas.
-      localStorage.setItem('ZIMA_USER_NAME',displayName);
-      localStorage.setItem('ZIMA_PEAJE',office);
-      localStorage.setItem('ZIMA360_USUARIO',SESSION.user);
-      localStorage.setItem('ZIMA360_NOMBRE',displayName);
-      localStorage.setItem('ZIMA360_ROL',SESSION.role);
-      localStorage.setItem('ZIMA360_PEAJE',office);
-      if(SESSION.foto){
-        localStorage.setItem('ZIMA360_FOTO',SESSION.foto);
-      }
-      localStorage.setItem('ZIMA360_ESTADO',SESSION.estado || 'ACTIVO');
-
       registrarIngreso();
       return true;
     }
@@ -1551,44 +1831,31 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const token =
         SESSION.token ||
         localStorage.getItem('ZIMA_SESSION_TOKEN') ||
+        localStorage.getItem('ZIMA360_SESSION_TOKEN') ||
+        localStorage.getItem('ZIMA_TOKEN') ||
         localStorage.getItem('ZIMA_SESSION') ||
         sessionStorage.getItem('ZIMA_SESSION_TOKEN') ||
+        sessionStorage.getItem('ZIMA360_SESSION_TOKEN') ||
         sessionStorage.getItem('ZIMA_SESSION') ||
         '';
 
-      /* Invalidar también la sesión del backend cuando existe token. */
-      if(token){
-        try{
-          if(window.google && google.script && google.script.run){
-            await onlineRun('apiPost',{action:'logout',token:token});
-          }else{
-            await fetch(API_URL,{
-              method:'POST',
-              headers:{'Content-Type':'application/json'},
-              body:JSON.stringify({action:'logout',token:token})
-            });
-          }
-        }catch(e){
-          /* Aunque falle la petición remota, se limpia la sesión local. */
+      return ZimaUI.confirmLogout({
+        detail:(SESSION.name||SESSION.user||'Usuario ZIMA') + (SESSION.office ? ' - ' + SESSION.office : ''),
+        beforeClear:async function(){
+          if(!token)return;
+          try{
+            if(window.google && google.script && google.script.run){
+              await onlineRun('apiPost',{action:'logout',token:token});
+            }else{
+              await fetch(API_URL,{
+                method:'POST',
+                headers:{'Content-Type':'text/plain;charset=utf-8'},
+                body:JSON.stringify({action:'logout',token:token})
+              });
+            }
+          }catch(e){}
         }
-      }
-
-      const keys=[
-        'ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO',
-        'ZIMA360_USUARIO','ZIMA360_NOMBRE','ZIMA360_ROL','ZIMA360_PEAJE',
-        'ZIMA360_FOTO','ZIMA360_ESTADO','ZIMA360_LOGIN_AT','ZIMA_USER','ZIMA_USER_NAME',
-        'ZIMA_PEAJE','ZIMA_OFFICE','ZIMA_ROLE','ZIMA_ROL','ZIMA_LAST_LOGIN',
-        'ZIMA_SESSION_TOKEN','ZIMA_API_URL'
-      ];
-
-      [localStorage,sessionStorage].forEach(storage=>{
-        keys.forEach(key=>{
-          try{ storage.removeItem(key); }catch(e){}
-        });
       });
-
-      /* Regresar al login sin tocar el diseño ni otras páginas. */
-      window.location.href='login.html';
     }
 
     function registrarIngreso(){
@@ -1698,8 +1965,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         setText('n',data.length);
         setText('t',money(total));
         setText('monthTotal',money(currentMonthTotal));
-        setText('e',data.filter(x=>String(x.estado||'').toUpperCase()==='ENTREGADA').length);
-        setText('c',data.filter(x=>String(x.estado||'').toUpperCase()==='CERRADA').length);
+        setText('e',data.filter(x=>normalizarEstado(x.estado)==='ENTREGADA').length);
+        setText('c',data.filter(x=>normalizarEstado(x.estado)==='CERRADA').length);
         renderChart(data);
         renderNotifications(data, 'Actualizado');
         msg.innerHTML='';
@@ -1723,8 +1990,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           setText('n',data.length);
           setText('t',money(total));
           setText('monthTotal',money(currentMonthTotal));
-          setText('e',data.filter(x=>String(x.estado||'').toUpperCase()==='ENTREGADA').length);
-          setText('c',data.filter(x=>String(x.estado||'').toUpperCase()==='CERRADA').length);
+          setText('e',data.filter(x=>normalizarEstado(x.estado)==='ENTREGADA').length);
+          setText('c',data.filter(x=>normalizarEstado(x.estado)==='CERRADA').length);
           renderChart(data);
           renderNotifications(data, 'Conectado');
           msg.innerHTML='';
@@ -1741,6 +2008,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     }
 
     setupNotifications();
+    setupPerfilModal();
     if(setupSession()){
       refrescarFotoPerfil();
       cargar();
@@ -1748,4 +2016,5 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </script>
 </body>
 </html>
+
 

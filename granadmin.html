@@ -169,6 +169,7 @@
         <a href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
         <a href="planilla.html"><i data-lucide="file-plus-2"></i><span>Nueva planilla</span></a>
         <a href="historial.html"><i data-lucide="history"></i><span>Historial</span></a>
+        <a href="informes.html"><i data-lucide="bar-chart-3"></i><span>Informes</span></a>
         <a class="active" href="granadmin.html"><i data-lucide="shield"></i><span>Gran admin</span></a>
       </nav>
       <div class="side-foot">Control de usuarios y permisos</div>
@@ -180,7 +181,7 @@
         <div class="userbox">
           <div class="avatar" id="avatar">GA</div>
           <div><strong id="topName">Gran Administrador</strong></div>
-          <button class="logout" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesion"><i data-lucide="log-out"></i></button>
+          <button class="logout zima-logout-button" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesion" title="Cerrar sesion"><i data-lucide="log-out"></i></button>
         </div>
       </header>
 
@@ -354,8 +355,9 @@
     </main>
   </div>
 
+  <script src="zima-ui.js"></script>
   <script>
-    const API_URL='https://script.google.com/macros/s/AKfycbzaRpWxLnIM7AsEfE_PFOU5w-umDF89BrggfL3JUjpw4zkOPq5zGsFLkJNHxphqX217mw/exec';
+    const API_URL='https://script.google.com/macros/s/AKfycbzEhLbhnhjHuaVhye61qGCLFg7Gpa9wNELXQcEEgOmU9jNf7mb08kduBm4GDxwHyHxf6w/exec';
     let USUARIOS=[];
     let PEAJES=[];
 
@@ -897,8 +899,9 @@
       finally{ZimaUI.busy('createUserBtn',false);}
     }
     function cerrarSesion(){
-      ['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','ZIMA360_USUARIO','ZIMA360_NOMBRE','ZIMA360_ROL','ZIMA360_PEAJE','ZIMA360_FOTO','ZIMA360_EMAIL','ZIMA360_TELEFONO','ZIMA360_CARGO','ZIMA_SESSION_TOKEN','ZIMA360_SESSION_TOKEN'].forEach(k=>{try{localStorage.removeItem(k);sessionStorage.removeItem(k);}catch(e){}});
-      location.href='login.html';
+      return ZimaUI.confirmLogout({
+        detail:(SESSION.name||SESSION.user||'Usuario ZIMA') + (SESSION.office ? ' - ' + SESSION.office : '')
+      });
     }
     function init(){
       setText('topName',SESSION.name||SESSION.user||'Gran Administrador');
@@ -928,5 +931,6 @@
   </script>
 </body>
 </html>
+
 
 

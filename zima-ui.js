@@ -143,10 +143,75 @@
     });
   }
 
+  const SESSION_KEYS = [
+    'ZIMA360_SESION',
+    'ZIMA_SESION',
+    'ZIMA_SESSION',
+    'ZIMA_USUARIO',
+    'ZIMA360_USUARIO',
+    'ZIMA360_NOMBRE',
+    'ZIMA360_ROL',
+    'ZIMA360_PEAJE',
+    'ZIMA360_FOTO',
+    'ZIMA360_EMAIL',
+    'ZIMA360_TELEFONO',
+    'ZIMA360_CARGO',
+    'ZIMA360_ESTADO',
+    'ZIMA360_LOGIN_AT',
+    'ZIMA_USER',
+    'ZIMA_USER_NAME',
+    'ZIMA_PEAJE',
+    'ZIMA_OFFICE',
+    'ZIMA_ROLE',
+    'ZIMA_ROL',
+    'ZIMA_LAST_LOGIN',
+    'ZIMA_SESSION_TOKEN',
+    'ZIMA360_SESSION_TOKEN',
+    'ZIMA_TOKEN',
+    'ZIMA_API_URL'
+  ];
+
+  function clearSession(extraKeys) {
+    const keys = SESSION_KEYS.concat(extraKeys || []);
+    [localStorage, sessionStorage].forEach(function (storage) {
+      keys.forEach(function (key) {
+        try {
+          storage.removeItem(key);
+        } catch (e) {}
+      });
+    });
+  }
+
+  function confirmLogout(options) {
+    options = options || {};
+
+    return confirmDialog({
+      title: options.title || 'Cerrar sesion',
+      message: options.message || 'Confirme si desea cerrar la sesion actual de ZIMA 360.',
+      detail: options.detail || '',
+      confirmText: options.confirmText || 'Cerrar sesion',
+      cancelText: options.cancelText || 'Cancelar',
+      danger: true
+    }).then(function (ok) {
+      if (!ok) return false;
+
+      return Promise
+        .resolve(options.beforeClear ? options.beforeClear() : null)
+        .catch(function () {})
+        .then(function () {
+          clearSession(options.extraKeys);
+          window.location.href = options.redirect || 'login.html';
+          return true;
+        });
+    });
+  }
+
   window.ZimaUI = {
     busy: busy,
+    clearSession: clearSession,
     closeModal: closeModal,
     confirm: confirmDialog,
+    confirmLogout: confirmLogout,
     escapeHtml: escapeHtml,
     notice: notice,
     openModal: openModal

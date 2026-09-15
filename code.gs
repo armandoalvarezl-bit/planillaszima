@@ -116,6 +116,11 @@ function setupSistema() {
   const usuarios =
     prepararHojaUsuarios_(ss);
 
+  const configActual =
+    leerConfigMap_(
+      config
+    );
+
   const configValues = [
     ['PARAMETRO', 'VALOR'],
     ['SISTEMA', 'ZIMA 360'],
@@ -127,6 +132,11 @@ function setupSistema() {
     ['HOJA_CONFIG', ZIMA.SHEET_CONFIG],
     ['HOJA_USUARIOS', ZIMA.SHEET_USUARIOS],
     ['WEB_APP_URL', obtenerWebAppUrl_() || ''],
+    [
+      'CORREOS_NOTIFICACION',
+      configActual.CORREOS_NOTIFICACION ||
+      'sistemaplanillaszima@gmail.com'
+    ],
     ['FECHA_CONFIGURACION', new Date()]
   ];
 
@@ -496,6 +506,92 @@ function prepararHojaUsuarios_(ss) {
 }
 
 
+function leerConfigMap_(
+  sh
+) {
+
+  const map = {};
+
+  if (
+    !sh ||
+    sh.getLastRow() < 2
+  ) {
+    return map;
+  }
+
+  const values =
+    sh
+      .getRange(
+        1,
+        1,
+        sh.getLastRow(),
+        Math.max(
+          sh.getLastColumn(),
+          2
+        )
+      )
+      .getValues();
+
+  values.slice(1).forEach(
+    function(row) {
+
+      const key =
+        String(
+          row[0] ||
+          ''
+        )
+          .trim()
+          .toUpperCase();
+
+      if (key) {
+        map[key] =
+          row[1];
+      }
+    }
+  );
+
+  return map;
+}
+
+
+function obtenerValorConfig_(
+  parametro
+) {
+
+  try {
+
+    const ss =
+      getSpreadsheet_();
+
+    const sh =
+      ss.getSheetByName(
+        ZIMA.SHEET_CONFIG
+      );
+
+    const config =
+      leerConfigMap_(
+        sh
+      );
+
+    return String(
+      config[
+        String(
+          parametro ||
+          ''
+        )
+          .trim()
+          .toUpperCase()
+      ] ||
+      ''
+    ).trim();
+
+  } catch (e) {
+
+    return '';
+  }
+}
+
+
 /* ============================================================
    USUARIOS INICIALES
    ============================================================ */
@@ -845,6 +941,10 @@ function autenticarUsuario(
           crearSesion_(
             usuarioSesion
           );
+
+        notificarIngresoPlataforma_(
+          usuarioSesion
+        );
 
         return {
 
@@ -1495,6 +1595,179 @@ function actualizarUsuario(datos) {
 
       return perfilActualizado;
     }
+  }
+
+  throw new Error(
+    'Usuario no encontrado.'
+  );
+}
+
+
+function actualizarPerfilPropio_(datos) {
+
+  datos =
+    datos || {};
+
+  const contexto =
+    obtenerContextoUsuario_(
+      datos
+    );
+
+  if (!contexto.ok) {
+    return contexto;
+  }
+
+  const sesion =
+    contexto.sesion;
+
+  const ss =
+    getSpreadsheet_();
+
+  const sh =
+    prepararHojaUsuarios_(ss);
+
+  const headers =
+    sh
+      .getRange(
+        1,
+        1,
+        1,
+        sh.getLastColumn()
+      )
+      .getValues()[0]
+      .map(function(header) {
+        return String(header || '').trim();
+      });
+
+  const col = function(name) {
+    const index =
+      headers.indexOf(name);
+
+    if (index === -1) {
+      throw new Error(
+        'Columna de usuario no configurada: ' +
+        name
+      );
+    }
+
+    return index + 1;
+  };
+
+  const datosHoja =
+    sh.getDataRange()
+      .getValues();
+
+  const usuarioSesion =
+    String(
+      sesion.usuario ||
+      ''
+    )
+      .trim()
+      .toLowerCase();
+
+  for (let i = 1; i < datosHoja.length; i++) {
+
+    if (
+      String(
+        datosHoja[i][col('USUARIO') - 1] ||
+        ''
+      )
+        .trim()
+        .toLowerCase() !==
+      usuarioSesion
+    ) {
+      continue;
+    }
+
+    const row =
+      i + 1;
+
+    const nombre =
+      String(
+        datos.nombre ||
+        datosHoja[i][col('NOMBRE') - 1] ||
+        sesion.nombre ||
+        sesion.usuario ||
+        ''
+      ).trim();
+
+    if (!nombre) {
+      throw new Error(
+        'El nombre es obligatorio.'
+      );
+    }
+
+    const email =
+      String(
+        datos.email ||
+        ''
+      ).trim();
+
+    const telefono =
+      String(
+        datos.telefono ||
+        ''
+      ).trim();
+
+    const cargo =
+      String(
+        datos.cargo ||
+        ''
+      ).trim();
+
+    const fotoUsuario =
+      String(
+        datos.foto ||
+        ''
+      ).trim();
+
+    sh.getRange(row, col('NOMBRE')).setValue(nombre);
+    sh.getRange(row, col('EMAIL')).setValue(email);
+    sh.getRange(row, col('TELEFONO')).setValue(telefono);
+    sh.getRange(row, col('CARGO')).setValue(cargo);
+    sh.getRange(row, col('FOTO')).setValue(fotoUsuario);
+
+    guardarFotoUsuarioPersistente_(
+      sesion.usuario,
+      fotoUsuario
+    );
+
+    const perfilActualizado = {
+      ok: true,
+      mensaje:
+        'Datos guardados correctamente.',
+      usuario:
+        sesion.usuario,
+      nombre:
+        nombre,
+      rol:
+        datosHoja[i][col('ROL') - 1] ||
+        sesion.rol ||
+        '',
+      peaje:
+        datosHoja[i][col('PEAJE') - 1] ||
+        sesion.peaje ||
+        '',
+      estado:
+        datosHoja[i][col('ESTADO') - 1] ||
+        sesion.estado ||
+        '',
+      email:
+        email,
+      telefono:
+        telefono,
+      cargo:
+        cargo,
+      foto:
+        fotoUsuario
+    };
+
+    actualizarSesionCacheSiCorresponde_(
+      datos,
+      perfilActualizado
+    );
+
+    return perfilActualizado;
   }
 
   throw new Error(
@@ -2220,6 +2493,18 @@ function doGet(e) {
       );
     }
 
+    if (
+      action === 'actualizarperfil'
+    ) {
+
+      return jsonOutput_(
+        actualizarPerfilPropio_(
+          params
+        ),
+        callback
+      );
+    }
+
     return jsonOutput_(
       apiGet({
         action:
@@ -2314,6 +2599,18 @@ function doPost(e) {
           payload.sessionToken ||
           payload.sesion ||
           ''
+        )
+      );
+    }
+
+    if (
+      action ===
+      'actualizarperfil'
+    ) {
+
+      return jsonOutput_(
+        actualizarPerfilPropio_(
+          payload
         )
       );
     }
@@ -2627,6 +2924,12 @@ function apiPost(data) {
         data
       );
 
+    case 'actualizarperfil':
+
+      return actualizarPerfilPropio_(
+        data
+      );
+
     default:
 
       return {
@@ -2775,6 +3078,15 @@ function guardarPlanilla_(data) {
       clean.peaje
     );
 
+    const notificacion =
+      notificarCambioPlanilla_(
+        'CREACION',
+        clean,
+        sesion,
+        'Planilla creada por ' +
+        sesion.usuario
+      );
+
     return {
 
       ok: true,
@@ -2797,7 +3109,10 @@ function guardarPlanilla_(data) {
         sesion.rol,
 
       peaje:
-        sesion.peaje
+        sesion.peaje,
+
+      notificacion:
+        notificacion
     };
 
   } finally {
@@ -2973,13 +3288,14 @@ function actualizarPlanilla_(data) {
       sesion.usuario
     );
 
-    notificarCambioPlanilla_(
+    const notificacion =
+      notificarCambioPlanilla_(
       'ACTUALIZACION',
       merged,
       sesion,
       'Planilla actualizada por ' +
       sesion.usuario
-    );
+      );
 
     return {
 
@@ -2997,7 +3313,10 @@ function actualizarPlanilla_(data) {
         sesion.usuario,
 
       peaje:
-        sesion.peaje
+        sesion.peaje,
+
+      notificacion:
+        notificacion
     };
 
   } finally {
@@ -3137,18 +3456,21 @@ function eliminarPlanilla_(data) {
       sesion.usuario
     );
 
-    notificarCambioPlanilla_(
+    const notificacion =
+      notificarCambioPlanilla_(
       'ANULACION',
       anulada,
       sesion,
       'Planilla anulada por ' +
       sesion.usuario
-    );
+      );
 
     return {
       ok: true,
       message:
-        'Planilla anulada correctamente.'
+        'Planilla anulada correctamente.',
+      notificacion:
+        notificacion
     };
 
   } finally {
@@ -3229,12 +3551,10 @@ function listarPlanillas_(params) {
       .toLowerCase();
 
   const estado =
-    String(
+    normalizarEstadoPlanilla_(
       params.estado ||
       ''
-    )
-      .trim()
-      .toUpperCase();
+    );
 
   const fecha =
     String(
@@ -3248,10 +3568,10 @@ function listarPlanillas_(params) {
 
         if (
           estado &&
-          String(
+          normalizarEstadoPlanilla_(
             row.estado ||
             ''
-          ).toUpperCase() !==
+          ) !==
           estado
         ) {
           return false;
@@ -3495,9 +3815,10 @@ function obtenerDashboard_(params) {
       function(r) {
 
         return String(
-          r.estado ||
-          ''
-        ).toUpperCase() !==
+          normalizarEstadoPlanilla_(
+            r.estado
+          )
+        ) !==
         'ANULADA';
 
       }
@@ -3520,10 +3841,9 @@ function obtenerDashboard_(params) {
     activas.filter(
       function(r) {
 
-        return String(
-          r.estado ||
-          ''
-        ).toUpperCase() ===
+        return normalizarEstadoPlanilla_(
+          r.estado
+        ) ===
         'ENTREGADA';
 
       }
@@ -3533,10 +3853,9 @@ function obtenerDashboard_(params) {
     activas.filter(
       function(r) {
 
-        return String(
-          r.estado ||
-          ''
-        ).toUpperCase() ===
+        return normalizarEstadoPlanilla_(
+          r.estado
+        ) ===
         'CERRADA';
 
       }
@@ -3882,6 +4201,29 @@ function normalizarPeaje_(value) {
 }
 
 
+function normalizarEstadoPlanilla_(
+  value
+) {
+
+  const estado =
+    String(
+      value ||
+      ''
+    )
+      .trim()
+      .toUpperCase();
+
+  if (
+    estado ===
+    'ENTREGADO'
+  ) {
+    return 'ENTREGADA';
+  }
+
+  return estado;
+}
+
+
 /* ============================================================
    NORMALIZACIÓN DE DATOS
    ============================================================ */
@@ -3936,18 +4278,19 @@ function normalizarDatos_(data) {
     );
 
   result.tula =
-    number_(
-      data.tula
-    );
+    result.total;
 
   result.billetes =
-    number_(
-      data.billetes
-    );
+    0;
 
   result.fecha =
     normalizeDateString_(
       data.fecha
+    );
+
+  result.estado =
+    normalizarEstadoPlanilla_(
+      result.estado
     );
 
   return result;
@@ -4007,10 +4350,15 @@ function validarPlanilla_(d) {
     'ANULADA'
   ];
 
+  d.estado =
+    normalizarEstadoPlanilla_(
+      d.estado
+    );
+
   if (
     d.estado &&
     estadosPermitidos.indexOf(
-      d.estado.toUpperCase()
+      d.estado
     ) === -1
   ) {
 
@@ -4365,7 +4713,11 @@ function serializarRegistro_(
       } else {
 
         copy[key] =
-          value;
+          key === 'estado'
+            ? normalizarEstadoPlanilla_(
+                value
+              )
+            : value;
       }
     }
   );
@@ -4679,37 +5031,457 @@ function emailValido_(
 }
 
 
+function extraerEmails_(
+  value
+) {
+
+  const emails = [];
+
+  String(
+    value ||
+    ''
+  )
+    .split(/[,\s;]+/)
+    .forEach(function(email) {
+
+      email =
+        String(
+          email ||
+          ''
+        ).trim();
+
+      if (
+        emailValido_(
+          email
+        ) &&
+        emails.indexOf(email) === -1
+      ) {
+        emails.push(email);
+      }
+    });
+
+  return emails;
+}
+
+
+function obtenerEmailsUsuariosNotificacion_(
+  sesion
+) {
+
+  const emails = [];
+
+  const agregar = function(value) {
+
+    extraerEmails_(
+      value
+    ).forEach(function(email) {
+      if (emails.indexOf(email) === -1) {
+        emails.push(email);
+      }
+    });
+  };
+
+  agregar(
+    obtenerValorConfig_(
+      'CORREOS_NOTIFICACION'
+    ) ||
+    'sistemaplanillaszima@gmail.com'
+  );
+
+  return emails;
+}
+
+
 function obtenerEmailNotificacion_(
   sesion
 ) {
 
-  const emailSesion =
+  return obtenerEmailsUsuariosNotificacion_(
+    sesion
+  ).join(',');
+}
+
+
+function htmlEscape_(
+  value
+) {
+
+  return String(
+    value == null
+      ? ''
+      : value
+  )
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+
+function formatoMonedaCorreo_(
+  value
+) {
+
+  const numero =
+    number_(
+      value
+    );
+
+  return '$ ' +
+    numero
+      .toFixed(0)
+      .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+
+function nombreArchivoPlanillaPdf_(
+  row,
+  accion
+) {
+
+  const codigo =
     String(
-      sesion &&
-      sesion.email ||
+      row &&
+      (
+        row.codigo ||
+        row.id
+      ) ||
+      'planilla'
+    )
+      .trim()
+      .replace(/[^a-z0-9_.-]/gi, '_');
+
+  return 'ZIMA_' +
+    String(
+      accion ||
+      'PLANILLA'
+    )
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9_.-]/g, '_') +
+    '_' +
+    codigo +
+    '.pdf';
+}
+
+
+function filaHtmlPlanillaPdf_(
+  label,
+  value
+) {
+
+  return '<tr>' +
+    '<th>' +
+    htmlEscape_(
+      label
+    ) +
+    '</th>' +
+    '<td>' +
+    htmlEscape_(
+      value
+    ) +
+    '</td>' +
+    '</tr>';
+}
+
+
+function construirHtmlPlanillaPdf_(
+  row,
+  accion,
+  sesion,
+  detalle
+) {
+
+  row =
+    row ||
+    {};
+
+  sesion =
+    sesion ||
+    {};
+
+  const fechaPlanilla =
+    normalizeDateString_(
+      row.fecha
+    );
+
+  const fechaGeneracion =
+    Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      'yyyy-MM-dd HH:mm:ss'
+    );
+
+  const filas = [
+    filaHtmlPlanillaPdf_('Codigo', row.codigo || ''),
+    filaHtmlPlanillaPdf_('ID', row.id || ''),
+    filaHtmlPlanillaPdf_('Peaje', row.peaje || ''),
+    filaHtmlPlanillaPdf_('Razon', row.razon || ''),
+    filaHtmlPlanillaPdf_('Moneda', row.moneda || ''),
+    filaHtmlPlanillaPdf_('Lugar de entrega', row.lugarEntrega || ''),
+    filaHtmlPlanillaPdf_('Recibe', row.recibe || ''),
+    filaHtmlPlanillaPdf_('Ciudad', row.ciudad || ''),
+    filaHtmlPlanillaPdf_('Lugar de recibo', row.lugarRecibo || ''),
+    filaHtmlPlanillaPdf_('Fecha', fechaPlanilla),
+    filaHtmlPlanillaPdf_('Concepto', row.concepto || ''),
+    filaHtmlPlanillaPdf_('Total entregado', formatoMonedaCorreo_(row.total)),
+    filaHtmlPlanillaPdf_('Observacion valor', row.obsValor || ''),
+    filaHtmlPlanillaPdf_('Valor tula', formatoMonedaCorreo_(row.tula)),
+    filaHtmlPlanillaPdf_('Valor billetes', formatoMonedaCorreo_(row.billetes)),
+    filaHtmlPlanillaPdf_('Valor en letras', row.letras || ''),
+    filaHtmlPlanillaPdf_('Observaciones', row.observaciones || ''),
+    filaHtmlPlanillaPdf_('Entregado por', row.entregadoNombre || ''),
+    filaHtmlPlanillaPdf_('Firma entregado', row.entregadoFirma || ''),
+    filaHtmlPlanillaPdf_('Revisado por', row.revisadoNombre || ''),
+    filaHtmlPlanillaPdf_('Firma revisado', row.revisadoFirma || ''),
+    filaHtmlPlanillaPdf_('Estado', row.estado || ''),
+    filaHtmlPlanillaPdf_('Usuario responsable', sesion.usuario || row.usuario || ''),
+    filaHtmlPlanillaPdf_('Nombre responsable', sesion.nombre || ''),
+    filaHtmlPlanillaPdf_('Rol responsable', sesion.rol || ''),
+    filaHtmlPlanillaPdf_('Fecha de generacion', fechaGeneracion)
+  ].join('');
+
+  return '<!doctype html>' +
+    '<html><head><meta charset="UTF-8">' +
+    '<style>' +
+    '@page{size:letter;margin:22mm 16mm}' +
+    'body{font-family:Arial,sans-serif;color:#172033;font-size:12px}' +
+    '.brand{border-bottom:4px solid #f4c20d;padding-bottom:12px;margin-bottom:18px}' +
+    '.kicker{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#6b7280;font-weight:bold}' +
+    'h1{font-size:22px;margin:5px 0 4px;color:#111827}' +
+    '.sub{color:#4b5563;line-height:1.45}' +
+    '.badge{display:inline-block;background:#111827;color:#fff;padding:6px 10px;border-radius:4px;font-size:11px;font-weight:bold;margin-top:8px}' +
+    'table{width:100%;border-collapse:collapse;margin-top:16px}' +
+    'th,td{border:1px solid #d8dee8;padding:8px 9px;vertical-align:top}' +
+    'th{width:32%;background:#f5f7fb;text-align:left;color:#374151}' +
+    '.footer{margin-top:18px;color:#6b7280;font-size:10px;line-height:1.5}' +
+    '</style></head><body>' +
+    '<div class="brand">' +
+    '<div class="kicker">ZIMA 360 · Seguimiento de planillas</div>' +
+    '<h1>Planilla ' +
+    htmlEscape_(
+      row.codigo ||
+      row.id ||
       ''
-    ).trim();
+    ) +
+    '</h1>' +
+    '<div class="sub">' +
+    htmlEscape_(
+      detalle ||
+      ''
+    ) +
+    '</div>' +
+    '<div class="badge">' +
+    htmlEscape_(
+      accion ||
+      'PLANILLA'
+    ) +
+    '</div>' +
+    '</div>' +
+    '<table>' +
+    filas +
+    '</table>' +
+    '<div class="footer">' +
+    'Este PDF fue generado automaticamente por ZIMA 360 como soporte del movimiento registrado.' +
+    '</div>' +
+    '</body></html>';
+}
 
-  if (
-    emailValido_(
-      emailSesion
+
+function crearPdfPlanilla_(
+  row,
+  accion,
+  sesion,
+  detalle
+) {
+
+  const html =
+    construirHtmlPlanillaPdf_(
+      row,
+      accion,
+      sesion,
+      detalle
+    );
+
+  const nombre =
+    nombreArchivoPlanillaPdf_(
+      row,
+      accion
+    );
+
+  return Utilities
+    .newBlob(
+      html,
+      'text/html',
+      nombre.replace(/\.pdf$/i, '.html')
     )
-  ) {
-    return emailSesion;
-  }
-
-  const emailGoogle =
-    obtenerUsuario_();
-
-  if (
-    emailValido_(
-      emailGoogle
+    .getAs(
+      MimeType.PDF
     )
-  ) {
-    return emailGoogle;
-  }
+    .setName(
+      nombre
+    );
+}
 
-  return '';
+
+function construirHtmlCorreoCambio_(
+  accion,
+  row,
+  sesion,
+  detalle,
+  fechaCambio
+) {
+
+  return '<div style="font-family:Arial,sans-serif;color:#172033;line-height:1.45">' +
+    '<div style="border-left:5px solid #f4c20d;padding:4px 0 4px 14px;margin-bottom:16px">' +
+    '<div style="font-size:12px;color:#6b7280;font-weight:bold;letter-spacing:1px;text-transform:uppercase">ZIMA 360</div>' +
+    '<div style="font-size:20px;font-weight:800;color:#111827">Seguimiento de planilla</div>' +
+    '</div>' +
+    '<p>Se registr&oacute; una <b>' +
+    htmlEscape_(
+      accion
+    ) +
+    '</b> en el sistema.</p>' +
+    '<table style="border-collapse:collapse;width:100%;max-width:680px">' +
+    filaHtmlPlanillaPdf_('Detalle', detalle || '') +
+    filaHtmlPlanillaPdf_('Fecha del cambio', fechaCambio) +
+    filaHtmlPlanillaPdf_('Codigo', row.codigo || '') +
+    filaHtmlPlanillaPdf_('ID', row.id || '') +
+    filaHtmlPlanillaPdf_('Peaje', row.peaje || '') +
+    filaHtmlPlanillaPdf_('Fecha planilla', normalizeDateString_(row.fecha)) +
+    filaHtmlPlanillaPdf_('Estado', row.estado || '') +
+    filaHtmlPlanillaPdf_('Total', formatoMonedaCorreo_(row.total)) +
+    filaHtmlPlanillaPdf_('Usuario', sesion && sesion.usuario || '') +
+    filaHtmlPlanillaPdf_('Nombre', sesion && sesion.nombre || '') +
+    filaHtmlPlanillaPdf_('Rol', sesion && sesion.rol || '') +
+    '</table>' +
+    '<p style="margin-top:16px;color:#4b5563">Se adjunta una copia en PDF de la planilla.</p>' +
+    '</div>';
+}
+
+
+function construirHtmlCorreoIngreso_(
+  sesion,
+  fechaIngreso
+) {
+
+  sesion =
+    sesion ||
+    {};
+
+  return '<div style="font-family:Arial,sans-serif;color:#172033;line-height:1.45">' +
+    '<div style="border-left:5px solid #f4c20d;padding:4px 0 4px 14px;margin-bottom:16px">' +
+    '<div style="font-size:12px;color:#6b7280;font-weight:bold;letter-spacing:1px;text-transform:uppercase">ZIMA 360</div>' +
+    '<div style="font-size:20px;font-weight:800;color:#111827">Ingreso a la plataforma</div>' +
+    '</div>' +
+    '<p>Se registr&oacute; un inicio de sesi&oacute;n correcto.</p>' +
+    '<table style="border-collapse:collapse;width:100%;max-width:680px">' +
+    filaHtmlPlanillaPdf_('Fecha de ingreso', fechaIngreso) +
+    filaHtmlPlanillaPdf_('Usuario', sesion.usuario || '') +
+    filaHtmlPlanillaPdf_('Nombre', sesion.nombre || '') +
+    filaHtmlPlanillaPdf_('Rol', sesion.rol || '') +
+    filaHtmlPlanillaPdf_('Peaje', sesion.peaje || '') +
+    filaHtmlPlanillaPdf_('Email perfil', sesion.email || '') +
+    '</table>' +
+    '</div>';
+}
+
+
+function notificarIngresoPlataforma_(
+  sesion
+) {
+
+  try {
+
+    const destino =
+      obtenerEmailNotificacion_(
+        sesion
+      );
+
+    if (!destino) {
+      return {
+        ok: false,
+        enviado: false,
+        error:
+          'No hay correos de notificación configurados.'
+      };
+    }
+
+    const zona =
+      Session.getScriptTimeZone();
+
+    const fechaIngreso =
+      Utilities.formatDate(
+        new Date(),
+        zona,
+        'yyyy-MM-dd HH:mm:ss'
+      );
+
+    const asunto =
+      'ZIMA 360 - Ingreso a la plataforma - ' +
+      (
+        sesion &&
+        sesion.usuario ||
+        ''
+      );
+
+    const lineas = [
+      'Ingreso a la plataforma ZIMA 360',
+      '',
+      'Fecha de ingreso: ' + fechaIngreso,
+      '',
+      'Usuario',
+      'Usuario: ' + (sesion && sesion.usuario || ''),
+      'Nombre: ' + (sesion && sesion.nombre || ''),
+      'Rol: ' + (sesion && sesion.rol || ''),
+      'Peaje: ' + (sesion && sesion.peaje || ''),
+      'Email perfil: ' + (sesion && sesion.email || '')
+    ];
+
+    MailApp.sendEmail({
+      to:
+        destino,
+
+      subject:
+        asunto,
+
+      body:
+        lineas.join('\n'),
+
+      htmlBody:
+        construirHtmlCorreoIngreso_(
+          sesion,
+          fechaIngreso
+        )
+    });
+
+    return {
+      ok: true,
+      enviado: true,
+      destinatarios:
+        destino
+    };
+
+  } catch (e) {
+
+    console.error(
+      'No fue posible enviar notificacion de ingreso: ' +
+      errorMessage_(
+        e
+      )
+    );
+
+    return {
+      ok: false,
+      enviado: false,
+      error:
+        'No fue posible enviar el correo de ingreso: ' +
+        errorMessage_(
+          e
+        )
+    };
+  }
 }
 
 
@@ -4728,7 +5500,12 @@ function notificarCambioPlanilla_(
       );
 
     if (!destino) {
-      return;
+      return {
+        ok: false,
+        enviado: false,
+        error:
+          'No hay correos de notificación configurados. Complete CORREOS_NOTIFICACION en CONFIG o el EMAIL de un ADMIN/INTERVENTORIA activo.'
+      };
     }
 
     const zona =
@@ -4776,8 +5553,16 @@ function notificarCambioPlanilla_(
       'Nombre: ' + (sesion && sesion.nombre || ''),
       'Rol: ' + (sesion && sesion.rol || ''),
       '',
-      'Web App: ' + (obtenerWebAppUrl_() || '')
+      'Se adjunta una copia en PDF de la planilla.'
     ];
+
+    const pdf =
+      crearPdfPlanilla_(
+        row,
+        accion,
+        sesion,
+        detalle
+      );
 
     MailApp.sendEmail({
       to:
@@ -4787,8 +5572,28 @@ function notificarCambioPlanilla_(
         asunto,
 
       body:
-        lineas.join('\n')
+        lineas.join('\n'),
+
+      htmlBody:
+        construirHtmlCorreoCambio_(
+          accion,
+          row,
+          sesion,
+          detalle,
+          fechaCambio
+        ),
+
+      attachments: [
+        pdf
+      ]
     });
+
+    return {
+      ok: true,
+      enviado: true,
+      destinatarios:
+        destino
+    };
 
   } catch (e) {
 
@@ -4798,6 +5603,16 @@ function notificarCambioPlanilla_(
         e
       )
     );
+
+    return {
+      ok: false,
+      enviado: false,
+      error:
+        'No fue posible enviar el correo: ' +
+        errorMessage_(
+          e
+        )
+    };
   }
 }
 
