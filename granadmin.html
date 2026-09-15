@@ -197,7 +197,7 @@
           <div>
             <div class="kicker">Control maestro</div>
             <h1>Gran administrador del sistema</h1>
-            <p>Gestiona usuarios, roles, peajes, estados de acceso y contraseñas operativas.</p>
+            <p>Gestiona usuarios, roles, peajes, estados de acceso y contrase&ntilde;as operativas.</p>
           </div>
           <div class="actions">
             <button class="btn" type="button" onclick="cargarUsuarios()"><i data-lucide="refresh-cw"></i>Actualizar</button>
@@ -318,7 +318,7 @@
                       <input id="editPhotoFile" type="file" accept="image/*">
                       <input id="editPhoto" type="hidden">
                     </label>
-                    <label>Nueva contraseña
+                    <label>Nueva contrase&ntilde;a
                       <input id="editPassword" type="password" minlength="6" placeholder="Opcional">
                     </label>
                   </div>
@@ -752,7 +752,7 @@
           <td><div class="row-actions">
             <button class="icon-btn" type="button" title="Editar perfil" onclick="editarUsuario('${encoded}')"><i data-lucide="pencil"></i></button>
             <button class="icon-btn" type="button" title="Cambiar estado" onclick="cambiarEstado('${encoded}','${next}')"><i data-lucide="${u.estado==='ACTIVO'?'user-x':'user-check'}"></i></button>
-            <button class="icon-btn" type="button" title="Cambiar contraseña" onclick="enfocarPassword('${encoded}')"><i data-lucide="key-round"></i></button>
+            <button class="icon-btn" type="button" title="Cambiar contrase\u00f1a" onclick="enfocarPassword('${encoded}')"><i data-lucide="key-round"></i></button>
           </div></td>
         </tr>`;
       }).join('');
@@ -826,7 +826,7 @@
       };
       if(!payload.usuario){notice('Seleccione un usuario para editar.','error');return;}
       if(payload.rol==='PEAJE'&&!payload.peaje){notice('Para rol PEAJE debes indicar el peaje.','error');return;}
-      if(payload.nuevaContrasena&&payload.nuevaContrasena.length<6){notice('La contraseña debe tener al menos 6 caracteres.','error');return;}
+      if(payload.nuevaContrasena&&payload.nuevaContrasena.length<6){notice('La contrase\u00f1a debe tener al menos 6 caracteres.','error');return;}
       try{
         ZimaUI.busy('saveProfileBtn',true,'Guardando cambios...');
         notice('Guardando cambios del perfil...');
@@ -853,7 +853,7 @@
           setText('topName',payload.nombre||payload.usuario);
           setText('sideUser',(payload.nombre||payload.usuario)+' - '+(payload.rol||'SIN ROL'));
         }
-        notice(resultado&&resultado.foto?'Perfil actualizado. Foto guardada en línea.':'Perfil actualizado correctamente.');
+        notice(resultado&&resultado.foto?'Perfil actualizado. Foto guardada en l\u00ednea.':'Perfil actualizado correctamente.');
         document.getElementById('editPassword').value='';
         await new Promise(resolve=>setTimeout(resolve,700));
         await cargarUsuarios();

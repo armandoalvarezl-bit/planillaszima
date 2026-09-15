@@ -750,8 +750,154 @@ input.locked-field,textarea.locked-field{
 }
 </style>
   <link rel="stylesheet" href="zima-ui-modern.css">
+<style id="planilla-workspace-polish">
+body.planilla-page{
+  min-height:100vh;
+  background:
+    linear-gradient(180deg,#eef3f7 0%,#f7f9fb 34%,#eef2f6 100%)!important;
+  color:#172033;
+}
+body.planilla-page .main{
+  min-height:100vh;
+  background:transparent!important;
+}
+body.planilla-page .top{
+  height:72px;
+  min-height:72px;
+  padding:14px 24px!important;
+  background:rgba(255,255,255,.94)!important;
+  border-bottom:1px solid #dde5ee!important;
+  box-shadow:0 8px 24px rgba(15,23,42,.05);
+  backdrop-filter:blur(10px);
+}
+body.planilla-page .top b{
+  font-size:18px;
+  letter-spacing:.1px;
+}
+body.planilla-page .top .muted{
+  color:#697789!important;
+}
+body.planilla-page .content{
+  width:min(100%,1280px);
+  margin:0 auto;
+  padding:18px 24px 34px!important;
+}
+body.planilla-page .toolbar.no-print{
+  position:sticky;
+  top:0;
+  z-index:22;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin:-18px -24px 18px;
+  padding:14px 24px;
+  background:rgba(255,255,255,.96)!important;
+  border-bottom:1px solid #dbe3ec;
+  box-shadow:0 10px 26px rgba(15,23,42,.08);
+  backdrop-filter:blur(12px);
+}
+body.planilla-page .toolbar.no-print h1{
+  font-size:20px;
+  line-height:1.15;
+  letter-spacing:0;
+  color:#111827;
+}
+body.planilla-page .toolbar.no-print .muted{
+  color:#68778a!important;
+  font-size:12px;
+  font-weight:700;
+}
+body.planilla-page .actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:9px;
+  flex-wrap:wrap;
+}
+body.planilla-page .toolbar.no-print .btn{
+  min-height:40px;
+  padding:0 14px!important;
+  border-radius:7px!important;
+  border:1px solid #d7e0ea;
+  background:#fff;
+  color:#172033;
+  font-size:13px;
+  font-weight:800;
+  box-shadow:0 6px 14px rgba(15,23,42,.06);
+  transition:transform .16s ease,box-shadow .16s ease,background .16s ease,border-color .16s ease;
+}
+body.planilla-page .toolbar.no-print .btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 10px 20px rgba(15,23,42,.11);
+}
+body.planilla-page .toolbar.no-print .btn i{
+  font-size:15px;
+}
+body.planilla-page .toolbar.no-print .btn-primary{
+  border-color:#0f766e;
+  background:#0f766e;
+  color:#fff;
+}
+body.planilla-page .toolbar.no-print .btn-danger{
+  border-color:#b42318;
+  background:#b42318;
+  color:#fff;
+}
+body.planilla-page .toolbar.no-print .btn-dark{
+  border-color:#111827;
+  background:#111827;
+  color:#fff;
+}
+body.planilla-page #msg{
+  margin:0 0 12px;
+}
+body.planilla-page .print-preview-backdrop{
+  backdrop-filter:blur(8px);
+}
+@media(max-width:900px){
+  body.planilla-page .content{
+    padding:14px 14px 86px!important;
+  }
+  body.planilla-page .toolbar.no-print{
+    align-items:flex-start;
+    margin:-14px -14px 14px;
+    padding:12px 14px;
+  }
+  body.planilla-page .actions{
+    width:100%;
+    justify-content:flex-start;
+  }
+  body.planilla-page .toolbar.no-print .btn{
+    flex:1 1 150px;
+    justify-content:center;
+  }
+}
+@media(max-width:560px){
+  body.planilla-page .top{
+    display:none;
+  }
+  body.planilla-page .toolbar.no-print{
+    position:relative;
+    top:auto;
+    display:grid;
+    gap:12px;
+  }
+  body.planilla-page .toolbar.no-print h1{
+    font-size:18px;
+  }
+}
+@media print{
+  body.planilla-page{
+    background:#fff!important;
+  }
+  body.planilla-page .toolbar.no-print{
+    display:none!important;
+  }
+}
+</style>
  </head>
- <body>
+ <body class="planilla-page">
   <div class="shell">
    <aside class="sidebar">
       <div class="brand-block">
@@ -765,18 +911,18 @@ input.locked-field,textarea.locked-field{
         </div>
         <div class="brand-copy">
           <div class="brand-name">ZIMA <strong>360</strong></div>
-          <div class="brand-caption">Gestión empresarial</div>
+          <div class="brand-caption">Gesti&oacute;n empresarial</div>
         </div>
       </div>
 
       <div class="branch-card">
         <div class="branch-label">OFICINA</div>
-        <div class="branch-name">Administración central</div>
+        <div class="branch-name">Administraci&oacute;n central</div>
         <div class="branch-status"><span></span> Operación normal</div>
       </div>
 
-      <nav class="main-nav" aria-label="Navegación principal">
-        <div class="nav-title">MENÚ PRINCIPAL</div>
+      <nav class="main-nav" aria-label="Navegaci&oacute;n principal">
+        <div class="nav-title">MEN&Uacute; PRINCIPAL</div>
         <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
         <a class="nav-item active" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
@@ -787,7 +933,7 @@ input.locked-field,textarea.locked-field{
 
       <div class="sidebar-bottom">
         <div class="secure-line"><span class="secure-dot"></span> Conexión segura</div>
-        <div class="version">ZIMA 360 · v1.0</div>
+        <div class="version">ZIMA 360 &middot; v1.0</div>
       </div>
     </aside>
    <main class="main">
@@ -821,7 +967,7 @@ input.locked-field,textarea.locked-field{
        </button>
        <button class="btn btn-primary" id="saveBtn" type="button" onclick="guardar()">
         <i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i>
-        Guardar en línea
+        Guardar en l&iacute;nea
        </button>
        <button class="btn btn-danger" id="annulBtn" type="button" onclick="anularPlanilla()" style="display:none">
         <i class="bi bi-x-octagon" aria-hidden="true"></i>
@@ -1245,8 +1391,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       const editando=Boolean(id);
       if(saveBtn){
         saveBtn.innerHTML=editando
-          ? '<i class="bi bi-cloud-check-fill" aria-hidden="true"></i> Actualizar en línea'
-          : '<i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i> Guardar en línea';
+          ? '<i class="bi bi-cloud-check-fill" aria-hidden="true"></i> Actualizar en l\u00ednea'
+          : '<i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i> Guardar en l\u00ednea';
       }
       if(annulBtn){
         annulBtn.style.display=(editando && esGranAdministradorSesion())?'inline-flex':'none';
@@ -1426,7 +1572,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         id=r.row.id;
         estadoActual=normalizarEstado(r.row.estado)||estadoActual||'APROBADO';
         actualizarAccionesAdmin();
-        msg.innerHTML='<div class="notice success">'+(editando?'Planilla actualizada':'Planilla guardada')+' correctamente. Código: <b>'+esc(r.row.codigo)+'</b>.'+(editando?textoNotificacion(r):'')+'</div>';
+        msg.innerHTML='<div class="notice success">'+(editando?'Planilla actualizada':'Planilla guardada')+' correctamente. C\u00f3digo: <b>'+esc(r.row.codigo)+'</b>.'+(editando?textoNotificacion(r):'')+'</div>';
       }catch(e){
         ZimaUI.notice(msg,e.message,'error');
       }finally{
@@ -1441,7 +1587,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       const confirmar=await ZimaUI.confirm({
         title:'Anular planilla',
         message:'Esta planilla pasará a estado ANULADA. El cambio quedará registrado en auditoría y se enviará correo de seguimiento si el usuario tiene email configurado.',
-        detail:'Código: '+codigo,
+        detail:'C\u00f3digo: '+codigo,
         confirmText:'Anular planilla',
         cancelText:'Conservar planilla',
         danger:true

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>ZIMA 360 · Iniciar sesión</title>
+  <title>ZIMA 360 &middot; Iniciar sesi&oacute;n</title>
 
   <style>
     * {
@@ -436,7 +436,7 @@
 
         <div class="field">
           <label for="password">
-            Contraseña
+            Contrase&ntilde;a
           </label>
 
           <div class="input-box">
@@ -446,7 +446,7 @@
               id="password"
               name="password"
               autocomplete="current-password"
-              placeholder="Ingrese su contraseña"
+              placeholder="Ingrese su contrase&ntilde;a"
               required
             >
 
@@ -454,7 +454,7 @@
               type="button"
               class="password-toggle"
               id="togglePassword"
-              title="Mostrar contraseña"
+              title="Mostrar contrase&ntilde;a"
             >
               ver
             </button>
@@ -479,13 +479,13 @@
 
       <div class="connection">
         <span class="connection-dot"></span>
-        Sistema conectado en línea
+        Sistema conectado en l&iacute;nea
       </div>
 
     </div>
 
     <div class="footer">
-      ZIMA 360 · Sistema de Gestión
+      ZIMA 360 &middot; Sistema de Gesti&oacute;n
     </div>
 
   </div>
@@ -494,11 +494,11 @@
   <div class="login-success-modal" id="loginSuccessModal" aria-hidden="true">
     <div class="login-success-box" role="status" aria-live="polite">
       <div class="login-success-head">
-        <div class="login-success-icon">✓</div>
+        <div class="login-success-icon">&#10003;</div>
         <div>
           <div class="login-success-title">Acceso confirmado</div>
           <div class="login-success-text" id="loginSuccessText">
-            Validando sesión...
+            Validando sesi&oacute;n...
           </div>
         </div>
       </div>
@@ -515,12 +515,12 @@
 
   <div class="announcement-modal" id="announcementModal" aria-hidden="true">
     <div class="announcement-dialog" role="dialog" aria-modal="true" aria-label="Anuncio ZIMA 360">
-      <button class="announcement-close" type="button" id="announcementClose" aria-label="Cerrar anuncio">×</button>
+      <button class="announcement-close" type="button" id="announcementClose" aria-label="Cerrar anuncio">&times;</button>
       <img src="img/anuncio-renovacion-zima360.png" alt="ZIMA 360 nos renovamos. Nueva plataforma, mas intuitiva y facil de usar.">
     </div>
   </div>
 
-
+<script src="zima-ui.js"></script>
 <script>
 
 /* ============================================================
@@ -1004,7 +1004,7 @@ loginForm.addEventListener(
     if (!password) {
 
       mostrarMensaje(
-        "Ingrese la contraseña.",
+        "Ingrese la contrase\u00f1a.",
         "error"
       );
 
@@ -1117,7 +1117,7 @@ loginForm.addEventListener(
       mostrarMensaje(
         resultado.mensaje ||
         resultado.error ||
-        "Usuario o contraseña incorrectos.",
+        "Usuario o contrase\u00f1a incorrectos.",
         "error"
       );
 
@@ -1192,7 +1192,7 @@ window.addEventListener(
   } catch (e) {
 
     console.warn(
-      "No se pudo consultar la sesión local."
+      "No se pudo consultar la sesi\u00f3n local."
     );
 
   }

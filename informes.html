@@ -38,6 +38,8 @@
     .dot{width:8px;height:8px;border-radius:50%;background:var(--green)}
     .session-user{display:flex;align-items:center;gap:10px}
     .avatar{width:38px;height:38px;border-radius:50%;background:#111827;color:#fff;display:grid;place-items:center;font-weight:800;overflow:hidden}
+    .avatar.profile-trigger{border:0;cursor:pointer;padding:0}
+    .avatar.profile-trigger:hover{box-shadow:0 0 0 3px rgba(0,55,71,.16)}
     .avatar img{width:100%;height:100%;object-fit:cover;display:block}
     .user-meta strong,.user-meta span{display:block}
     .user-meta strong{font-size:13px}.user-meta span{font-size:11px;color:var(--muted)}
@@ -72,67 +74,137 @@
     .notice{margin:0 0 16px;padding:12px 14px;border-radius:8px;background:#fff7d6;border:1px solid #f6d86a;color:#6b5200;font-weight:700}
     .notice.error{background:#fff1f1;border-color:#f5b5b5;color:#8a1f1f}
     .footer{display:flex;gap:12px;color:#98a2b3;font-size:12px;margin-top:18px}
+    .profile-modal{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.42);padding:18px}
+    .profile-modal.open{display:flex}
+    .profile-dialog{width:min(520px,100%);background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.22);overflow:hidden}
+    .profile-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:18px 20px;border-bottom:1px solid var(--line)}
+    .profile-head h2{margin:0;font-size:18px}
+    .profile-head p{margin:5px 0 0;color:#667085;font-size:12px;line-height:1.45}
+    .profile-close{width:34px;height:34px;border:1px solid var(--line);background:#fff;border-radius:6px;display:grid;place-items:center;cursor:pointer}
+    .profile-form{padding:18px 20px 20px;display:grid;gap:12px}
+    .profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .profile-field{display:grid;gap:6px}
+    .profile-field label{font-size:10px;font-weight:900;color:#4b5563;text-transform:uppercase}
+    .profile-field input{height:40px;border:1px solid #cfd6df;border-radius:4px;padding:0 11px;background:#fff;color:#111;font-weight:600}
+    .profile-field input[type=file]{height:auto;padding:9px}
+    .profile-photo-row{display:flex;align-items:center;gap:12px}
+    .profile-preview{width:56px;height:56px;border-radius:50%;background:#111827;color:#fff;display:grid;place-items:center;font-weight:900;overflow:hidden;flex:0 0 56px}
+    .profile-preview img{width:100%;height:100%;object-fit:cover;display:block}
+    .profile-error{min-height:16px;color:#8a1f1f;font-size:12px;font-weight:700}
+    .profile-actions{display:flex;justify-content:flex-end;gap:9px}
     .print-cover{display:none}
+    body.reports-page .page{max-width:1280px;margin:0 auto}
+    body.reports-page .hero{background:#fff;border:1px solid var(--line);border-left:5px solid #003747;border-radius:6px;padding:20px 22px;margin-bottom:18px;box-shadow:0 1px 5px rgba(0,0,0,.12)}
+    body.reports-page .kicker{color:#003747;letter-spacing:.08em}
+    body.reports-page h1{font-size:28px;margin-top:4px}
+    body.reports-page .hero p{max-width:640px;font-size:14px;line-height:1.45;color:#4b5563}
+    body.reports-page .actions{justify-content:flex-end}
+    body.reports-page .btn{height:38px;border-radius:3px!important;box-shadow:none!important}
+    body.reports-page .btn.primary{background:#003747!important;border-color:#003747!important;color:#fff!important}
+    body.reports-page .btn.gold{background:#25d6ad!important;border-color:#25d6ad!important;color:#062229!important}
+    body.reports-page .field{height:38px;border-radius:3px!important;min-width:165px}
+    body.reports-page .metrics{grid-template-columns:repeat(4,minmax(180px,1fr));gap:12px;margin-bottom:14px}
+    body.reports-page .metric{position:relative;min-height:104px;border-radius:4px!important;padding:14px 16px;border-color:#dedede!important;box-shadow:0 1px 5px rgba(0,0,0,.12)!important;overflow:hidden}
+    body.reports-page .metric::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:#e7e7e7}
+    body.reports-page .metric:first-child::after{background:#25d6ad}
+    body.reports-page .metric:nth-child(2)::after{background:#ffb52d}
+    body.reports-page .metric span{font-size:11px;letter-spacing:.04em;color:#5d6670}
+    body.reports-page .metric strong{font-size:25px;line-height:1.1;color:#111}
+    body.reports-page .grid{grid-template-columns:minmax(0,1.25fr) minmax(320px,.75fr);gap:14px;align-items:start}
+    body.reports-page .panel{border-radius:4px!important;border-color:#dedede!important;box-shadow:0 1px 5px rgba(0,0,0,.12)!important}
+    body.reports-page .panel-head{min-height:50px;background:#fff;padding:13px 16px}
+    body.reports-page .panel-head strong{font-size:16px;color:#111}
+    body.reports-page .panel-head span{background:#efefef;border:1px solid #d6d6d6;border-radius:2px;padding:5px 8px;color:#111;font-size:12px;font-weight:700}
+    body.reports-page .table-wrap{max-height:280px;overflow:auto}
+    body.reports-page .page>section.panel .table-wrap{max-height:360px}
+    body.reports-page table{min-width:720px;table-layout:fixed}
+    body.reports-page .panel:nth-child(2) table{min-width:340px}
+    body.reports-page th{background:#f1f1f1!important;color:#111!important;font-size:11px;letter-spacing:0}
+    body.reports-page th{position:sticky;top:0;z-index:1}
+    body.reports-page td{color:#111}
+    body.reports-page th,body.reports-page td{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    body.reports-page td.money{color:#111!important;font-size:13px}
+    body.reports-page tbody tr:hover td{background:#f7fbfc}
+    body.reports-page .badge{border-radius:2px;padding:5px 8px}
+    body.reports-page .empty{padding:32px 18px}
+    @media(min-width:1001px){
+      body.reports-page .main{height:100vh;overflow:hidden}
+      body.reports-page .page{height:calc(100vh - 74px);display:flex;flex-direction:column;overflow:hidden;padding-bottom:18px!important}
+      body.reports-page .hero,
+      body.reports-page .metrics,
+      body.reports-page .grid,
+      body.reports-page #msg{flex:0 0 auto}
+      body.reports-page .grid .table-wrap{max-height:175px}
+      body.reports-page .page>section.panel:last-of-type{flex:1 1 auto;min-height:220px;display:flex;flex-direction:column;margin-top:14px!important}
+      body.reports-page .page>section.panel:last-of-type .table-wrap{flex:1 1 auto;max-height:none;min-height:0}
+    }
     @media(max-width:1000px){.sidebar{width:82px;padding:22px 10px}.brand-copy,.branch-card,.nav-title,.sidebar-bottom,.nav-item span:not(.nav-icon){display:none}.main{margin-left:82px}.metrics,.grid{grid-template-columns:1fr}}
-    @media(max-width:700px){.sidebar{inset:auto 0 0;width:100%;height:68px;padding:8px 10px;flex-direction:row}.brand-block,.sidebar-bottom{display:none}.main-nav{width:100%;display:flex;gap:4px}.nav-item{flex:1;justify-content:center;min-height:52px;padding:8px}.main{margin-left:0;padding-bottom:68px}.topbar{padding:0 14px}.user-meta{display:none}.page{padding:20px 14px}.hero{display:block}.actions{margin-top:14px}.metrics{grid-template-columns:1fr 1fr}}
+    @media(max-width:1100px){body.reports-page .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}body.reports-page .grid{grid-template-columns:1fr}}
+    @media(max-width:700px){.sidebar{inset:auto 0 0;width:100%;height:68px;padding:8px 10px;flex-direction:row}.brand-block,.sidebar-bottom{display:none}.main-nav{width:100%;display:flex;gap:4px}.nav-item{flex:1;justify-content:center;min-height:52px;padding:8px}.main{margin-left:0;padding-bottom:68px}.topbar{padding:0 14px}.user-meta{display:none}.page{padding:20px 14px}.hero{display:block}.actions{margin-top:14px}.metrics{grid-template-columns:1fr 1fr}body.reports-page .hero{padding:16px}body.reports-page .actions{display:grid;grid-template-columns:1fr;align-items:stretch}body.reports-page .actions .btn,body.reports-page .field{width:100%;justify-content:center}body.reports-page .metrics{grid-template-columns:1fr}body.reports-page h1{font-size:24px}.profile-grid{grid-template-columns:1fr}.profile-actions{flex-direction:column}.profile-actions .btn{width:100%;justify-content:center}}
     @media print{
-      @page{size:letter;margin:12mm}
+      @page{size:letter landscape;margin:5mm}
       *{print-color-adjust:exact;-webkit-print-color-adjust:exact}
-      body{background:#fff;color:#111827;font-size:10px}
+      body{background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:8.4px}
       .sidebar,.topbar,.hero,.actions,.filters,.notice,.footer{display:none!important}
-      .main{margin:0;min-height:auto}
+      .main{margin:0;min-height:auto;width:100%}
       .page{padding:0;background:#fff}
-      .print-cover{display:block;border:1px solid #111827;margin-bottom:10mm}
-      .print-head{display:grid;grid-template-columns:34mm 1fr 40mm;align-items:center;border-bottom:1px solid #111827;min-height:24mm}
-      .print-logo{display:grid;place-items:center;border-right:1px solid #111827;height:24mm}
-      .print-logo img{width:23mm;height:18mm;object-fit:contain}
-      .print-title{text-align:center;padding:3mm 5mm}
-      .print-title strong{display:block;font-size:15px;font-family:Arial,sans-serif}
-      .print-title span{display:block;font-size:10px;margin-top:2mm;text-transform:uppercase;letter-spacing:.4px}
-      .print-code{height:24mm;border-left:1px solid #111827;display:grid;place-items:center;text-align:center;font-weight:800}
-      .print-meta{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #111827}
-      .print-meta div{padding:3mm;border-right:1px solid #111827}
-      .print-meta div:last-child{border-right:0}
-      .print-meta span{display:block;font-size:8px;color:#475569;text-transform:uppercase;font-weight:800}
-      .print-summary{display:grid;grid-template-columns:repeat(4,1fr)}
-      .print-summary div{padding:4mm 3mm;border-right:1px solid #111827}
+      .print-cover{display:block;border:0;margin:0 0 2.5mm}
+      .print-head{display:grid;grid-template-columns:39mm 1fr 43mm;align-items:start;border:0;min-height:30mm}
+      .print-logo{display:grid;place-items:start;border:0;height:auto;padding-top:1mm}
+      .print-logo img{width:38mm;height:22mm;object-fit:contain}
+      .print-title{text-align:center;padding:2mm 5mm 0;color:#000}
+      .print-title::before{content:"CONCESION VIAL ANDINA";display:block;font-size:12px;font-weight:700;margin-bottom:3mm;text-transform:uppercase}
+      .print-title strong{display:block;font-size:12px;font-family:Arial,Helvetica,sans-serif;font-weight:700;text-transform:uppercase}
+      .print-title span{display:block;font-size:10px;margin-top:2mm;text-transform:uppercase;letter-spacing:0;font-weight:700}
+      .print-code{height:auto;border:0;display:block;text-align:right;font-size:8px;font-weight:700;padding-top:1mm;line-height:1.45}
+      .print-code::before{content:"Fecha de generaci\00f3n: " attr(data-generated);display:block;font-weight:400}
+      .print-meta{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:0;border:0;margin-top:0}
+      .print-meta div{padding:0 2mm 1.5mm 0;border:0;font-size:10px}
+      .print-meta span{display:inline;font-size:10px;color:#000;text-transform:none;font-weight:700}
+      .print-meta span::after{content:": "}
+      .print-meta strong{font-weight:400}
+      .print-summary{display:grid;grid-template-columns:repeat(4,1fr);border:0.7pt solid #004e46;margin-top:1mm}
+      .print-summary div{padding:1.8mm 2mm;border-right:0.7pt solid #004e46;background:#d8d8d8;text-align:center}
       .print-summary div:last-child{border-right:0}
-      .print-summary span{display:block;font-size:8px;text-transform:uppercase;color:#475569;font-weight:800}
-      .print-summary strong{font-size:13px}
+      .print-summary span{display:block;font-size:7.8px;text-transform:uppercase;color:#001c14;font-weight:700}
+      .print-summary strong{font-size:9px;color:#000}
       .metrics{display:none}
       .grid{display:block}
-      .panel{border:1px solid #111827;border-radius:0;margin:0 0 7mm;break-inside:avoid;overflow:visible}
-      .panel-head{padding:3mm 4mm;border-bottom:1px solid #111827}
-      .panel-head strong{font-size:12px;font-family:Arial,sans-serif}
-      .panel-head span{font-size:9px}
+      body.reports-page table{min-width:0!important;width:100%}
+      .panel{border:0!important;border-radius:0!important;margin:0 0 2.5mm;break-inside:avoid;overflow:visible;box-shadow:none!important}
+      .panel-head{padding:1.6mm 2mm;border:0.7pt solid #004e46;border-bottom:0;background:#7f7f7f!important;color:#001c14}
+      .panel-head strong{font-size:10px;font-family:Arial,Helvetica,sans-serif;text-transform:uppercase}
+      .panel-head span{font-size:8px;background:transparent!important;border:0!important;padding:0!important;color:#001c14!important}
       .table-wrap{overflow:visible}
-      th,td{padding:2.2mm 2.5mm;border-bottom:1px solid #cbd5e1;font-size:8.5px;white-space:normal}
-      th{background:#eef2f7;color:#111827;font-size:7.5px}
-      td.money{text-align:right}
-      .badge{border:1px solid #94a3b8;background:#fff!important;color:#111827!important;border-radius:2px;padding:1mm 1.5mm;font-size:7.5px}
+      th,td{padding:1.25mm 1.5mm;border:0.7pt solid #004e46!important;font-size:7.6px;line-height:1.15;white-space:normal;color:#000!important}
+      th{background:#a6a6a6!important;color:#001c14!important;font-size:7.4px;text-align:center;text-transform:uppercase}
+      td{background:#fff!important}
+      td:first-child,td:nth-child(2),td:nth-child(3){background:#d8d8d8!important;font-weight:700;color:#001c14!important}
+      td.money{text-align:right;font-weight:700}
+      .badge{border:0;background:transparent!important;color:#000!important;border-radius:0;padding:0;font-size:7.4px}
     }
   </style>
 </head>
-<body>
+<body class="reports-page">
   <div class="app">
     <aside class="sidebar">
       <div class="brand-block">
         <div class="brand-logo"><img src="logo-zima.png" alt="ZIMA"></div>
-        <div class="brand-copy"><strong>ZIMA 360</strong><span>GestiÃ³n de planillas</span></div>
+        <div class="brand-copy"><strong>ZIMA 360</strong><span>GESTION DE PLANILLAS</span></div>
       </div>
       <div class="branch-card">
         <div class="branch-label">Peaje activo</div>
-        <div class="branch-name" id="sidebarPeaje">AdministraciÃ³n central</div>
+        <div class="branch-name" id="sidebarPeaje">Administracion central</div>
       </div>
-      <nav class="main-nav" aria-label="NavegaciÃ³n principal">
-        <div class="nav-title">MENÃš PRINCIPAL</div>
+      <nav class="main-nav" aria-label="Navegacion principal">
+        <div class="nav-title">MENU PRINCIPAL</div>
         <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
         <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
         <a class="nav-item active" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
         <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
       </nav>
-      <div class="sidebar-bottom">ZIMA 360 Â· v1.0</div>
+      <div class="sidebar-bottom">ZIMA 360 - v1.0</div>
     </aside>
 
     <main class="main">
@@ -140,8 +212,8 @@
         <div class="breadcrumb"><b>Informes</b> / Recaudo mensual</div>
         <div class="session-user">
           <div class="status"><span class="dot"></span><span id="syncLabel">Conectando...</span></div>
-          <div class="avatar" id="avatar">ZU</div>
-          <div class="user-meta"><strong id="headerUser">Usuario ZIMA</strong><span id="headerPeaje">AdministraciÃ³n central</span></div>
+          <button class="avatar profile-trigger" id="avatar" type="button" title="Ver perfil" aria-label="Ver perfil">ZU</button>
+          <div class="user-meta"><strong id="headerUser">Usuario ZIMA</strong><span id="headerPeaje">Administracion central</span></div>
           <button class="icon-btn zima-logout-button" type="button" title="Cerrar sesion" aria-label="Cerrar sesion" onclick="cerrarSesion()"><i data-lucide="log-out"></i></button>
         </div>
       </header>
@@ -175,7 +247,7 @@
           <div class="print-meta">
             <div><span>Periodo</span><strong id="printPeriodoMeta">--</strong></div>
             <div><span>Generado por</span><strong id="printUsuario">Usuario ZIMA</strong></div>
-            <div><span>Fecha generaciÃ³n</span><strong id="printFecha">--</strong></div>
+            <div><span>Fecha generacion</span><strong id="printFecha">--</strong></div>
           </div>
           <div class="print-summary">
             <div><span>Total recaudado</span><strong id="pTotal">$ 0</strong></div>
@@ -217,15 +289,59 @@
           <div class="panel-head"><strong>Detalle del mes</strong><span id="countDetalle">0 registros</span></div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>CÃ³digo</th><th>Fecha</th><th>Peaje</th><th>Entregado por</th><th>Recibe</th><th>Estado</th><th>Total</th><th>Tula</th><th>Billetes</th></tr></thead>
+              <thead><tr><th>Codigo</th><th>Fecha</th><th>Peaje</th><th>Entregado por</th><th>Recibe</th><th>Estado</th><th>Total</th><th>Tula</th><th>Billetes</th></tr></thead>
               <tbody id="tablaDetalle"><tr><td colspan="9" class="empty">Cargando informe...</td></tr></tbody>
             </table>
           </div>
         </section>
 
-        <footer class="footer"><span>ZIMA 360</span><span>Informes de recaudo</span><span>Â© 2026</span></footer>
+        <footer class="footer"><span>ZIMA 360</span><span>Informes de recaudo</span><span>&copy; 2026</span></footer>
       </div>
     </main>
+  </div>
+
+  <div class="profile-modal" id="profileModal" aria-hidden="true" onclick="cerrarPerfilDesdeFondo(event)">
+    <div class="profile-dialog" role="dialog" aria-modal="true" aria-labelledby="profileTitle" onclick="event.stopPropagation()">
+      <div class="profile-head">
+        <div>
+          <h2 id="profileTitle">Datos de perfil</h2>
+          <p>Consulta y actualiza tus datos cuando lo necesites.</p>
+        </div>
+        <button class="profile-close" id="profileClose" type="button" aria-label="Cerrar"><i data-lucide="x"></i></button>
+      </div>
+      <form class="profile-form" id="profileForm">
+        <div class="profile-field">
+          <label for="profileNombre">Nombre completo</label>
+          <input id="profileNombre" autocomplete="name" required>
+        </div>
+        <div class="profile-grid">
+          <div class="profile-field">
+            <label for="profileEmail">Correo</label>
+            <input id="profileEmail" type="email" autocomplete="email">
+          </div>
+          <div class="profile-field">
+            <label for="profileTelefono">Telefono</label>
+            <input id="profileTelefono" autocomplete="tel">
+          </div>
+        </div>
+        <div class="profile-field">
+          <label for="profileCargo">Cargo</label>
+          <input id="profileCargo" autocomplete="organization-title">
+        </div>
+        <div class="profile-photo-row">
+          <div class="profile-preview" id="profileFotoPreview">ZU</div>
+          <div class="profile-field">
+            <label for="profileFoto">Foto de perfil</label>
+            <input id="profileFoto" type="file" accept="image/*">
+          </div>
+        </div>
+        <div class="profile-error" id="profileError"></div>
+        <div class="profile-actions">
+          <button class="btn" id="profileCancel" type="button">Cerrar</button>
+          <button class="btn primary" id="profileSave" type="submit"><i data-lucide="save"></i> Guardar</button>
+        </div>
+      </form>
+    </div>
   </div>
 
   <script src="zima-ui.js"></script>
@@ -235,8 +351,10 @@
     const $=id=>document.getElementById(id);
     let allRows=[];
     let monthRows=[];
+    let PROFILE_FOTO_DATA='';
 
     function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
+    function textoLimpio(v){return window.ZimaUI&&ZimaUI.fixMojibake?ZimaUI.fixMojibake(v):v;}
     function money(v){const n=Number(v)||0;return '$ '+Math.round(n).toLocaleString('es-CO');}
     function numberValue(v){if(typeof v==='number')return isFinite(v)?v:0;const s=String(v??'').replace(/[^\d,.-]/g,'').replace(/\./g,'').replace(',','.');const n=Number(s);return isFinite(n)?n:0;}
     function normalizarEstado(v){const e=String(v||'').trim().toUpperCase();return e==='ENTREGADO'?'ENTREGADA':e;}
@@ -278,8 +396,12 @@
         user:s.usuario||s.user||localStorage.getItem('ZIMA_USER')||'',
         name:s.nombre||s.name||localStorage.getItem('ZIMA_USER_NAME')||s.usuario||'Usuario ZIMA',
         role:String(s.rol||s.role||localStorage.getItem('ZIMA_ROL')||'PEAJE').toUpperCase(),
-        peaje:s.peaje||s.office||localStorage.getItem('ZIMA_PEAJE')||'AdministraciÃ³n central',
-        foto:s.foto||s.FOTO||s.photo||''
+        peaje:s.peaje||s.office||localStorage.getItem('ZIMA_PEAJE')||'Administracion central',
+        foto:s.foto||s.FOTO||s.photo||localStorage.getItem('ZIMA360_FOTO')||'',
+        email:s.email||s.EMAIL||localStorage.getItem('ZIMA360_EMAIL')||'',
+        telefono:s.telefono||s.TELEFONO||localStorage.getItem('ZIMA360_TELEFONO')||'',
+        cargo:s.cargo||s.CARGO||localStorage.getItem('ZIMA360_CARGO')||'',
+        token:s.token||s.sessionToken||tokenLocal()
       };
     })();
 
@@ -317,14 +439,62 @@
       }
     }
 
+    async function apiPost(action,params={}){
+      const payload={action,...zimaSessionParams(),...params};
+      if(window.google&&google.script&&google.script.run)return onlineRun('apiPost',payload);
+      try{
+        const r=await fetch(API_URL,{method:'POST',redirect:'follow',cache:'no-store',headers:{'Content-Type':'text/plain;charset=utf-8',Accept:'application/json'},body:JSON.stringify(payload)});
+        if(!r.ok)throw new Error('HTTP '+r.status);
+        const data=JSON.parse(await r.text());
+        if(data&&data.ok===false)throw new Error(data.error||data.mensaje||'El servidor rechazo la operacion.');
+        return data;
+      }catch(e){
+        if(JSON.stringify(payload).length>6000){
+          await postViaHiddenForm(payload);
+          return {ok:true,nombre:payload.nombre,email:payload.email,telefono:payload.telefono,cargo:payload.cargo,foto:payload.foto};
+        }
+        const data=await jsonp(payload);
+        if(data&&data.ok===false)throw new Error(data.error||data.mensaje||'El servidor rechazo la operacion.');
+        return data;
+      }
+    }
+
+    function postViaHiddenForm(payload){
+      return new Promise(resolve=>{
+        const iframe=document.createElement('iframe');
+        const form=document.createElement('form');
+        const name='zimaPerfilPost_'+Date.now();
+        let done=false;
+        function finish(){if(done)return;done=true;setTimeout(()=>{form.remove();iframe.remove();},700);resolve({ok:true});}
+        iframe.name=name;
+        iframe.style.display='none';
+        iframe.onload=finish;
+        form.method='POST';
+        form.action=API_URL;
+        form.target=name;
+        form.style.display='none';
+        Object.keys(payload).forEach(key=>{
+          const input=document.createElement('input');
+          input.type='hidden';
+          input.name=key;
+          input.value=payload[key]==null?'':String(payload[key]);
+          form.appendChild(input);
+        });
+        document.body.appendChild(iframe);
+        document.body.appendChild(form);
+        form.submit();
+        setTimeout(finish,8000);
+      });
+    }
+
     function setupSession(){
-      $('headerUser').textContent=SESSION.name;
-      $('headerPeaje').textContent=SESSION.peaje;
-      $('sidebarPeaje').textContent=SESSION.peaje;
-      $('printUsuario').textContent=SESSION.name;
+      $('headerUser').textContent=textoLimpio(SESSION.name);
+      $('headerPeaje').textContent=textoLimpio(SESSION.peaje);
+      $('sidebarPeaje').textContent=textoLimpio(SESSION.peaje);
+      $('printUsuario').textContent=textoLimpio(SESSION.name);
       pintarAvatar($('avatar'),SESSION.foto,SESSION.name||SESSION.user);
       const peaje=String(SESSION.peaje||'').trim().toUpperCase();
-      const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
+      const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACI\u00d3N CENTRAL';
       document.querySelectorAll('.admin-only').forEach(el=>{el.style.display=(['ADMIN','ADMINISTRADOR'].includes(SESSION.role)&&peajeGlobal)?'flex':'none';});
     }
 
@@ -350,8 +520,129 @@
       if(perfil.nombre)SESSION.name=perfil.nombre;
       if(perfil.rol)SESSION.role=String(perfil.rol).toUpperCase();
       if(perfil.peaje)SESSION.peaje=perfil.peaje;
+      SESSION.email=String(perfil.email||perfil.EMAIL||SESSION.email||'').trim();
+      SESSION.telefono=String(perfil.telefono||perfil.TELEFONO||SESSION.telefono||'').trim();
+      SESSION.cargo=String(perfil.cargo||perfil.CARGO||SESSION.cargo||'').trim();
       SESSION.foto=foto;
+      try{
+        localStorage.setItem('ZIMA_USER_NAME',SESSION.name||'');
+        localStorage.setItem('ZIMA360_EMAIL',SESSION.email||'');
+        localStorage.setItem('ZIMA360_TELEFONO',SESSION.telefono||'');
+        localStorage.setItem('ZIMA360_CARGO',SESSION.cargo||'');
+        localStorage.setItem('ZIMA360_FOTO',SESSION.foto||'');
+      }catch(e){}
       setupSession();
+    }
+
+    function abrirPerfil(){
+      const modal=$('profileModal');
+      if(!modal)return;
+      $('profileNombre').value=SESSION.name||SESSION.user||'';
+      $('profileEmail').value=SESSION.email||'';
+      $('profileTelefono').value=SESSION.telefono||'';
+      $('profileCargo').value=SESSION.cargo||'';
+      PROFILE_FOTO_DATA=SESSION.foto||'';
+      $('profileFoto').value='';
+      $('profileError').textContent='';
+      pintarAvatar($('profileFotoPreview'),PROFILE_FOTO_DATA,SESSION.name||SESSION.user);
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+      setTimeout(()=>$('profileNombre').focus(),0);
+    }
+
+    function cerrarPerfil(){
+      const modal=$('profileModal');
+      if(!modal)return;
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+    }
+
+    function cerrarPerfilDesdeFondo(event){
+      if(event.target&&event.target.id==='profileModal')cerrarPerfil();
+    }
+
+    function leerFotoPerfil(file){
+      return new Promise((resolve,reject)=>{
+        if(!file){resolve(PROFILE_FOTO_DATA||'');return;}
+        if(!/^image\//.test(file.type||'')){reject(new Error('Seleccione una imagen valida.'));return;}
+        if(file.size>6*1024*1024){reject(new Error('La foto no debe pesar mas de 6 MB.'));return;}
+        const reader=new FileReader();
+        reader.onerror=()=>reject(new Error('No fue posible leer la foto.'));
+        reader.onload=()=>{
+          const img=new Image();
+          img.onerror=()=>reject(new Error('No fue posible procesar la foto.'));
+          img.onload=()=>{
+            function render(max,quality){
+              const scale=Math.min(1,max/Math.max(img.width,img.height));
+              const canvas=document.createElement('canvas');
+              canvas.width=Math.max(1,Math.round(img.width*scale));
+              canvas.height=Math.max(1,Math.round(img.height*scale));
+              canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+              return canvas.toDataURL('image/jpeg',quality);
+            }
+            let data=render(320,.76);
+            if(data.length>45000)data=render(240,.68);
+            if(data.length>45000)data=render(180,.6);
+            if(data.length>49000){reject(new Error('La foto sigue muy pesada. Pruebe con otra imagen.'));return;}
+            resolve(data);
+          };
+          img.src=String(reader.result||'');
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function setupPerfil(){
+      const avatar=$('avatar');
+      const close=$('profileClose');
+      const cancel=$('profileCancel');
+      const foto=$('profileFoto');
+      const form=$('profileForm');
+      if(avatar)avatar.addEventListener('click',abrirPerfil);
+      if(avatar)avatar.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();abrirPerfil();}});
+      if(close)close.addEventListener('click',cerrarPerfil);
+      if(cancel)cancel.addEventListener('click',cerrarPerfil);
+      document.addEventListener('keydown',event=>{if(event.key==='Escape')cerrarPerfil();});
+      if(foto)foto.addEventListener('change',async()=>{
+        try{
+          $('profileError').textContent='';
+          PROFILE_FOTO_DATA=await leerFotoPerfil(foto.files&&foto.files[0]);
+          pintarAvatar($('profileFotoPreview'),PROFILE_FOTO_DATA,$('profileNombre').value||SESSION.name||SESSION.user);
+        }catch(error){
+          foto.value='';
+          $('profileError').textContent=error.message||'No fue posible cargar la foto.';
+        }
+      });
+      if(form)form.addEventListener('submit',async event=>{
+        event.preventDefault();
+        const save=$('profileSave');
+        try{
+          PROFILE_FOTO_DATA=await leerFotoPerfil($('profileFoto').files&&$('profileFoto').files[0]);
+        }catch(error){
+          $('profileError').textContent=error.message||'No fue posible cargar la foto.';
+          return;
+        }
+        const payload={
+          token:SESSION.token||tokenLocal(),
+          nombre:$('profileNombre').value.trim(),
+          email:$('profileEmail').value.trim(),
+          telefono:$('profileTelefono').value.trim(),
+          cargo:$('profileCargo').value.trim(),
+          foto:PROFILE_FOTO_DATA
+        };
+        if(!payload.nombre){$('profileError').textContent='El nombre es obligatorio.';return;}
+        try{
+          $('profileError').textContent='';
+          save.disabled=true;
+          const perfil=await apiPost('actualizarperfil',payload);
+          guardarPerfilSesion({...payload,...perfil});
+          cerrarPerfil();
+        }catch(error){
+          $('profileError').textContent=error.message||'No fue posible guardar el perfil.';
+        }finally{
+          save.disabled=false;
+        }
+      });
     }
 
     async function refrescarPerfil(){
@@ -390,7 +681,9 @@
       $('mEntregadas').textContent=entregadas;
       $('printPeriodo').textContent=ym;
       $('printPeriodoMeta').textContent=periodo;
-      $('printFecha').textContent=new Date().toLocaleString('es-CO');
+      const fechaGeneracion=new Date().toLocaleString('es-CO');
+      $('printFecha').textContent=fechaGeneracion;
+      $('printPeriodo').setAttribute('data-generated',fechaGeneracion);
       $('pTotal').textContent=money(total);
       $('pTula').textContent=money(tula);
       $('pPlanillas').textContent=monthRows.length;
@@ -407,6 +700,7 @@
       const detalle=[...monthRows].sort((a,b)=>String(a.fecha||'').localeCompare(String(b.fecha||'')));
       $('countDetalle').textContent=detalle.length+' registros';
       $('tablaDetalle').innerHTML=detalle.length?detalle.map(r=>'<tr><td>'+esc(r.codigo||r.id||'')+'</td><td>'+esc(String(r.fecha||'').slice(0,10))+'</td><td>'+esc(r.peaje||'')+'</td><td>'+esc(r.entregadoNombre||'')+'</td><td>'+esc(r.recibe||'')+'</td><td>'+badge(r.estado)+'</td><td class="money">'+money(numberValue(r.total))+'</td><td class="money">'+money(numberValue(r.tula))+'</td><td class="money">'+money(numberValue(r.billetes))+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">Sin datos para el mes seleccionado.</td></tr>';
+      if(window.ZimaUI&&ZimaUI.repairVisibleText)ZimaUI.repairVisibleText();
     }
 
     async function cargar(){
@@ -420,7 +714,7 @@
         $('msg').innerHTML='';
         $('syncLabel').textContent='Conectado';
       }catch(e){
-        $('syncLabel').textContent='Sin conexiÃ³n';
+        $('syncLabel').textContent='Sin conexion';
         $('msg').innerHTML='<div class="notice error">'+esc(e.message)+'</div>';
         render();
       }
@@ -449,6 +743,7 @@
       const now=new Date();
       $('mes').value=String(now.getFullYear()).padStart(4,'0')+'-'+String(now.getMonth()+1).padStart(2,'0');
       setupSession();
+      setupPerfil();
       $('mes').addEventListener('change',render);
       refrescarPerfil();
       cargar();

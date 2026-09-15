@@ -15,6 +15,70 @@
     });
   }
 
+  function fixMojibake(value) {
+    if (value == null) return value;
+    return String(value)
+      .replace(/\u00c2\u00bf/g, '\u00bf')
+      .replace(/\u00c2\u00a1/g, '\u00a1')
+      .replace(/\u00c2\u00a9/g, '\u00a9')
+      .replace(/\u00c2\u00b7/g, '\u00b7')
+      .replace(/\u00c3\u00a1/g, '\u00e1')
+      .replace(/\u00c3\u00a9/g, '\u00e9')
+      .replace(/\u00c3\u00ad/g, '\u00ed')
+      .replace(/\u00c3\u00b3/g, '\u00f3')
+      .replace(/\u00c3\u00ba/g, '\u00fa')
+      .replace(/\u00c3\u00b1/g, '\u00f1')
+      .replace(/\u00c3\u0081/g, '\u00c1')
+      .replace(/\u00c3\u0089/g, '\u00c9')
+      .replace(/\u00c3\u008d/g, '\u00cd')
+      .replace(/\u00c3\u0093/g, '\u00d3')
+      .replace(/\u00c3\u0161/g, '\u00da')
+      .replace(/\u00c3\u0091/g, '\u00d1');
+  }
+
+  function repairVisibleText(root) {
+    root = root || document.body;
+    if (!root) return;
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
+
+    textNodes.forEach(function (node) {
+      const fixed = fixMojibake(node.nodeValue);
+      if (fixed !== node.nodeValue) node.nodeValue = fixed;
+    });
+
+    document.querySelectorAll('[title],[aria-label],[alt],[placeholder],[value]').forEach(function (el) {
+      ['title', 'aria-label', 'alt', 'placeholder', 'value'].forEach(function (attr) {
+        if (!el.hasAttribute(attr)) return;
+        const current = el.getAttribute(attr);
+        const fixed = fixMojibake(current);
+        if (fixed !== current) el.setAttribute(attr, fixed);
+      });
+    });
+  }
+
+  function watchTextRepairs() {
+    if (!window.MutationObserver || !document.body || window.__zimaTextRepairObserver) return;
+    let scheduled = false;
+    window.__zimaTextRepairObserver = new MutationObserver(function () {
+      if (scheduled) return;
+      scheduled = true;
+      setTimeout(function () {
+        scheduled = false;
+        repairVisibleText();
+      }, 0);
+    });
+    window.__zimaTextRepairObserver.observe(document.body, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['title', 'aria-label', 'alt', 'placeholder', 'value']
+    });
+  }
+
   function notice(target, message, type) {
     const el = byId(target);
     if (!el) return;
@@ -66,18 +130,23 @@
     const style = document.createElement('style');
     style.id = 'zima-confirm-styles';
     style.textContent = [
-      '.zima-confirm-backdrop{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(8,17,30,.52);backdrop-filter:blur(5px)}',
+      '.zima-confirm-backdrop{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(8,17,30,.48);backdrop-filter:blur(6px)}',
       '.zima-confirm-backdrop.open{display:flex}',
-      '.zima-confirm-card{width:min(430px,100%);background:#fff;border:1px solid #dce5ee;border-radius:14px;box-shadow:0 26px 90px rgba(8,17,30,.28);overflow:hidden}',
-      '.zima-confirm-head{display:flex;align-items:center;gap:12px;padding:18px 20px 12px}',
-      '.zima-confirm-icon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#fff4db;color:#8a6200;font-weight:900;font-size:20px;flex:0 0 auto}',
-      '.zima-confirm-title{margin:0;font-size:18px;line-height:1.15;font-weight:900;color:#07182b}',
-      '.zima-confirm-body{padding:0 20px 18px;color:#526477;font-size:13px;line-height:1.5}',
-      '.zima-confirm-detail{margin-top:12px;padding:12px;border:1px solid #e6edf4;border-radius:10px;background:#f8fafc;color:#07182b;font-weight:800}',
-      '.zima-confirm-actions{display:flex;justify-content:flex-end;gap:10px;padding:14px 20px 18px;border-top:1px solid #edf2f7}',
-      '.zima-confirm-btn{border:1px solid #d6e0ea;background:#fff;border-radius:10px;padding:10px 14px;font-weight:850;cursor:pointer}',
-      '.zima-confirm-btn.primary{background:#003b49;border-color:#003b49;color:#fff}',
+      '.zima-confirm-card{width:min(460px,100%);background:#fff;border:1px solid #d9e1ea;border-radius:6px;box-shadow:0 24px 70px rgba(8,17,30,.26);overflow:hidden;color:#111}',
+      '.zima-confirm-card:before{content:"";display:block;height:5px;background:#003747}',
+      '.zima-confirm-head{display:flex;align-items:flex-start;gap:13px;padding:20px 22px 10px}',
+      '.zima-confirm-icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#fff0ef;color:#b42318;border:1px solid #f2c4bd;font-weight:900;font-size:20px;flex:0 0 auto}',
+      '.zima-confirm-title{margin:0;font-size:18px;line-height:1.18;font-weight:850;color:#101827}',
+      '.zima-confirm-body{padding:0 22px 18px;color:#46515f;font-size:13px;line-height:1.55}',
+      '.zima-confirm-message{max-width:390px}',
+      '.zima-confirm-detail{margin-top:13px;padding:11px 12px;border-left:4px solid #003747;background:#f6f8fa;color:#111;font-weight:800}',
+      '.zima-confirm-actions{display:flex;justify-content:flex-end;gap:9px;padding:14px 22px 20px;border-top:1px solid #edf1f5;background:#fbfcfe}',
+      '.zima-confirm-btn{min-height:38px;border:1px solid #cfd6df;background:#fff;border-radius:4px;padding:0 14px;font-weight:800;cursor:pointer;color:#111}',
+      '.zima-confirm-btn:hover{background:#f2f4f6}',
+      '.zima-confirm-btn.primary{background:#003747;border-color:#003747;color:#fff}',
+      '.zima-confirm-btn.primary:hover{background:#00485c}',
       '.zima-confirm-btn.danger{background:#b42318;border-color:#b42318;color:#fff}',
+      '.zima-confirm-btn.danger:hover{background:#9f1f16}',
       '.zima-confirm-btn:focus{outline:3px solid rgba(0,59,73,.22);outline-offset:2px}',
       '@media(max-width:560px){.zima-confirm-actions{flex-direction:column-reverse}.zima-confirm-btn{width:100%}}'
     ].join('');
@@ -93,8 +162,8 @@
       backdrop.className = 'zima-confirm-backdrop open';
       backdrop.setAttribute('aria-hidden', 'false');
 
-      const title = options.title || 'Confirmar acción';
-      const message = options.message || '¿Desea continuar?';
+      const title = options.title || 'Confirmar acci\u00f3n';
+      const message = options.message || '\u00bfDesea continuar?';
       const detail = options.detail || '';
       const confirmText = options.confirmText || 'Confirmar';
       const cancelText = options.cancelText || 'Cancelar';
@@ -107,7 +176,7 @@
             '<div><h2 class="zima-confirm-title" id="zimaConfirmTitle">' + escapeHtml(title) + '</h2></div>' +
           '</div>' +
           '<div class="zima-confirm-body">' +
-            '<div>' + escapeHtml(message) + '</div>' +
+            '<div class="zima-confirm-message">' + escapeHtml(message) + '</div>' +
             (detail ? '<div class="zima-confirm-detail">' + escapeHtml(detail) + '</div>' : '') +
           '</div>' +
           '<div class="zima-confirm-actions">' +
@@ -186,10 +255,10 @@
     options = options || {};
 
     return confirmDialog({
-      title: options.title || 'Cerrar sesion',
-      message: options.message || 'Confirme si desea cerrar la sesion actual de ZIMA 360.',
+      title: options.title || 'Cerrar sesi\u00f3n',
+      message: options.message || 'Confirme si desea cerrar la sesi\u00f3n actual de ZIMA 360.',
       detail: options.detail || '',
-      confirmText: options.confirmText || 'Cerrar sesion',
+      confirmText: options.confirmText || 'Cerrar sesi\u00f3n',
       cancelText: options.cancelText || 'Cancelar',
       danger: true
     }).then(function (ok) {
@@ -213,7 +282,19 @@
     confirm: confirmDialog,
     confirmLogout: confirmLogout,
     escapeHtml: escapeHtml,
+    fixMojibake: fixMojibake,
     notice: notice,
-    openModal: openModal
+    openModal: openModal,
+    repairVisibleText: repairVisibleText
   };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      repairVisibleText();
+      watchTextRepairs();
+    });
+  } else {
+    repairVisibleText();
+    watchTextRepairs();
+  }
 })();
