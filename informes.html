@@ -202,7 +202,6 @@
         <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
         <a class="nav-item active" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
-        <a class="nav-item" href="soporte.html"><span class="nav-icon"><i data-lucide="life-buoy"></i></span><span>Soporte</span></a>
         <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
       </nav>
       <div class="sidebar-bottom">ZIMA 360 - v1.0</div>
@@ -490,8 +489,8 @@
 
     function setupSession(){
       $('headerUser').textContent=textoLimpio(SESSION.name);
-      $('headerPeaje').textContent=textoLimpio(SESSION.peaje);
-      $('sidebarPeaje').textContent=textoLimpio(SESSION.peaje);
+      $('headerPeaje').textContent=ZimaUI.nombrePeaje(textoLimpio(SESSION.peaje));
+      $('sidebarPeaje').textContent=ZimaUI.nombrePeaje(textoLimpio(SESSION.peaje));
       $('printUsuario').textContent=textoLimpio(SESSION.name);
       pintarAvatar($('avatar'),SESSION.foto,SESSION.name||SESSION.user);
       const peaje=String(SESSION.peaje||'').trim().toUpperCase();
@@ -692,7 +691,7 @@
 
       const peajes=agrupar(monthRows,'peaje');
       $('countPeajes').textContent=peajes.length+' peajes';
-      $('tablaPeajes').innerHTML=peajes.length?peajes.map(p=>'<tr><td>'+esc(p.key)+'</td><td>'+p.planillas+'</td><td class="money">'+money(p.total)+'</td><td class="money">'+money(p.tula)+'</td><td class="money">'+money(p.billetes)+'</td><td>'+p.entregadas+'</td><td>'+p.cerradas+'</td></tr>').join(''):'<tr><td colspan="7" class="empty">Sin datos para el mes seleccionado.</td></tr>';
+      $('tablaPeajes').innerHTML=peajes.length?peajes.map(p=>'<tr><td>'+esc(ZimaUI.nombrePeaje(p.key))+'</td><td>'+p.planillas+'</td><td class="money">'+money(p.total)+'</td><td class="money">'+money(p.tula)+'</td><td class="money">'+money(p.billetes)+'</td><td>'+p.entregadas+'</td><td>'+p.cerradas+'</td></tr>').join(''):'<tr><td colspan="7" class="empty">Sin datos para el mes seleccionado.</td></tr>';
 
       const estados=agrupar(monthRows,'estado');
       $('countEstados').textContent=estados.length+' estados';
@@ -700,7 +699,7 @@
 
       const detalle=[...monthRows].sort((a,b)=>String(a.fecha||'').localeCompare(String(b.fecha||'')));
       $('countDetalle').textContent=detalle.length+' registros';
-      $('tablaDetalle').innerHTML=detalle.length?detalle.map(r=>'<tr><td>'+esc(r.codigo||r.id||'')+'</td><td>'+esc(String(r.fecha||'').slice(0,10))+'</td><td>'+esc(r.peaje||'')+'</td><td>'+esc(r.entregadoNombre||'')+'</td><td>'+esc(r.recibe||'')+'</td><td>'+badge(r.estado)+'</td><td class="money">'+money(numberValue(r.total))+'</td><td class="money">'+money(numberValue(r.tula))+'</td><td class="money">'+money(numberValue(r.billetes))+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">Sin datos para el mes seleccionado.</td></tr>';
+      $('tablaDetalle').innerHTML=detalle.length?detalle.map(r=>'<tr><td>'+esc(r.codigo||r.id||'')+'</td><td>'+esc(String(r.fecha||'').slice(0,10))+'</td><td>'+esc(ZimaUI.nombrePeaje(r.peaje))+'</td><td>'+esc(r.entregadoNombre||'')+'</td><td>'+esc(r.recibe||'')+'</td><td>'+badge(r.estado)+'</td><td class="money">'+money(numberValue(r.total))+'</td><td class="money">'+money(numberValue(r.tula))+'</td><td class="money">'+money(numberValue(r.billetes))+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">Sin datos para el mes seleccionado.</td></tr>';
       if(window.ZimaUI&&ZimaUI.repairVisibleText)ZimaUI.repairVisibleText();
     }
 

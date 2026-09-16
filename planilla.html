@@ -927,7 +927,6 @@ body.planilla-page .print-preview-backdrop{
         <a class="nav-item active" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
         <a class="nav-item" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
-        <a class="nav-item" href="soporte.html"><span class="nav-icon"><i data-lucide="life-buoy"></i></span><span>Soporte</span></a>
         <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
         
       </nav>
@@ -1330,16 +1329,16 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     const totalVisual=$('totalVisual');
     const letrasInput=$('letras');
     const msg=$('msg');
-    const CAMPOS_FIJOS=['peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','concepto','obsValor','letras','tula','billetes','observaciones','entregadoNombre','entregadoFirma','revisadoNombre','revisadoFirma'];
+    const CAMPOS_FIJOS=['peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','concepto','obsValor','letras','tula','billetes','entregadoFirma','revisadoNombre','revisadoFirma'];
     const DATOS_PEAJE={
       fragua:{
         ciudad:'Fragua',
-        lugarRecibo:'PEAJE FRAGUA',
+        lugarRecibo:'Peaje Fragua',
         entregadoNombre:'Marliza Tiziana Herazo Londoño'
       },
       zaragoza:{
         ciudad:'Zaragoza',
-        lugarRecibo:'PEAJE ZARAGOZA',
+        lugarRecibo:'Peaje Zaragoza',
         entregadoNombre:'Adriana Espitia'
       }
     };
@@ -1371,7 +1370,11 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     function aplicarDatosFijosPlanilla(){
       const ses=zimaSessionParams();
       const peajeActual=String(($('peaje')&&$('peaje').value)||ses.peaje||'').trim();
-      if($('peaje') && !id && peajeActual)$('peaje').value=peajeActual;
+      if($('peaje') && peajeActual){
+        // Conservar el identificador original para guardar y filtrar registros.
+        if(!$('peaje').dataset.peajeOriginal)$('peaje').dataset.peajeOriginal=peajeActual;
+        $('peaje').value=ZimaUI.nombrePeaje(peajeActual);
+      }
       if($('razon'))$('razon').value='CENTRO EFECTIVO';
       if($('moneda'))$('moneda').value='COP - Peso colombiano';
       if($('lugarEntrega'))$('lugarEntrega').value='CENTRO EFECTIVO';
@@ -1381,7 +1384,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       if(fijo){
         if($('ciudad'))$('ciudad').value=fijo.ciudad;
         if($('lugarRecibo'))$('lugarRecibo').value=fijo.lugarRecibo;
-        if($('entregadoNombre'))$('entregadoNombre').value=fijo.entregadoNombre;
+
       }
       if($('billetes'))$('billetes').value=formatCOP(0);
     }
@@ -1416,6 +1419,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         }
 
         aplicarDatosFijosPlanilla();
+        const fijo=datosFijosPorPeaje(peaje);
+        if(fijo && $('entregadoNombre'))$('entregadoNombre').value=fijo.entregadoNombre;
       }catch(_){
         // Si no hay sesión disponible, se mantiene el comportamiento actual.
       }
@@ -1520,6 +1525,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       const ids=['codigo','peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','fecha','concepto','obsValor','observaciones','entregadoNombre','entregadoFirma','revisadoNombre','revisadoFirma'];
       const d={};
       ids.forEach(x=>d[x]=$(x).value.trim());
+      d.peaje=$('peaje').dataset.peajeOriginal||d.peaje;
       d.total=parseMoney(totalInput.value);
       d.tula=parseMoney($('tula').value);
       d.billetes=parseMoney($('billetes').value);
@@ -1542,6 +1548,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         Object.keys(r.row).forEach(k=>{
           const e=$(k);
           if(!e)return;
+          if(k==='peaje')e.dataset.peajeOriginal=String(r.row[k]??'').trim();
           if(['total','tula','billetes'].includes(k))e.value=formatCOP(parseMoney(r.row[k]));
           else e.value=r.row[k]??'';
         });

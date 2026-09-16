@@ -1,4 +1,11 @@
 (function () {
+  function nombrePeaje(value) {
+    const text = String(value ?? '').trim();
+    if (/^(?:peaje\s+)?fragua$/i.test(text)) return 'Peaje Fragua';
+    if (/^(?:peaje\s+)?zaragoza$/i.test(text)) return 'Peaje Zaragoza';
+    return text;
+  }
+
   function byId(target) {
     return typeof target === 'string' ? document.getElementById(target) : target;
   }
@@ -284,195 +291,8 @@
     }
   }
 
-  function getSupportSession() {
-    const stored =
-      readJsonStorage('ZIMA360_SESION') ||
-      readJsonStorage('ZIMA_SESION') ||
-      readJsonStorage('ZIMA_SESSION') ||
-      {};
-
-    return {
-      usuario:
-        stored.usuario ||
-        stored.user ||
-        localStorage.getItem('ZIMA360_USUARIO') ||
-        localStorage.getItem('ZIMA_USUARIO') ||
-        '',
-      nombre:
-        stored.nombre ||
-        stored.name ||
-        localStorage.getItem('ZIMA360_NOMBRE') ||
-        localStorage.getItem('ZIMA_USER_NAME') ||
-        '',
-      rol:
-        stored.rol ||
-        stored.role ||
-        localStorage.getItem('ZIMA360_ROL') ||
-        localStorage.getItem('ZIMA_ROL') ||
-        '',
-      peaje:
-        stored.peaje ||
-        stored.office ||
-        localStorage.getItem('ZIMA360_PEAJE') ||
-        localStorage.getItem('ZIMA_PEAJE') ||
-        '',
-      email:
-        stored.email ||
-        localStorage.getItem('ZIMA360_EMAIL') ||
-        '',
-      token:
-        stored.token ||
-        stored.sessionToken ||
-        localStorage.getItem('ZIMA360_SESSION_TOKEN') ||
-        localStorage.getItem('ZIMA_SESSION_TOKEN') ||
-        localStorage.getItem('ZIMA_TOKEN') ||
-        ''
-    };
-  }
-
-  function buildSupportCapture(error, extra) {
-    extra = extra || {};
-    const session = getSupportSession();
-    const lines = [
-      'Fecha local: ' + new Date().toISOString(),
-      'Pagina: ' + location.href,
-      'Titulo pagina: ' + document.title,
-      'Usuario: ' + (session.usuario || ''),
-      'Nombre: ' + (session.nombre || ''),
-      'Rol: ' + (session.rol || ''),
-      'Peaje: ' + (session.peaje || ''),
-      'Navegador: ' + navigator.userAgent,
-      'Viewport: ' + window.innerWidth + 'x' + window.innerHeight,
-      'Online: ' + (navigator.onLine ? 'si' : 'no'),
-      'Tipo: ' + (extra.tipo || 'error'),
-      'Mensaje: ' + (extra.mensaje || (error && (error.message || error.reason)) || String(error || '')),
-      'Archivo: ' + (extra.filename || ''),
-      'Linea: ' + (extra.lineno || ''),
-      'Columna: ' + (extra.colno || ''),
-      '',
-      'Stack:',
-      (error && error.stack) || (extra.stack || '')
-    ];
-
-    return lines.join('\n');
-  }
-
-  function sendSupportReport(payload) {
-    const apiUrl =
-      localStorage.getItem('ZIMA_API_URL') ||
-      window.ZIMA_API_URL ||
-      '';
-
-    if (!apiUrl || apiUrl.indexOf('PEGA_AQUI') !== -1) {
-      return Promise.resolve({ ok: false, error: 'API no configurada' });
-    }
-
-    const body = JSON.stringify(payload);
-
-    try {
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(apiUrl, new Blob([body], { type: 'text/plain;charset=utf-8' }));
-      }
-    } catch (e) {}
-
-    return fetch(apiUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      keepalive: true,
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: body
-    }).catch(function () {
-      return { ok: false };
-    });
-  }
-
-  function reportSupport(error, options) {
-    options = options || {};
-    const session = getSupportSession();
-    const message =
-      options.mensaje ||
-      options.message ||
-      (error && (error.message || error.reason)) ||
-      String(error || 'Error no identificado');
-
-    const payload = {
-      action: 'soporte',
-      tipo: options.tipo || 'automatico',
-      titulo: options.titulo || options.title || 'Fallo detectado por el sistema',
-      mensaje: message,
-      pagina: location.href,
-      navegador: navigator.userAgent,
-      captura: options.captura || buildSupportCapture(error, options),
-      usuario: session.usuario,
-      nombre: session.nombre,
-      rol: session.rol,
-      peaje: session.peaje,
-      email: session.email,
-      token: session.token,
-      sessionToken: session.token
-    };
-
-    const signature = [
-      payload.tipo,
-      payload.mensaje,
-      payload.pagina
-    ].join('|').slice(0, 500);
-
-    try {
-      const lastSignature = sessionStorage.getItem('ZIMA_SUPPORT_LAST_SIGNATURE') || '';
-      const lastTime = Number(sessionStorage.getItem('ZIMA_SUPPORT_LAST_TIME') || 0);
-      if (lastSignature === signature && Date.now() - lastTime < 60000) {
-        return Promise.resolve({ ok: true, skipped: true });
-      }
-      sessionStorage.setItem('ZIMA_SUPPORT_LAST_SIGNATURE', signature);
-      sessionStorage.setItem('ZIMA_SUPPORT_LAST_TIME', String(Date.now()));
-    } catch (e) {}
-
-    try {
-      localStorage.setItem('ZIMA_SUPPORT_LAST', JSON.stringify(payload));
-    } catch (e) {}
-
-    const sending = sendSupportReport(payload);
-
-    if (options.redirect === true && !/soporte\.html/i.test(location.pathname)) {
-      setTimeout(function () {
-        const target = 'soporte.html?auto=1';
-        if (!/soporte\.html/i.test(location.pathname)) window.location.href = target;
-      }, options.delay || 450);
-    }
-
-    return sending;
-  }
-
-  function installSupportWatcher() {
-    if (window.__zimaSupportWatcher) return;
-    window.__zimaSupportWatcher = true;
-
-    window.addEventListener('error', function (event) {
-      if (event && event.target && event.target !== window && event.target !== document) return;
-      if (event && event.error && event.error.__zimaReported) return;
-      if (event && event.error) event.error.__zimaReported = true;
-      reportSupport(event && event.error || new Error(event && event.message || 'Error de interfaz'), {
-        tipo: 'javascript',
-        mensaje: event && event.message,
-        filename: event && event.filename,
-        lineno: event && event.lineno,
-        colno: event && event.colno
-      });
-    });
-
-    window.addEventListener('unhandledrejection', function (event) {
-      const reason = event && event.reason;
-      if (reason && reason.__zimaReported) return;
-      if (reason && typeof reason === 'object') reason.__zimaReported = true;
-      reportSupport(reason || new Error('Promesa rechazada'), {
-        tipo: 'promesa',
-        mensaje: reason && reason.message || String(reason || 'Promesa rechazada')
-      });
-    });
-  }
-
   window.ZimaUI = {
+    nombrePeaje: nombrePeaje,
     busy: busy,
     clearSession: clearSession,
     closeModal: closeModal,
@@ -482,20 +302,16 @@
     fixMojibake: fixMojibake,
     notice: notice,
     openModal: openModal,
-    repairVisibleText: repairVisibleText,
-    reportSupport: reportSupport,
-    sendSupportReport: sendSupportReport
+    repairVisibleText: repairVisibleText
   };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       repairVisibleText();
       watchTextRepairs();
-      installSupportWatcher();
     });
   } else {
     repairVisibleText();
     watchTextRepairs();
-    installSupportWatcher();
   }
 })();

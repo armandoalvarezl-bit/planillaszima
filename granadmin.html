@@ -174,7 +174,6 @@
         <a href="planilla.html"><i data-lucide="file-plus-2"></i><span>Nueva planilla</span></a>
         <a href="historial.html"><i data-lucide="history"></i><span>Historial</span></a>
         <a href="informes.html"><i data-lucide="bar-chart-3"></i><span>Informes</span></a>
-        <a href="soporte.html"><i data-lucide="life-buoy"></i><span>Soporte</span></a>
         <a class="active" href="granadmin.html"><i data-lucide="shield"></i><span>Gran admin</span></a>
       </nav>
       <div class="side-foot">Control de usuarios y permisos</div>
@@ -216,7 +215,6 @@
           <article class="metric"><span>Total usuarios</span><strong id="mTotal">0</strong></article>
           <article class="metric"><span>Activos</span><strong id="mActivos">0</strong></article>
           <article class="metric"><span>Admins</span><strong id="mAdmins">0</strong></article>
-          <article class="metric"><span>Soporte</span><strong id="mSoporte">0</strong></article>
         </section>
 
         <section class="grid">
@@ -357,27 +355,6 @@
           </section>
         </section>
 
-        <section class="panel support-panel">
-          <div class="panel-head">
-            <div class="toolbar">
-              <div>
-                <div class="kicker">Mesa de ayuda</div>
-                <h2>Reportes de soporte</h2>
-              </div>
-              <button class="btn" type="button" onclick="cargarSoporte()"><i data-lucide="refresh-cw"></i>Actualizar soporte</button>
-            </div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr><th>Fecha</th><th>Tipo</th><th>Asunto</th><th>Mensaje</th><th>Usuario</th><th>Pagina</th><th>Estado</th><th>Captura</th></tr>
-              </thead>
-              <tbody id="supportBody">
-                <tr><td class="empty" colspan="8">Cargando reportes...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
       </section>
     </main>
   </div>
@@ -387,7 +364,6 @@
     const API_URL='https://script.google.com/macros/s/AKfycbxrA58PXId5baP3sOXKJ2U71erwjfTC4SbRmNQ7p63KoSKLa--P3yFM1eWP1-GVf_XV7g/exec';
     let USUARIOS=[];
     let PEAJES=[];
-    let SOPORTE=[];
 
     function getStore(key){try{return localStorage.getItem(key)||sessionStorage.getItem(key)||'';}catch(e){return '';}}
     function leerSesion(){
@@ -722,7 +698,7 @@
       if(includeTodos) opciones.push('TODOS');
       PEAJES.forEach(peaje=>opciones.push(peaje));
       if(actual&&!opciones.some(item=>peajeKey(item)===peajeKey(actual))) opciones.push(actual);
-      select.innerHTML='<option value="">Seleccione peaje</option>'+opciones.map(peaje=>'<option value="'+esc(peaje)+'">'+esc(peaje)+'</option>').join('');
+      select.innerHTML='<option value="">Seleccione peaje</option>'+opciones.map(peaje=>'<option value="'+esc(peaje)+'">'+esc(ZimaUI.nombrePeaje(peaje))+'</option>').join('');
       if(actual) select.value=actual;
       if(!select.value&&PEAJES.length&&!includeTodos) select.value=PEAJES[0];
       if(!select.value&&includeTodos) select.value='TODOS';
@@ -765,7 +741,6 @@
       setText('mTotal',USUARIOS.length);
       setText('mActivos',USUARIOS.filter(u=>u.estado==='ACTIVO').length);
       setText('mAdmins',USUARIOS.filter(u=>['ADMIN','ADMINISTRADOR'].includes(u.rol)).length);
-      setText('mSoporte',SOPORTE.length);
       if(!rows.length){body.innerHTML='<tr><td class="empty" colspan="7">No hay usuarios para mostrar.</td></tr>';return;}
       body.innerHTML=rows.map(u=>{
         const next=u.estado==='ACTIVO'?'INACTIVO':'ACTIVO';
@@ -774,7 +749,7 @@
           <td><div class="user-cell"><div class="user-photo">${photoHtml(u.foto,u.nombre||u.usuario)}</div><strong>${esc(u.usuario)}</strong></div></td>
           <td>${esc(u.nombre)}</td>
           <td><span class="role">${esc(u.rol)}</span></td>
-          <td>${esc(u.peaje||'TODOS')}</td>
+          <td>${esc(ZimaUI.nombrePeaje(u.peaje||'TODOS'))}</td>
           <td>${esc(u.email||u.telefono||'--')}</td>
           <td><span class="pill ${esc(u.estado)}">${esc(u.estado)}</span></td>
           <td><div class="row-actions">
@@ -791,52 +766,6 @@
       if(isNaN(d.getTime())) return String(value||'--');
       return d.toLocaleString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
     }
-    function supportHost(value){
-      try{
-        const url=new URL(String(value||''),location.href);
-        return url.pathname.split('/').pop()||url.hostname;
-      }catch(e){
-        return String(value||'--');
-      }
-    }
-    function renderSoporte(){
-      const body=document.getElementById('supportBody');
-      setText('mSoporte',SOPORTE.length);
-      if(!body) return;
-      if(!SOPORTE.length){
-        body.innerHTML='<tr><td class="empty" colspan="8">No hay reportes de soporte todavia.</td></tr>';
-        return;
-      }
-      body.innerHTML=SOPORTE.map(item=>`<tr>
-        <td>${esc(formatDateTime(item.timestamp))}</td>
-        <td><span class="role">${esc(item.tipo||'manual')}</span></td>
-        <td>${esc(item.titulo||'Reporte')}</td>
-        <td><div class="support-message">${esc(item.mensaje||'--')}</div></td>
-        <td>${esc(item.nombre||item.usuario||'--')}</td>
-        <td>${esc(supportHost(item.pagina))}</td>
-        <td><span class="pill ACTIVO">${esc(item.estado||'ABIERTO')}</span></td>
-        <td><div class="support-capture" title="${esc(item.captura||'')}">${esc(item.captura||'--')}</div></td>
-      </tr>`).join('');
-    }
-    async function cargarSoporte(){
-      const body=document.getElementById('supportBody');
-      try{
-        if(body) body.innerHTML='<tr><td class="empty" colspan="8">Consultando reportes...</td></tr>';
-        let data;
-        try{
-          data=await apiGet('soportes');
-        }catch(firstError){
-          data=await apiGet('listasoporte');
-        }
-        SOPORTE=data.rows||[];
-        renderSoporte();
-      }catch(error){
-        const msg=String(error&&error.message||error||'');
-        const legacy=/GET no soportada|no soportad/i.test(msg);
-        if(body) body.innerHTML='<tr><td class="empty" colspan="8">'+esc(legacy?'El backend publicado aun no tiene activado el listado de soporte. Actualiza code.gs en Apps Script y vuelve a desplegar la Web App.':msg)+'</td></tr>';
-        notice(error.message||'No se pudieron cargar los reportes de soporte.','error');
-      }
-    }
     async function cargarUsuarios(){
       try{
         const body=document.getElementById('usersBody');
@@ -845,7 +774,6 @@
         USUARIOS=(data.usuarios||[]).map(normalizarUsuario);
         await cargarPeajes();
         renderUsuarios();
-        await cargarSoporte();
       }catch(error){
         document.getElementById('usersBody').innerHTML='<tr><td class="empty" colspan="7">'+esc(error.message||error)+'</td></tr>';
         notice(error.message||'No se pudieron cargar los usuarios.','error');
@@ -882,7 +810,7 @@
       document.getElementById('editPhotoFile').value='';
       document.getElementById('editPassword').value='';
       setText('editProfileTitle',u.nombre||u.usuario);
-      setText('editProfileMeta',(u.rol||'SIN ROL')+' - '+(u.peaje||'TODOS'));
+      setText('editProfileMeta',(u.rol||'SIN ROL')+' - '+ZimaUI.nombrePeaje(u.peaje||'TODOS'));
       setPhoto('editPhotoPreview',u.foto,u.nombre||u.usuario);
       document.getElementById('editName').focus();
     }

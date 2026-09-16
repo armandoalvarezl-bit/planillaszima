@@ -986,7 +986,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
         <a class="nav-item" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
-        <a class="nav-item" href="soporte.html"><span class="nav-icon"><i data-lucide="life-buoy"></i></span><span>Soporte</span></a>
         <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
         
       </nav>
@@ -1554,7 +1553,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       SESSION.telefono=String(perfil.telefono||perfil.TELEFONO||'').trim();
       SESSION.cargo=String(perfil.cargo||perfil.CARGO||'').trim();
       const displayName=SESSION.name||SESSION.user||'Usuario ZIMA';
-      const office=SESSION.office||'';
+      const office=ZimaUI.nombrePeaje(SESSION.office||'');
       pintarAvatar(document.querySelector('.avatar'),src,displayName);
       const profileStrong=document.querySelector('.profile-text strong');
       const profileSpan=document.querySelector('.profile-text span');
@@ -1770,7 +1769,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const total=rows.reduce((sum,item)=>sum+Number(item.total||0),0);
       setText('notificationStatus',status || (rows.length?'Actualizado':'Sin datos'));
       list.innerHTML=[
-        {icon:'database',title:'Planillas sincronizadas',text:`${rows.length} registros disponibles para ${SESSION.office || 'este acceso'}.`},
+        {icon:'database',title:'Planillas sincronizadas',text:`${rows.length} registros disponibles para ${ZimaUI.nombrePeaje(SESSION.office) || 'este acceso'}.`},
         {icon:'send',title:'Estados por revisar',text:`${entregadas} entregadas, ${cerradas} cerradas y ${borradores} en borrador.`},
         {icon:'wallet',title:'Valor administrado',text:`Acumulado visible: ${money(total)} COP.`}
       ].map(item=>`<div class="notification-item" role="menuitem">
@@ -1818,7 +1817,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         return false;
       }
 
-      const office=SESSION.office || (esAdministrador() ? 'Administraci\u00f3n central' : 'Peaje no asignado');
+      const office=ZimaUI.nombrePeaje(SESSION.office || (esAdministrador() ? 'Administraci\u00f3n central' : 'Peaje no asignado'));
       const displayName=SESSION.name || SESSION.user || 'Usuario ZIMA';
 
       setText('welcomeTitle',`Bienvenido, ${displayName}`);
