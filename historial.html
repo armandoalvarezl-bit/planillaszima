@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/png" href="img/logo.png">
   <title>ZIMA 360 &middot; Historial</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
@@ -441,6 +442,17 @@
     .pdf-dialog-subtitle{margin-top:3px;color:var(--muted);font-size:11px}
     .pdf-frame{width:100%;flex:1;border:0;background:#f5f7fa}
     .pdf-close{width:36px;height:36px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:17px}
+    .edit-modal{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,20,34,.62);backdrop-filter:blur(4px)}
+    .edit-modal.open{display:flex}
+    .edit-dialog{width:min(1220px,100%);height:min(920px,95vh);display:flex;flex-direction:column;overflow:hidden;background:#fff;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.30)}
+    .edit-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line);background:#fff}
+    .edit-dialog-title{font-weight:850}
+    .edit-dialog-subtitle{margin-top:3px;color:var(--muted);font-size:11px}
+    .edit-frame-wrap{position:relative;flex:1;min-height:0;background:#f5f7fa}
+    .edit-frame{width:100%;height:100%;border:0;background:#f5f7fa}
+    .edit-loading,.edit-saving{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;background:rgba(245,247,250,.88);color:#244e74;font-weight:800;z-index:2}
+    .edit-loading[hidden],.edit-saving[hidden]{display:none}
+    .edit-close{width:36px;height:36px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:17px}
 
     .footer {
       display: flex;
@@ -649,6 +661,10 @@
   .pdf-dialog{width:100%;height:100%;border-radius:0}
   .pdf-dialog-head{padding:11px 12px}
   .pdf-dialog-subtitle{display:none}
+  .edit-modal{padding:0}
+  .edit-dialog{width:100%;height:100%;border-radius:0}
+  .edit-dialog-head{padding:11px 12px}
+  .edit-dialog-subtitle{display:none}
 }
 @media(max-width:700px){
   .sidebar{inset:0 auto 0 0!important;width:293px!important;height:100vh!important;padding:28px 16px 18px!important;flex-direction:column!important;transform:translateX(-105%);transition:transform .22s ease;box-shadow:18px 0 45px rgba(0,0,0,.22);z-index:1002}
@@ -783,6 +799,29 @@
     </div>
   </div>
 
+  <div class="edit-modal" id="editModal" aria-hidden="true" onclick="cerrarEdicionDesdeFondo(event)">
+    <div class="edit-dialog" role="dialog" aria-modal="true" aria-labelledby="editTitle" onclick="event.stopPropagation()">
+      <div class="edit-dialog-head">
+        <div>
+          <div class="edit-dialog-title" id="editTitle">Editar planilla</div>
+          <div class="edit-dialog-subtitle">Realice los ajustes y guarde la actualización sin salir del historial.</div>
+        </div>
+        <button class="edit-close" type="button" title="Cerrar edición" aria-label="Cerrar edición" onclick="cerrarEdicion()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="edit-frame-wrap">
+        <div class="edit-loading" id="editLoading">
+          <span class="zima-spinner" aria-hidden="true"></span>
+          Cargando planilla...
+        </div>
+        <div class="edit-saving" id="editSaving" hidden>
+          <span class="zima-spinner" aria-hidden="true"></span>
+          Actualizando historial...
+        </div>
+        <iframe class="edit-frame" id="editFrame" title="Edición de planilla"></iframe>
+      </div>
+    </div>
+  </div>
+
   <div id="sessionModal" class="session-modal" onclick="cerrarModalSesionDesdeFondo(event)">
     <div class="session-box" onclick="event.stopPropagation()">
       <div class="session-head"><div class="session-avatar" id="sessionAvatar">ZU</div><div><strong>Sesi&oacute;n activa</strong><span>ZIMA 360 &middot; Historial y trazabilidad</span></div></div>
@@ -802,26 +841,82 @@
     async function apiGet(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiGet', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); try { return await zimaFetchGet(payload); } catch(fetchError) { return zimaJsonp(payload); } }
     const SESSION = (() => { let data = null; try { data = JSON.parse(localStorage.getItem('ZIMA360_SESION') || localStorage.getItem('ZIMA_SESION') || sessionStorage.getItem('ZIMA360_SESION') || sessionStorage.getItem('ZIMA_SESION') || 'null'); } catch(e) {} return { user:data?.usuario || data?.user || 'Usuario ZIMA', name:data?.nombre || data?.name || data?.usuario || 'Usuario ZIMA', role:data?.rol || data?.role || 'USUARIO', peaje:data?.peaje || data?.office || 'Administraci\u00f3n central', foto:data?.foto || data?.FOTO || data?.photo || '' }; })();
     function iniciales(name){ return String(name||'ZU').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'ZU'; }
-    function pintarAvatar(el,foto,nombre){ if(!el)return; const src=String(foto||'').trim(); if(src){ el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'" onerror="this.remove();this.parentElement.textContent=\''+esc(iniciales(nombre)).replace(/'/g,'')+'\'">'; }else{ el.textContent=iniciales(nombre); } }
+    function pintarAvatar(el,foto,nombre){ if(!el)return; const src=String(foto||'').trim(); const esFuenteImagen=/^(data:image\/|https?:\/\/|blob:)/i.test(src); if(src&&esFuenteImagen){ el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'">'; const image=el.querySelector('img'); if(image)image.addEventListener('error',function(){ el.textContent=iniciales(nombre); },{once:true}); }else{ el.textContent=iniciales(nombre); } }
     function guardarPerfilSesion(perfil){ perfil=perfil||{}; const foto=String(perfil.foto||perfil.FOTO||perfil.photo||'').trim(); if(perfil.nombre)SESSION.name=perfil.nombre; if(perfil.rol)SESSION.role=perfil.rol; if(perfil.peaje)SESSION.peaje=perfil.peaje; SESSION.foto=foto; setupSession(); }
     async function refrescarPerfil(){ try{ const data=await apiGet('perfil'); if(data&&data.ok!==false)guardarPerfilSesion(data); }catch(e){} }
     function esGranAdministradorSesion(){ const rol=String(SESSION.role||'').trim().toUpperCase(); const peaje=String(SESSION.peaje||'').trim().toUpperCase(); const peajeGlobal=peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL'; return (rol==='ADMIN'||rol==='ADMINISTRADOR')&&peajeGlobal; }
+    function puedeGestionarPlanillas(){ return esGranAdministradorSesion() || String(SESSION.role||'').trim().toUpperCase()==='PEAJE'; }
     function mostrarMenuAdmin(){ document.querySelectorAll('.admin-only').forEach(item=>{ item.style.display=esGranAdministradorSesion()?'flex':'none'; }); }
-    function setupSession(){ const name=SESSION.name || SESSION.user; const peaje=SESSION.peaje || 'Administraci\u00f3n central'; const h=document.getElementById('headerUser'), p=document.getElementById('headerPeaje'), a=document.getElementById('headerAvatar'), sp=document.getElementById('sidebarPeaje'); if(h) h.textContent=name; if(p) p.textContent=ZimaUI.nombrePeaje(peaje); if(sp) sp.textContent=ZimaUI.nombrePeaje(peaje); pintarAvatar(a,SESSION.foto,name); if(a){a.style.cursor='pointer';a.setAttribute('role','button');a.setAttribute('tabindex','0');a.setAttribute('title','Ver perfil');a.onclick=abrirModalSesion;a.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();abrirModalSesion();}};} }
-    function abrirModalSesion(){ const m=document.getElementById('sessionModal'); if(!m)return; const name=SESSION.name||SESSION.user||'Usuario ZIMA'; const peaje=SESSION.peaje||'Administracion central'; const av=document.getElementById('sessionAvatar'); pintarAvatar(av,SESSION.foto,name); document.getElementById('modalSessionUser').textContent=name; document.getElementById('modalSessionRole').textContent=SESSION.role||'USUARIO'; document.getElementById('modalSessionPeaje').textContent=ZimaUI.nombrePeaje(peaje); m.classList.add('open'); }
+    function setupSession(){ const name=SESSION.name || SESSION.user; const peaje=SESSION.peaje || 'Administraci\u00f3n central'; const h=document.getElementById('headerUser'), p=document.getElementById('headerPeaje'), a=document.getElementById('headerAvatar'), sp=document.getElementById('sidebarPeaje'); if(h) h.textContent=name; if(p) p.textContent=peaje; if(sp) sp.textContent=peaje; pintarAvatar(a,SESSION.foto,name); if(a){a.style.cursor='pointer';a.setAttribute('role','button');a.setAttribute('tabindex','0');a.setAttribute('title','Ver perfil');a.onclick=abrirModalSesion;a.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();abrirModalSesion();}};} }
+    function abrirModalSesion(){ const m=document.getElementById('sessionModal'); if(!m)return; const name=SESSION.name||SESSION.user||'Usuario ZIMA'; const peaje=SESSION.peaje||'Administracion central'; const av=document.getElementById('sessionAvatar'); pintarAvatar(av,SESSION.foto,name); document.getElementById('modalSessionUser').textContent=name; document.getElementById('modalSessionRole').textContent=SESSION.role||'USUARIO'; document.getElementById('modalSessionPeaje').textContent=peaje; m.classList.add('open'); }
     function cerrarModalSesion(){ const m=document.getElementById('sessionModal'); if(m)m.classList.remove('open'); }
     function cerrarModalSesionDesdeFondo(e){ if(e.target && e.target.id==='sessionModal') cerrarModalSesion(); }
     function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'<i class="bi bi-x-lg"></i>':'<i class="bi bi-list"></i>';toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');} }
     function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<i class="bi bi-list"></i>';toggle.setAttribute('aria-label','Abrir menú');} }
     function cerrarSesion(){ return ZimaUI.confirmLogout({detail:(SESSION.name||SESSION.user||'Usuario ZIMA') + (SESSION.peaje ? ' - ' + SESSION.peaje : '')}); }
     document.addEventListener('click',e=>{if(e.target.closest('.nav-item'))cerrarMenu();});
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarMenu();}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarEdicion();cerrarMenu();}});
     function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function normalizarEstado(v) { const e = String(v || '').trim().toUpperCase(); return e === 'ENTREGADO' ? 'ENTREGADA' : e } function statusClass(v) { const e = normalizarEstado(v); return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA', 'ANULADA'].includes(e) ? e : 'BORRADOR' }
     function textoNotificacion(r){ if(!r||!r.notificacion)return ''; if(r.notificacion.enviado)return ' Correo enviado a: '+esc(r.notificacion.destinatarios||'')+'.'; return ' No se envió correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.'; }
     async function apiPost(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
-    function editar(id) { if (!id) return; location.href = 'planilla.html?id=' + id; }
+    let currentEditId = '';
+    function editar(id) {
+      if (!id) return;
+      const decodedId = decodeURIComponent(id);
+      const row = allRows.find(x => String(x.id) === decodedId);
+      const modal = $('editModal');
+      const frame = $('editFrame');
+      const loading = $('editLoading');
+      const saving = $('editSaving');
+      if (!modal || !frame) return;
+      currentEditId = decodedId;
+      $('editTitle').textContent = 'Editar - ' + (row?.codigo || 'Planilla');
+      if (loading) loading.hidden = false;
+      if (saving) saving.hidden = true;
+      frame.onload = function(){ if (loading) loading.hidden = true; };
+      frame.src = 'planilla.html?id=' + id + '&edit=1&embed=historial';
+      ZimaUI.openModal(modal);
+    }
+    function cerrarEdicion() {
+      const frame = $('editFrame');
+      ZimaUI.closeModal('editModal');
+      if (frame) frame.src = 'about:blank';
+      currentEditId = '';
+      const loading = $('editLoading');
+      const saving = $('editSaving');
+      if (loading) loading.hidden = true;
+      if (saving) saving.hidden = true;
+    }
+    function cerrarEdicionDesdeFondo(e) { if (e.target && e.target.id === 'editModal') cerrarEdicion(); }
+    window.addEventListener('message', async function(event){
+      const data = event && event.data;
+      if (!data || data.source !== 'zima-planilla') return;
+      const saving = $('editSaving');
+      if (data.type === 'saving') {
+        if (saving) {
+          saving.hidden = false;
+          saving.lastChild.textContent = ' Actualizando planilla...';
+        }
+        return;
+      }
+      if (data.type === 'error') {
+        if (saving) saving.hidden = true;
+        ZimaUI.notice('msg', data.message || 'No fue posible actualizar la planilla.', 'error');
+        return;
+      }
+      if (data.type !== 'saved') return;
+      if (saving) saving.hidden = false;
+      try {
+        await cargar();
+        cerrarEdicion();
+        ZimaUI.notice('msg', 'Planilla actualizada correctamente. Código: ' + esc(data.codigo || 'sin código') + '.', 'success');
+      } catch (e) {
+        if (saving) saving.hidden = true;
+        ZimaUI.notice('msg', 'La planilla se actualizó, pero no se pudo refrescar el historial: ' + e.message, 'error');
+      }
+    });
     async function anular(id) {
-      if (!id || !esGranAdministradorSesion()) return;
+      if (!id || !puedeGestionarPlanillas()) return;
       const decodedId = decodeURIComponent(id);
       const row = allRows.find(x => String(x.id) === decodedId);
       const codigo = row?.codigo || 'esta planilla';
@@ -845,17 +940,43 @@
         ZimaUI.notice('msg', e.message, 'error');
       }
     }
+    async function restaurar(id) {
+      if (!id || !esGranAdministradorSesion()) return;
+      const decodedId = decodeURIComponent(id);
+      const row = allRows.find(x => String(x.id) === decodedId);
+      const codigo = row?.codigo || 'esta planilla';
+      const confirmar = await ZimaUI.confirm({
+        title: 'Restaurar planilla',
+        message: 'La planilla volverá al estado APROBADO y dejará de estar anulada.',
+        detail: 'Código: ' + codigo,
+        confirmText: 'Restaurar planilla',
+        cancelText: 'Cancelar'
+      });
+      if (!confirmar) return;
+      try {
+        ZimaUI.notice('msg', 'Restaurando planilla...');
+        const r = await apiPost('update', Object.assign({}, row, { id: decodedId, estado: 'APROBADO' }));
+        if (!r.ok) throw Error(r.error || r.message || 'No fue posible restaurar la planilla.');
+        allRows = allRows.map(x => String(x.id) === decodedId ? Object.assign({}, x, { estado: 'APROBADO', updatedAt: new Date().toISOString() }) : x);
+        render();
+        ZimaUI.notice('msg', 'Planilla restaurada correctamente.', 'success');
+      } catch (e) {
+        ZimaUI.notice('msg', e.message, 'error');
+      }
+    }
     function accionesFila(x) {
       const id = encodeURIComponent(x.id || '');
       const anulada = normalizarEstado(x.estado) === 'ANULADA';
       const admin = esGranAdministradorSesion();
+      const puedeGestionar = puedeGestionarPlanillas();
       return '<div class="row-actions">' +
         '<button class="action" title="Ver planilla" onclick="ver(\'' + id + '\')"><i class="bi bi-eye-fill"></i></button>' +
-        (admin ? '<button class="action" title="Editar / actualizar planilla" onclick="editar(\'' + id + '\')"><i class="bi bi-pencil-square"></i></button>' : '') +
-        (admin && !anulada ? '<button class="action" title="Anular planilla" onclick="anular(\'' + id + '\')"><i class="bi bi-x-octagon"></i></button>' : '') +
+        (puedeGestionar && (!anulada || admin) ? '<button class="action" title="Editar / actualizar planilla" onclick="editar(\'' + id + '\')"><i class="bi bi-pencil-square"></i></button>' : '') +
+        (admin && anulada ? '<button class="action" title="Restaurar planilla" onclick="restaurar(\'' + id + '\')"><i class="bi bi-arrow-counterclockwise"></i></button>' : '') +
+        (puedeGestionar && !anulada ? '<button class="action" title="Anular planilla" onclick="anular(\'' + id + '\')"><i class="bi bi-x-octagon"></i></button>' : '') +
       '</div>';
     }
-    let allRows = []; function render() { const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = allRows.filter(x => { const text = [x.codigo, ZimaUI.nombrePeaje(x.peaje), x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong></td><td>${esc(x.fecha || '')}</td><td>${esc(ZimaUI.nombrePeaje(x.peaje))}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
+    let allRows = []; function render() { const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = allRows.filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong></td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
     let currentPreviewId = '';
     function ver(id) { if (!id) return; const decodedId=decodeURIComponent(id); const row = allRows.find(x => String(x.id) === decodedId); const modal = $('pdfModal'); const frame = $('pdfFrame'); const loading=$('pdfLoading'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); if(loading)loading.hidden=false; frame.onload=function(){ if(loading)loading.hidden=true; }; if(currentPreviewId!==decodedId){ frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; currentPreviewId=decodedId; } ZimaUI.openModal(modal); }
     function cerrarPdf() { const frame = $('pdfFrame'); ZimaUI.closeModal('pdfModal'); if (frame) frame.src = 'about:blank'; currentPreviewId=''; const loading=$('pdfLoading'); if(loading)loading.hidden=true; }
@@ -866,6 +987,3 @@
 </body>
 
 </html>
-
-
-

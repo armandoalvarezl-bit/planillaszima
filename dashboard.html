@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111827">
+  <link rel="icon" type="image/png" href="img/logo.png">
   <title>ZIMA 360 &middot; Centro de Operaciones</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -955,6 +956,33 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .topbar .notification-icon svg{color:#9b7600!important;stroke:#9b7600!important}
 .topbar .notification-panel.open{display:block!important}
 </style>
+<style id="zima-welcome-modal-style">
+.zima-welcome-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(8,17,30,.58);backdrop-filter:blur(8px)}
+.zima-welcome-modal.open{display:flex}
+.zima-welcome-card{width:min(560px,100%);background:#fff;border:1px solid rgba(255,255,255,.72);border-radius:8px;box-shadow:0 28px 90px rgba(8,17,30,.34);overflow:hidden;color:#111827;position:relative}
+.zima-welcome-card::before{content:"";display:block;height:6px;background:linear-gradient(90deg,#003747 0%,#25d6ad 52%,#f7c600 100%)}
+.zima-welcome-body{padding:28px 30px 26px;text-align:center}
+.zima-welcome-logos{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:18px}
+.zima-welcome-logo{height:64px;width:96px;object-fit:contain;display:block}
+.zima-welcome-divider{width:1px;height:42px;background:#d8dee6}
+.zima-welcome-ani{height:58px;width:58px;object-fit:contain;display:block}
+.zima-welcome-kicker{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#006072;margin-bottom:9px}
+.zima-welcome-title{margin:0;font-family:Manrope,Inter,Arial,sans-serif;font-size:28px;line-height:1.12;letter-spacing:0;color:#101827}
+.zima-welcome-office{margin:14px auto 0;display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%;padding:9px 13px;border:1px solid #d9e2ea;background:#f7fafb;border-radius:4px;color:#003747;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
+.zima-welcome-office svg{width:16px;height:16px;flex:0 0 16px}
+.zima-welcome-message{margin:18px auto 0;max-width:430px;color:#4b5563;font-size:14px;line-height:1.55}
+.zima-welcome-actions{display:flex;justify-content:center;margin-top:22px}
+.zima-welcome-close{height:40px;border:1px solid #003747;background:#003747;color:#fff;border-radius:4px;padding:0 18px;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.zima-welcome-close:hover{background:#004a5d}
+.zima-welcome-close svg{width:16px;height:16px}
+@media(max-width:560px){
+  .zima-welcome-body{padding:24px 20px 22px}
+  .zima-welcome-title{font-size:23px}
+  .zima-welcome-logo{height:56px;width:84px}
+  .zima-welcome-ani{height:50px;width:50px}
+  .zima-welcome-office{font-size:11px;white-space:normal}
+}
+</style>
 </head>
 <body>
   <div class="app-shell">
@@ -1100,6 +1128,25 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <footer class="footer"><span>ZIMA 360</span><span>Plataforma de gesti&oacute;n y trazabilidad</span><span>&copy; 2026</span></footer>
       </div>
     </main>
+  </div>
+
+  <div class="zima-welcome-modal" id="zimaWelcomeModal" aria-hidden="true">
+    <div class="zima-welcome-card" role="dialog" aria-modal="true" aria-labelledby="zimaWelcomeTitle">
+      <div class="zima-welcome-body">
+        <div class="zima-welcome-logos" aria-hidden="true">
+          <img class="zima-welcome-logo" src="logo-zima.png" alt="">
+          <span class="zima-welcome-divider"></span>
+          <img class="zima-welcome-ani" src="logo-ani.png" alt="">
+        </div>
+        <div class="zima-welcome-kicker">Ingreso confirmado</div>
+        <h2 class="zima-welcome-title" id="zimaWelcomeTitle">Bienvenido a ZIMA 360</h2>
+        <div class="zima-welcome-office"><i data-lucide="map-pin"></i><span id="zimaWelcomeOffice">Peaje activo</span></div>
+        <p class="zima-welcome-message" id="zimaWelcomeMessage">Que tengas un excelente turno y un trabajo seguro, ordenado y eficiente.</p>
+        <div class="zima-welcome-actions">
+          <button class="zima-welcome-close" id="zimaWelcomeClose" type="button"><i data-lucide="check-circle-2"></i> Continuar</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="profile-modal" id="profileModal" aria-hidden="true">
@@ -1523,7 +1570,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
     function go(page){location.href=page;}
-    function normalizarEstado(v){const e=String(v||'').trim().toUpperCase();return e==='ENTREGADO'?'ENTREGADA':e;}
+    function obtenerEstado(row){return row?.estado ?? row?.ESTADO ?? row?.status ?? row?.estatus ?? '';}
+    function normalizarEstado(v){const e=String(v||'').trim().toUpperCase();if(e==='ENTREGADO')return 'ENTREGADA';if(e==='CERRADO')return 'CERRADA';return e;}
     function statusClass(v){const e=normalizarEstado(v);return ['BORRADOR','APROBADO','ENTREGADA','CERRADA','ANULADA'].includes(e)?e:'BORRADOR';}
 
     function iniciales(nombre){
@@ -1535,8 +1583,15 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     function pintarAvatar(el,foto,nombre){
       if(!el) return;
       const src=String(foto||'').trim();
-      if(src){
-        el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'" onerror="this.remove();this.parentElement.textContent=\''+esc(iniciales(nombre)).replace(/'/g,'')+'\'">';
+      const esFuenteImagen=/^(data:image\/|https?:\/\/|blob:)/i.test(src);
+      if(src && esFuenteImagen){
+        el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'">';
+        const image=el.querySelector('img');
+        if(image){
+          image.addEventListener('error',function(){
+            el.textContent=iniciales(nombre);
+          },{once:true});
+        }
       }else{
         el.textContent=iniciales(nombre);
       }
@@ -1553,7 +1608,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       SESSION.telefono=String(perfil.telefono||perfil.TELEFONO||'').trim();
       SESSION.cargo=String(perfil.cargo||perfil.CARGO||'').trim();
       const displayName=SESSION.name||SESSION.user||'Usuario ZIMA';
-      const office=ZimaUI.nombrePeaje(SESSION.office||'');
+      const office=SESSION.office||'';
       pintarAvatar(document.querySelector('.avatar'),src,displayName);
       const profileStrong=document.querySelector('.profile-text strong');
       const profileSpan=document.querySelector('.profile-text span');
@@ -1763,13 +1818,13 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const list=document.getElementById('notificationList');
       if(!list) return;
       const rows=Array.isArray(data)?data:[];
-      const entregadas=rows.filter(x=>normalizarEstado(x.estado)==='ENTREGADA').length;
-      const cerradas=rows.filter(x=>normalizarEstado(x.estado)==='CERRADA').length;
-      const borradores=rows.filter(x=>normalizarEstado(x.estado)==='BORRADOR').length;
+      const entregadas=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='ENTREGADA').length;
+      const cerradas=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='CERRADA').length;
+      const borradores=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='BORRADOR').length;
       const total=rows.reduce((sum,item)=>sum+Number(item.total||0),0);
       setText('notificationStatus',status || (rows.length?'Actualizado':'Sin datos'));
       list.innerHTML=[
-        {icon:'database',title:'Planillas sincronizadas',text:`${rows.length} registros disponibles para ${ZimaUI.nombrePeaje(SESSION.office) || 'este acceso'}.`},
+        {icon:'database',title:'Planillas sincronizadas',text:`${rows.length} registros disponibles para ${SESSION.office || 'este acceso'}.`},
         {icon:'send',title:'Estados por revisar',text:`${entregadas} entregadas, ${cerradas} cerradas y ${borradores} en borrador.`},
         {icon:'wallet',title:'Valor administrado',text:`Acumulado visible: ${money(total)} COP.`}
       ].map(item=>`<div class="notification-item" role="menuitem">
@@ -1804,6 +1859,61 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       renderNotifications([], 'Listo');
     }
 
+    function cerrarBienvenidaIngreso(){
+      const modal=document.getElementById('zimaWelcomeModal');
+      if(!modal) return;
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+      document.body.style.overflow='';
+    }
+
+    function mostrarBienvenidaIngreso(){
+      const modal=document.getElementById('zimaWelcomeModal');
+      if(!modal || !tieneSesion()) return;
+
+      try{
+        if(sessionStorage.getItem('ZIMA_SHOW_WELCOME')!=='1') return;
+        sessionStorage.removeItem('ZIMA_SHOW_WELCOME');
+      }catch(e){
+        return;
+      }
+
+      const displayName=SESSION.name || SESSION.user || 'Usuario ZIMA';
+      const office=SESSION.office || (esAdministrador() ? 'Administracion central' : 'Peaje no asignado');
+      const title=document.getElementById('zimaWelcomeTitle');
+      const officeEl=document.getElementById('zimaWelcomeOffice');
+      const message=document.getElementById('zimaWelcomeMessage');
+      const close=document.getElementById('zimaWelcomeClose');
+
+      if(title) title.textContent='Bienvenido, '+displayName;
+      if(officeEl) officeEl.textContent=office;
+      if(message) message.textContent='Que tengas un excelente turno en '+office+'. Te deseamos un trabajo seguro, ordenado y eficiente.';
+
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+      document.body.style.overflow='hidden';
+
+      if(close) close.focus();
+      if(window.lucide && typeof lucide.createIcons === 'function'){
+        lucide.createIcons({attrs:{"stroke-width":1.9}});
+      }
+
+      window.clearTimeout(window.__zimaWelcomeTimer);
+      window.__zimaWelcomeTimer=window.setTimeout(cerrarBienvenidaIngreso,6500);
+    }
+
+    document.addEventListener('click',function(event){
+      const modal=document.getElementById('zimaWelcomeModal');
+      if(!modal || !modal.classList.contains('open')) return;
+      if(event.target===modal || event.target.closest('#zimaWelcomeClose')){
+        cerrarBienvenidaIngreso();
+      }
+    });
+
+    document.addEventListener('keydown',function(event){
+      if(event.key==='Escape') cerrarBienvenidaIngreso();
+    });
+
     function setupSession(){
       if(!tieneSesion()){
         setText('welcomeTitle','Sesi\u00f3n no disponible');
@@ -1817,7 +1927,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         return false;
       }
 
-      const office=ZimaUI.nombrePeaje(SESSION.office || (esAdministrador() ? 'Administraci\u00f3n central' : 'Peaje no asignado'));
+      const office=SESSION.office || (esAdministrador() ? 'Administraci\u00f3n central' : 'Peaje no asignado');
       const displayName=SESSION.name || SESSION.user || 'Usuario ZIMA';
 
       setText('welcomeTitle',`Bienvenido, ${displayName}`);
@@ -1980,8 +2090,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         setText('n',data.length);
         setText('t',money(total));
         setText('monthTotal',money(currentMonthTotal));
-        setText('e',data.filter(x=>normalizarEstado(x.estado)==='ENTREGADA').length);
-        setText('c',data.filter(x=>normalizarEstado(x.estado)==='CERRADA').length);
+        setText('e',data.filter(x=>normalizarEstado(obtenerEstado(x))==='ENTREGADA').length);
+        setText('c',data.filter(x=>normalizarEstado(obtenerEstado(x))==='CERRADA').length);
         renderChart(data);
         renderNotifications(data, 'Actualizado');
         msg.innerHTML='';
@@ -2005,8 +2115,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           setText('n',data.length);
           setText('t',money(total));
           setText('monthTotal',money(currentMonthTotal));
-          setText('e',data.filter(x=>normalizarEstado(x.estado)==='ENTREGADA').length);
-          setText('c',data.filter(x=>normalizarEstado(x.estado)==='CERRADA').length);
+          setText('e',data.filter(x=>normalizarEstado(obtenerEstado(x))==='ENTREGADA').length);
+          setText('c',data.filter(x=>normalizarEstado(obtenerEstado(x))==='CERRADA').length);
           renderChart(data);
           renderNotifications(data, 'Conectado');
           msg.innerHTML='';
@@ -2025,11 +2135,10 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     setupNotifications();
     setupPerfilModal();
     if(setupSession()){
+      mostrarBienvenidaIngreso();
       refrescarFotoPerfil();
       cargar();
     }
   </script>
 </body>
 </html>
-
-

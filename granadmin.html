@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="img/logo.png">
   <title>ZIMA 360 - Gran Administrador</title>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -698,7 +699,7 @@
       if(includeTodos) opciones.push('TODOS');
       PEAJES.forEach(peaje=>opciones.push(peaje));
       if(actual&&!opciones.some(item=>peajeKey(item)===peajeKey(actual))) opciones.push(actual);
-      select.innerHTML='<option value="">Seleccione peaje</option>'+opciones.map(peaje=>'<option value="'+esc(peaje)+'">'+esc(ZimaUI.nombrePeaje(peaje))+'</option>').join('');
+      select.innerHTML='<option value="">Seleccione peaje</option>'+opciones.map(peaje=>'<option value="'+esc(peaje)+'">'+esc(peaje)+'</option>').join('');
       if(actual) select.value=actual;
       if(!select.value&&PEAJES.length&&!includeTodos) select.value=PEAJES[0];
       if(!select.value&&includeTodos) select.value='TODOS';
@@ -749,7 +750,7 @@
           <td><div class="user-cell"><div class="user-photo">${photoHtml(u.foto,u.nombre||u.usuario)}</div><strong>${esc(u.usuario)}</strong></div></td>
           <td>${esc(u.nombre)}</td>
           <td><span class="role">${esc(u.rol)}</span></td>
-          <td>${esc(ZimaUI.nombrePeaje(u.peaje||'TODOS'))}</td>
+          <td>${esc(u.peaje||'TODOS')}</td>
           <td>${esc(u.email||u.telefono||'--')}</td>
           <td><span class="pill ${esc(u.estado)}">${esc(u.estado)}</span></td>
           <td><div class="row-actions">
@@ -760,11 +761,6 @@
         </tr>`;
       }).join('');
       if(window.lucide) lucide.createIcons({attrs:{"stroke-width":1.9}});
-    }
-    function formatDateTime(value){
-      const d=new Date(value);
-      if(isNaN(d.getTime())) return String(value||'--');
-      return d.toLocaleString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
     }
     async function cargarUsuarios(){
       try{
@@ -810,7 +806,7 @@
       document.getElementById('editPhotoFile').value='';
       document.getElementById('editPassword').value='';
       setText('editProfileTitle',u.nombre||u.usuario);
-      setText('editProfileMeta',(u.rol||'SIN ROL')+' - '+ZimaUI.nombrePeaje(u.peaje||'TODOS'));
+      setText('editProfileMeta',(u.rol||'SIN ROL')+' - '+(u.peaje||'TODOS'));
       setPhoto('editPhotoPreview',u.foto,u.nombre||u.usuario);
       document.getElementById('editName').focus();
     }

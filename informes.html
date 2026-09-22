@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" type="image/png" href="img/logo.png">
   <title>ZIMA 360 | Informes mensuales</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -144,14 +145,15 @@
     @media print{
       @page{size:letter landscape;margin:5mm}
       *{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+      html,body{width:auto!important;height:auto!important;overflow:visible!important}
       body{background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:8.4px}
       .sidebar,.topbar,.hero,.actions,.filters,.notice,.footer{display:none!important}
-      .main{margin:0;min-height:auto;width:100%}
-      .page{padding:0;background:#fff}
+      .main{margin:0!important;min-height:auto!important;width:100%!important;height:auto!important;overflow:visible!important}
+      .page{max-width:none!important;height:auto!important;display:block!important;overflow:visible!important;padding:0!important;background:#fff}
       .print-cover{display:block;border:0;margin:0 0 2.5mm}
-      .print-head{display:grid;grid-template-columns:39mm 1fr 43mm;align-items:start;border:0;min-height:30mm}
+      .print-head{display:grid;grid-template-columns:38mm 1fr 48mm;align-items:start;border:0;min-height:24mm}
       .print-logo{display:grid;place-items:start;border:0;height:auto;padding-top:1mm}
-      .print-logo img{width:38mm;height:22mm;object-fit:contain}
+      .print-logo img{width:34mm;height:20mm;object-fit:contain}
       .print-title{text-align:center;padding:2mm 5mm 0;color:#000}
       .print-title::before{content:"CONCESION VIAL ANDINA";display:block;font-size:12px;font-weight:700;margin-bottom:3mm;text-transform:uppercase}
       .print-title strong{display:block;font-size:12px;font-family:Arial,Helvetica,sans-serif;font-weight:700;text-transform:uppercase}
@@ -169,19 +171,44 @@
       .print-summary span{display:block;font-size:7.8px;text-transform:uppercase;color:#001c14;font-weight:700}
       .print-summary strong{font-size:9px;color:#000}
       .metrics{display:none}
-      .grid{display:block}
-      body.reports-page table{min-width:0!important;width:100%}
-      .panel{border:0!important;border-radius:0!important;margin:0 0 2.5mm;break-inside:avoid;overflow:visible;box-shadow:none!important}
+      .grid{display:grid!important;grid-template-columns:minmax(0,2fr) minmax(0,.9fr)!important;gap:2.5mm!important;align-items:start!important;margin-bottom:2.5mm!important}
+      body.reports-page table{min-width:0!important;width:100%!important;table-layout:fixed!important;border-collapse:collapse!important}
+      .panel{border:0!important;border-radius:0!important;margin:0 0 2.5mm!important;break-inside:auto;page-break-inside:auto;overflow:visible!important;box-shadow:none!important}
+      .grid .panel{break-inside:avoid;page-break-inside:avoid;margin-bottom:0!important}
       .panel-head{padding:1.6mm 2mm;border:0.7pt solid #004e46;border-bottom:0;background:#7f7f7f!important;color:#001c14}
       .panel-head strong{font-size:10px;font-family:Arial,Helvetica,sans-serif;text-transform:uppercase}
       .panel-head span{font-size:8px;background:transparent!important;border:0!important;padding:0!important;color:#001c14!important}
-      .table-wrap{overflow:visible}
-      th,td{padding:1.25mm 1.5mm;border:0.7pt solid #004e46!important;font-size:7.6px;line-height:1.15;white-space:normal;color:#000!important}
-      th{background:#a6a6a6!important;color:#001c14!important;font-size:7.4px;text-align:center;text-transform:uppercase}
+      .table-wrap{max-height:none!important;overflow:visible!important}
+      thead{display:table-header-group}
+      tfoot{display:table-footer-group}
+      tr{break-inside:avoid;page-break-inside:avoid}
+      th,td{padding:1.1mm 1.2mm;border:0.7pt solid #004e46!important;font-size:7.2px;line-height:1.16;white-space:normal!important;overflow-wrap:anywhere;word-break:normal;color:#000!important;vertical-align:top}
+      th{position:static!important;background:#a6a6a6!important;color:#001c14!important;font-size:7px;text-align:center;text-transform:uppercase}
       td{background:#fff!important}
       td:first-child,td:nth-child(2),td:nth-child(3){background:#d8d8d8!important;font-weight:700;color:#001c14!important}
       td.money{text-align:right;font-weight:700}
       .badge{border:0;background:transparent!important;color:#000!important;border-radius:0;padding:0;font-size:7.4px}
+      .report-table col{width:auto}
+      .peajes-table col:nth-child(1){width:24%}
+      .peajes-table col:nth-child(2){width:10%}
+      .peajes-table col:nth-child(3),
+      .peajes-table col:nth-child(4),
+      .peajes-table col:nth-child(5){width:16%}
+      .peajes-table col:nth-child(6),
+      .peajes-table col:nth-child(7){width:9%}
+      .estados-table col:nth-child(1){width:46%}
+      .estados-table col:nth-child(2){width:22%}
+      .estados-table col:nth-child(3){width:32%}
+      .detalle-table th,.detalle-table td{font-size:6.8px;padding:1mm .9mm}
+      .detalle-table col:nth-child(1){width:11%}
+      .detalle-table col:nth-child(2){width:10%}
+      .detalle-table col:nth-child(3){width:14%}
+      .detalle-table col:nth-child(4){width:15%}
+      .detalle-table col:nth-child(5){width:13%}
+      .detalle-table col:nth-child(6){width:10%}
+      .detalle-table col:nth-child(7){width:10%}
+      .detalle-table col:nth-child(8){width:9%}
+      .detalle-table col:nth-child(9){width:8%}
     }
   </style>
 </head>
@@ -268,7 +295,8 @@
           <div class="panel">
             <div class="panel-head"><strong>Desglose por peaje</strong><span id="countPeajes">0 peajes</span></div>
             <div class="table-wrap">
-              <table>
+              <table class="report-table peajes-table">
+                <colgroup><col><col><col><col><col><col><col></colgroup>
                 <thead><tr><th>Peaje</th><th>Planillas</th><th>Total</th><th>Tula</th><th>Billetes</th><th>Entregadas</th><th>Cerradas</th></tr></thead>
                 <tbody id="tablaPeajes"><tr><td colspan="7" class="empty">Sin datos para el mes seleccionado.</td></tr></tbody>
               </table>
@@ -277,7 +305,8 @@
           <div class="panel">
             <div class="panel-head"><strong>Desglose por estado</strong><span id="countEstados">0 estados</span></div>
             <div class="table-wrap">
-              <table>
+              <table class="report-table estados-table">
+                <colgroup><col><col><col></colgroup>
                 <thead><tr><th>Estado</th><th>Planillas</th><th>Total</th></tr></thead>
                 <tbody id="tablaEstados"><tr><td colspan="3" class="empty">Sin datos.</td></tr></tbody>
               </table>
@@ -288,7 +317,8 @@
         <section class="panel" style="margin-top:18px">
           <div class="panel-head"><strong>Detalle del mes</strong><span id="countDetalle">0 registros</span></div>
           <div class="table-wrap">
-            <table>
+            <table class="report-table detalle-table">
+              <colgroup><col><col><col><col><col><col><col><col><col></colgroup>
               <thead><tr><th>Codigo</th><th>Fecha</th><th>Peaje</th><th>Entregado por</th><th>Recibe</th><th>Estado</th><th>Total</th><th>Tula</th><th>Billetes</th></tr></thead>
               <tbody id="tablaDetalle"><tr><td colspan="9" class="empty">Cargando informe...</td></tr></tbody>
             </table>
@@ -489,8 +519,8 @@
 
     function setupSession(){
       $('headerUser').textContent=textoLimpio(SESSION.name);
-      $('headerPeaje').textContent=ZimaUI.nombrePeaje(textoLimpio(SESSION.peaje));
-      $('sidebarPeaje').textContent=ZimaUI.nombrePeaje(textoLimpio(SESSION.peaje));
+      $('headerPeaje').textContent=textoLimpio(SESSION.peaje);
+      $('sidebarPeaje').textContent=textoLimpio(SESSION.peaje);
       $('printUsuario').textContent=textoLimpio(SESSION.name);
       pintarAvatar($('avatar'),SESSION.foto,SESSION.name||SESSION.user);
       const peaje=String(SESSION.peaje||'').trim().toUpperCase();
@@ -506,9 +536,11 @@
     function pintarAvatar(el,foto,nombre){
       if(!el)return;
       const src=String(foto||'').trim();
-      if(src){
-        const fallback=iniciales(nombre).replace(/'/g,'');
-        el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'" onerror="this.remove();this.parentElement.textContent=\''+fallback+'\'">';
+      const esFuenteImagen=/^(data:image\/|https?:\/\/|blob:)/i.test(src);
+      if(src&&esFuenteImagen){
+        el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'">';
+        const image=el.querySelector('img');
+        if(image)image.addEventListener('error',function(){ el.textContent=iniciales(nombre); },{once:true});
       }else{
         el.textContent=iniciales(nombre);
       }
@@ -683,7 +715,7 @@
       $('printPeriodoMeta').textContent=periodo;
       const fechaGeneracion=new Date().toLocaleString('es-CO');
       $('printFecha').textContent=fechaGeneracion;
-      $('printPeriodo').setAttribute('data-generated',fechaGeneracion);
+      document.querySelector('.print-code').setAttribute('data-generated',fechaGeneracion);
       $('pTotal').textContent=money(total);
       $('pTula').textContent=money(tula);
       $('pPlanillas').textContent=monthRows.length;
@@ -691,7 +723,7 @@
 
       const peajes=agrupar(monthRows,'peaje');
       $('countPeajes').textContent=peajes.length+' peajes';
-      $('tablaPeajes').innerHTML=peajes.length?peajes.map(p=>'<tr><td>'+esc(ZimaUI.nombrePeaje(p.key))+'</td><td>'+p.planillas+'</td><td class="money">'+money(p.total)+'</td><td class="money">'+money(p.tula)+'</td><td class="money">'+money(p.billetes)+'</td><td>'+p.entregadas+'</td><td>'+p.cerradas+'</td></tr>').join(''):'<tr><td colspan="7" class="empty">Sin datos para el mes seleccionado.</td></tr>';
+      $('tablaPeajes').innerHTML=peajes.length?peajes.map(p=>'<tr><td>'+esc(p.key)+'</td><td>'+p.planillas+'</td><td class="money">'+money(p.total)+'</td><td class="money">'+money(p.tula)+'</td><td class="money">'+money(p.billetes)+'</td><td>'+p.entregadas+'</td><td>'+p.cerradas+'</td></tr>').join(''):'<tr><td colspan="7" class="empty">Sin datos para el mes seleccionado.</td></tr>';
 
       const estados=agrupar(monthRows,'estado');
       $('countEstados').textContent=estados.length+' estados';
@@ -699,7 +731,7 @@
 
       const detalle=[...monthRows].sort((a,b)=>String(a.fecha||'').localeCompare(String(b.fecha||'')));
       $('countDetalle').textContent=detalle.length+' registros';
-      $('tablaDetalle').innerHTML=detalle.length?detalle.map(r=>'<tr><td>'+esc(r.codigo||r.id||'')+'</td><td>'+esc(String(r.fecha||'').slice(0,10))+'</td><td>'+esc(ZimaUI.nombrePeaje(r.peaje))+'</td><td>'+esc(r.entregadoNombre||'')+'</td><td>'+esc(r.recibe||'')+'</td><td>'+badge(r.estado)+'</td><td class="money">'+money(numberValue(r.total))+'</td><td class="money">'+money(numberValue(r.tula))+'</td><td class="money">'+money(numberValue(r.billetes))+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">Sin datos para el mes seleccionado.</td></tr>';
+      $('tablaDetalle').innerHTML=detalle.length?detalle.map(r=>'<tr><td>'+esc(r.codigo||r.id||'')+'</td><td>'+esc(String(r.fecha||'').slice(0,10))+'</td><td>'+esc(r.peaje||'')+'</td><td>'+esc(r.entregadoNombre||'')+'</td><td>'+esc(r.recibe||'')+'</td><td>'+badge(r.estado)+'</td><td class="money">'+money(numberValue(r.total))+'</td><td class="money">'+money(numberValue(r.tula))+'</td><td class="money">'+money(numberValue(r.billetes))+'</td></tr>').join(''):'<tr><td colspan="9" class="empty">Sin datos para el mes seleccionado.</td></tr>';
       if(window.ZimaUI&&ZimaUI.repairVisibleText)ZimaUI.repairVisibleText();
     }
 
@@ -752,4 +784,3 @@
   </script>
 </body>
 </html>
-

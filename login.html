@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="img/logo.png">
 
   <title>ZIMA 360 &middot; Iniciar sesi&oacute;n</title>
 
@@ -675,6 +676,8 @@ function irDashboard() {
 function programarAnuncioSistema(datos) {
 
   try {
+    sessionStorage.setItem("ZIMA_SHOW_WELCOME", "1");
+
     if (!esAdminLogin(datos)) {
       sessionStorage.setItem("ZIMA_SHOW_ANNOUNCEMENT", "1");
     } else {
