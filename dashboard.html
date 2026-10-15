@@ -1,11 +1,10 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#111827">
-  <link rel="icon" type="image/png" href="img/logo.png">
-  <title>ZIMA 360 &middot; Centro de Operaciones</title>
+  <title>ZIMA 360 · Centro de Operaciones</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
@@ -26,7 +25,7 @@
 </style><style>
 
 /* ==========================================================
-   ZIMA 360 - estilos integrados y correcciones de layout
+   ZIMA 360 — estilos integrados y correcciones de layout
    ========================================================== */
 :root{
   --navy:#101827;--navy2:#1d2939;--ink:#17202b;--muted:#6b7280;
@@ -78,8 +77,7 @@ button,a{font:inherit}
 .icon-button:hover{background:#f2f4f6}
 .icon-button svg{width:17px;height:17px}
 .profile{display:flex;align-items:center;gap:9px}
-.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#e8edf2;color:#253242;font-size:10px;font-weight:900;overflow:hidden;cursor:pointer}
-.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.avatar{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:#e8edf2;color:#253242;font-size:10px;font-weight:900}
 .profile-text{display:grid;line-height:1.15}
 .profile-text strong{font-size:11px}.profile-text span{font-size:9px;color:#87909b;margin-top:3px}
 .profile-chevron{font-size:14px;color:#8a929c}
@@ -106,29 +104,6 @@ button,a{font:inherit}
 .btn-primary{background:var(--yellow);border-color:var(--yellow);color:#111827}.btn-primary:hover{background:#ffd83d}
 #msg{min-height:0}.notice{margin:12px 0;padding:10px 12px;border-radius:8px;background:#f0f7ff;border:1px solid #dbeafe;color:#315d8b;font-size:10px}
 .notice.error{background:#fff2f1;border-color:#f3d0cd;color:#9b3028}
-.profile-modal{position:fixed;inset:0;background:rgba(16,24,39,.54);display:none;align-items:center;justify-content:center;padding:20px;z-index:80}
-.profile-modal.open{display:flex}
-.profile-dialog{width:min(520px,100%);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 24px 70px rgba(17,24,39,.22);overflow:hidden}
-.profile-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px;border-bottom:1px solid var(--line)}
-.profile-dialog-head h2{margin:0;font-size:18px;letter-spacing:-.2px}
-.profile-dialog-head p{margin:5px 0 0;color:#6b7280;font-size:12px;line-height:1.45}
-.profile-close{width:34px;height:34px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#687381;display:grid;place-items:center;cursor:pointer;flex:0 0 auto}
-.profile-close:hover{background:#f8fafb;color:#111827}
-.profile-form{padding:18px 22px 22px;display:grid;gap:13px}
-.profile-field{display:grid;gap:6px}
-.profile-field label{font-size:10px;font-weight:850;color:#4b5563;text-transform:uppercase;letter-spacing:.04em}
-.profile-field input{height:42px;border:1px solid #dce2e8;border-radius:9px;padding:0 12px;font-size:13px;color:#17202b;background:#fff;outline:none}
-.profile-field input[type=file]{height:auto;padding:10px;background:#f8fafb}
-.profile-field input:focus{border-color:#d4ad00;box-shadow:0 0 0 3px rgba(247,198,0,.15)}
-.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.profile-photo-row{display:flex;align-items:center;gap:12px}
-.profile-photo-preview{width:54px;height:54px;border-radius:50%;background:#eef1f4;color:#253242;display:grid;place-items:center;font-size:13px;font-weight:900;overflow:hidden;flex:0 0 54px}
-.profile-photo-preview img{width:100%;height:100%;object-fit:cover;display:block}
-.profile-photo-row .profile-field{flex:1}
-.profile-form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:4px}
-.profile-error{min-height:16px;color:#9b3028;font-size:11px}
-.profile-secondary{height:42px;border:1px solid var(--line);background:#fff;color:#374151;border-radius:9px;padding:0 14px;font-size:12px;font-weight:800;cursor:pointer}
-.profile-secondary:hover{background:#f8fafb}
 .quick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0}
 .metric-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:17px 18px;box-shadow:0 5px 20px rgba(17,24,39,.035)}
 .metric-card.highlight{border-color:#f0df8b;background:linear-gradient(180deg,#fff 0%,#fffdf5 100%)}
@@ -166,7 +141,7 @@ button,a{font:inherit}
 .footer{display:flex;justify-content:space-between;margin-top:18px;color:#9aa2ac;font-size:8.5px}.footer span:first-child{font-weight:850;color:#68717c}
 @media(max-width:1150px){.sidebar{width:82px;padding:20px 10px}.brand-block{justify-content:center;padding-left:0;padding-right:0}.brand-block .brand-copy,.branch-card,.nav-title,.nav-item span:not(.nav-icon),.sidebar-bottom{display:none}.main-content{margin-left:82px;width:calc(100% - 82px)}.dashboard-grid{grid-template-columns:1fr}.side-panel{display:none}}
 @media(max-width:800px){.topbar{padding:0 17px}.profile-text,.profile-chevron,.icon-button{display:none}.page{padding:18px 15px 28px}.welcome-card{padding:24px;align-items:flex-start;flex-direction:column}.welcome-card h1{font-size:23px}.welcome-actions{width:100%}.btn{flex:1;justify-content:center}.quick-grid{grid-template-columns:repeat(2,1fr)}.chart-wrap{height:300px;grid-template-columns:58px 1fr}.bar-chart{gap:5px}}
-@media(max-width:520px){.quick-grid{grid-template-columns:1fr}.footer{display:none}.connection{display:none}.welcome-actions{flex-direction:column}.brand-ani{display:none}.profile-grid{grid-template-columns:1fr}.profile-photo-row{align-items:flex-start}.profile-form-actions{flex-direction:column}.profile-secondary,.profile-form-actions .btn{width:100%;justify-content:center}}
+@media(max-width:520px){.quick-grid{grid-template-columns:1fr}.footer{display:none}.connection{display:none}.welcome-actions{flex-direction:column}.brand-ani{display:none}}
 
 </style>
 
@@ -554,7 +529,7 @@ body{font-size:13px;-webkit-font-smoothing:antialiased}
 <style id="zima-ui-polish-v2">
 /* ==========================================================
    ZIMA 360 · AJUSTE VISUAL V2
-   SOLO PRESENTACIÓN - NO MODIFICA HTML, JS, API NI DATOS.
+   SOLO PRESENTACIÓN — NO MODIFICA HTML, JS, API NI DATOS.
    ========================================================== */
 :root{
   --z-side:238px;
@@ -573,7 +548,7 @@ body{font-size:13px;-webkit-font-smoothing:antialiased}
 html,body{background:var(--z-bg);color:var(--z-ink)}
 body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
-/* SIDEBAR - más sobria y de apariencia corporativa */
+/* SIDEBAR — más sobria y de apariencia corporativa */
 .sidebar{
   width:var(--z-side)!important;
   padding:18px 13px 15px!important;
@@ -643,7 +618,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   padding:22px var(--z-page) 28px!important;
 }
 
-/* CABECERA - menos "plantilla", más panel institucional */
+/* CABECERA — menos "plantilla", más panel institucional */
 .welcome-card{
   min-height:122px!important;
   padding:23px 26px!important;
@@ -670,7 +645,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .btn{height:36px!important;padding:0 13px!important;border-radius:8px!important;font-size:9.5px!important}
 .btn-primary{box-shadow:0 5px 12px rgba(246,197,0,.13)!important}
 
-/* INDICADORES - más aire y jerarquía */
+/* INDICADORES — más aire y jerarquía */
 .quick-grid{gap:12px!important;margin:15px 0!important}
 .metric-card{
   min-height:118px!important;
@@ -703,7 +678,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .chart-period{font-size:11px!important;font-weight:800!important}
 .chart-period svg{width:16px!important;height:16px!important}
 
-/* GRÁFICO - limpio, tipo dashboard empresarial */
+/* GRÁFICO — limpio, tipo dashboard empresarial */
 .chart-wrap{
   height:330px!important;
   padding:15px 17px 14px!important;
@@ -728,7 +703,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 .bar-fill.current{box-shadow:0 5px 12px rgba(218,171,0,.20)!important}
 .bar-label{font-size:8px!important;padding-top:5px!important;color:#778392!important;font-weight:700!important}
 
-/* ACTIVIDAD - más compacta y refinada */
+/* ACTIVIDAD — más compacta y refinada */
 .side-panel{padding:17px!important}
 .side-title{font-size:13px!important;margin-bottom:10px!important;letter-spacing:-.15px!important}
 .login-card{
@@ -791,7 +766,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 <style>
 /* ==========================================================
-   ZIMA 360 · IDENTIDAD DEL MENÚ - AJUSTE FINAL
+   ZIMA 360 · IDENTIDAD DEL MENÚ — AJUSTE FINAL
    Solo presentación de logos; no altera ninguna lógica.
    ========================================================== */
 .brand-block{
@@ -924,65 +899,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 @media(max-width:950px){.sidebar{width:82px!important;padding:22px 10px 18px!important}.main-content{margin-left:82px!important;width:calc(100% - 82px)!important}}
 @media(max-width:700px){.sidebar{inset:auto 0 0!important;width:100%!important;height:68px!important;padding:8px 10px!important}.main-content{margin-left:0!important;width:100%!important;padding-bottom:68px!important}.nav-item.active{border-left:0!important;border-bottom:3px solid #f7c600!important;padding-left:6px!important}}
 </style>
-<style id="notification-panel-style">
-.notification-wrap{position:relative;display:grid;place-items:center}
-.notification-button{position:relative}
-.notification-button::after{content:"";position:absolute;right:8px;top:8px;width:7px;height:7px;border-radius:50%;background:#f4c20d;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,24,39,.06)}
-.notification-panel{position:absolute;top:44px;right:0;width:min(340px,calc(100vw - 32px));background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 18px 45px rgba(17,24,39,.16);padding:14px;z-index:60;display:none}
-.notification-panel.open{display:block}
-.notification-panel::before{content:"";position:absolute;right:12px;top:-7px;width:12px;height:12px;background:#fff;border-left:1px solid #e5e7eb;border-top:1px solid #e5e7eb;transform:rotate(45deg)}
-.notification-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 2px 12px;border-bottom:1px solid #eef0f2}
-.notification-head strong{font-size:12px;color:#17202b}
-.notification-head span{font-size:9px;font-weight:850;color:#9a7a00;letter-spacing:.7px;text-transform:uppercase}
-.notification-list{display:grid;gap:10px;padding-top:12px}
-.notification-item{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:flex-start}
-.notification-icon{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;background:#fff8d8;color:#9b7600;flex:0 0 32px}
-.notification-icon svg{width:16px;height:16px}
-.notification-copy strong{display:block;font-size:10px;color:#1f2937;margin-bottom:3px}
-.notification-copy span{display:block;font-size:9px;line-height:1.45;color:#7b8490}
-.notification-empty{padding:16px 8px;color:#7b8490;text-align:center;font-size:10px}
-@media(max-width:800px){.notification-button{display:grid!important}.notification-panel{right:-72px}}
-@media(max-width:520px){.notification-panel{right:-82px;width:calc(100vw - 24px)}}
-</style>
   <link rel="stylesheet" href="zima-ui-modern.css">
-<style id="notification-panel-final-override">
-.topbar .notification-panel{background:#fff!important;color:#17202b!important;overflow:visible!important}
-.topbar .notification-panel *{color:inherit}
-.topbar .notification-head strong{color:#17202b!important}
-.topbar .notification-head span{color:#9a7a00!important}
-.topbar .notification-copy strong{color:#1f2937!important}
-.topbar .notification-copy span,.topbar .notification-empty{color:#7b8490!important}
-.topbar .notification-icon{background:#fff8d8!important;color:#9b7600!important}
-.topbar .notification-icon svg{color:#9b7600!important;stroke:#9b7600!important}
-.topbar .notification-panel.open{display:block!important}
-</style>
-<style id="zima-welcome-modal-style">
-.zima-welcome-modal{position:fixed;inset:0;z-index:10000;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(8,17,30,.58);backdrop-filter:blur(8px)}
-.zima-welcome-modal.open{display:flex}
-.zima-welcome-card{width:min(560px,100%);background:#fff;border:1px solid rgba(255,255,255,.72);border-radius:8px;box-shadow:0 28px 90px rgba(8,17,30,.34);overflow:hidden;color:#111827;position:relative}
-.zima-welcome-card::before{content:"";display:block;height:6px;background:linear-gradient(90deg,#003747 0%,#25d6ad 52%,#f7c600 100%)}
-.zima-welcome-body{padding:28px 30px 26px;text-align:center}
-.zima-welcome-logos{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:18px}
-.zima-welcome-logo{height:64px;width:96px;object-fit:contain;display:block}
-.zima-welcome-divider{width:1px;height:42px;background:#d8dee6}
-.zima-welcome-ani{height:58px;width:58px;object-fit:contain;display:block}
-.zima-welcome-kicker{font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:#006072;margin-bottom:9px}
-.zima-welcome-title{margin:0;font-family:Manrope,Inter,Arial,sans-serif;font-size:28px;line-height:1.12;letter-spacing:0;color:#101827}
-.zima-welcome-office{margin:14px auto 0;display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%;padding:9px 13px;border:1px solid #d9e2ea;background:#f7fafb;border-radius:4px;color:#003747;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
-.zima-welcome-office svg{width:16px;height:16px;flex:0 0 16px}
-.zima-welcome-message{margin:18px auto 0;max-width:430px;color:#4b5563;font-size:14px;line-height:1.55}
-.zima-welcome-actions{display:flex;justify-content:center;margin-top:22px}
-.zima-welcome-close{height:40px;border:1px solid #003747;background:#003747;color:#fff;border-radius:4px;padding:0 18px;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
-.zima-welcome-close:hover{background:#004a5d}
-.zima-welcome-close svg{width:16px;height:16px}
-@media(max-width:560px){
-  .zima-welcome-body{padding:24px 20px 22px}
-  .zima-welcome-title{font-size:23px}
-  .zima-welcome-logo{height:56px;width:84px}
-  .zima-welcome-ani{height:50px;width:50px}
-  .zima-welcome-office{font-size:11px;white-space:normal}
-}
-</style>
 </head>
 <body>
   <div class="app-shell">
@@ -998,29 +915,27 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         </div>
         <div class="brand-copy">
           <div class="brand-name">ZIMA <strong>360</strong></div>
-          <div class="brand-caption">Gesti&oacute;n empresarial</div>
+          <div class="brand-caption">Gestión empresarial</div>
         </div>
       </div>
 
       <div class="branch-card">
         <div class="branch-label">OFICINA</div>
-        <div class="branch-name">Administraci&oacute;n central</div>
+        <div class="branch-name">Administración central</div>
         <div class="branch-status"><span></span> Operación normal</div>
       </div>
 
-      <nav class="main-nav" aria-label="Navegaci&oacute;n principal">
-        <div class="nav-title">MEN&Uacute; PRINCIPAL</div>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <div class="nav-title">MENÚ PRINCIPAL</div>
         <a class="nav-item active" href="dashboard.html"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span><span>Inicio</span></a>
         <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
-        <a class="nav-item" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
-        <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
         
       </nav>
 
       <div class="sidebar-bottom">
         <div class="secure-line"><span class="secure-dot"></span> Conexión segura</div>
-        <div class="version">ZIMA 360 &middot; v1.0</div>
+        <div class="version">ZIMA 360 · v1.0</div>
       </div>
     </aside>
 
@@ -1030,22 +945,12 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           <div class="breadcrumb">Inicio <span>/</span> Panel de control</div>
         </div>
         <div class="topbar-right">
-          <div class="connection"><span class="connection-dot"></span><span id="syncLabel">Conectando...</span></div>
-          <div class="notification-wrap">
-            <button class="icon-button notification-button" id="notificationButton" type="button" aria-label="Notificaciones" aria-expanded="false" aria-controls="notificationPanel">
-              <i data-lucide="bell"></i>
-            </button>
-            <div class="notification-panel" id="notificationPanel" role="menu" aria-label="Notificaciones del sistema">
-              <div class="notification-head"><strong>Notificaciones</strong><span id="notificationStatus">En l&iacute;nea</span></div>
-              <div class="notification-list" id="notificationList">
-                <div class="notification-empty">Cargando avisos...</div>
-              </div>
-            </div>
-          </div>
+          <div class="connection"><span class="connection-dot"></span><span id="syncLabel">Conectando…</span></div>
+          <button class="icon-button" type="button" aria-label="Notificaciones"><i data-lucide="bell"></i></button>
           <div class="profile">
             <div class="avatar">ZU</div>
             <div class="profile-text"><strong>Usuario ZIMA</strong><span>Administrador</span></div>
-            <button class="profile-logout zima-logout-button" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesi&oacute;n" title="Cerrar sesi&oacute;n">
+            <button class="profile-logout" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesión" title="Cerrar sesión">
               <i data-lucide="log-out"></i>
             </button>
           </div>
@@ -1061,7 +966,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           </div>
           <div class="institutional-mark">
             <img src="data:image/png;base64,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" alt="ANI">
-            <span>Gesti&oacute;n institucional</span>
+            <span>Gestión institucional</span>
           </div>
           <div class="welcome-actions">
             <button class="btn btn-light" type="button" onclick="cargar()"><i data-lucide="refresh-cw"></i> Actualizar</button>
@@ -1118,82 +1023,17 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             <div class="quick-action-wrap">
               <button class="quick-action" type="button" onclick="go('planilla.html')"><span class="qa-icon"><i data-lucide="file-plus-2"></i></span><span><strong>Crear planilla</strong><small>Registrar una nueva operación</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
               <button class="quick-action" type="button" onclick="go('historial.html')"><span class="qa-icon"><i data-lucide="search"></i></span><span><strong>Consultar historial</strong><small>Buscar registros anteriores</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
-              <button class="quick-action" type="button" onclick="go('informes.html')"><span class="qa-icon"><i data-lucide="bar-chart-3"></i></span><span><strong>Informes mensuales</strong><small>Desglosar recaudo por mes</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
-              <button class="quick-action" type="button" onclick="cargar()"><span class="qa-icon"><i data-lucide="refresh-cw"></i></span><span><strong>Sincronizar</strong><small>Actualizar informaci&oacute;n en l&iacute;nea</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
+              <button class="quick-action" type="button" onclick="cargar()"><span class="qa-icon"><i data-lucide="refresh-cw"></i></span><span><strong>Sincronizar</strong><small>Actualizar información en línea</small></span><i class="qa-arrow" data-lucide="chevron-right"></i></button>
             </div>
             <div class="service-card"><div class="service-icon"><i data-lucide="shield-check"></i></div><div><strong>Servicio operativo</strong><p>La plataforma está disponible y lista para trabajar.</p></div></div>
           </aside>
         </section>
 
-        <footer class="footer"><span>ZIMA 360</span><span>Plataforma de gesti&oacute;n y trazabilidad</span><span>&copy; 2026</span></footer>
+        <footer class="footer"><span>ZIMA 360</span><span>Plataforma de gestión y trazabilidad</span><span>© 2026</span></footer>
       </div>
     </main>
   </div>
 
-  <div class="zima-welcome-modal" id="zimaWelcomeModal" aria-hidden="true">
-    <div class="zima-welcome-card" role="dialog" aria-modal="true" aria-labelledby="zimaWelcomeTitle">
-      <div class="zima-welcome-body">
-        <div class="zima-welcome-logos" aria-hidden="true">
-          <img class="zima-welcome-logo" src="logo-zima.png" alt="">
-          <span class="zima-welcome-divider"></span>
-          <img class="zima-welcome-ani" src="logo-ani.png" alt="">
-        </div>
-        <div class="zima-welcome-kicker">Ingreso confirmado</div>
-        <h2 class="zima-welcome-title" id="zimaWelcomeTitle">Bienvenido a ZIMA 360</h2>
-        <div class="zima-welcome-office"><i data-lucide="map-pin"></i><span id="zimaWelcomeOffice">Peaje activo</span></div>
-        <p class="zima-welcome-message" id="zimaWelcomeMessage">Que tengas un excelente turno y un trabajo seguro, ordenado y eficiente.</p>
-        <div class="zima-welcome-actions">
-          <button class="zima-welcome-close" id="zimaWelcomeClose" type="button"><i data-lucide="check-circle-2"></i> Continuar</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="profile-modal" id="profileModal" aria-hidden="true">
-    <div class="profile-dialog" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
-      <div class="profile-dialog-head">
-        <div>
-          <h2 id="profileTitle">Actualiza tus datos</h2>
-          <p>Estos datos se guardan en la hoja USUARIOS y se usan en todas las pantallas.</p>
-        </div>
-        <button class="profile-close" type="button" id="profileClose" aria-label="Cerrar"><i data-lucide="x"></i></button>
-      </div>
-      <form class="profile-form" id="profileForm">
-        <div class="profile-field">
-          <label for="profileNombre">Nombre completo</label>
-          <input id="profileNombre" name="nombre" autocomplete="name" required>
-        </div>
-        <div class="profile-grid">
-          <div class="profile-field">
-            <label for="profileEmail">Correo</label>
-            <input id="profileEmail" name="email" type="email" autocomplete="email">
-          </div>
-          <div class="profile-field">
-            <label for="profileTelefono">Telefono</label>
-            <input id="profileTelefono" name="telefono" autocomplete="tel">
-          </div>
-        </div>
-        <div class="profile-field">
-          <label for="profileCargo">Cargo</label>
-          <input id="profileCargo" name="cargo" autocomplete="organization-title">
-        </div>
-        <div class="profile-photo-row">
-          <div class="profile-photo-preview" id="profileFotoPreview">ZU</div>
-          <div class="profile-field">
-            <label for="profileFoto">Foto de perfil</label>
-            <input id="profileFoto" name="foto" type="file" accept="image/*">
-          </div>
-        </div>
-        <div class="profile-error" id="profileError"></div>
-        <div class="profile-form-actions">
-          <button class="profile-secondary" type="button" id="profileLater">Luego</button>
-          <button class="btn btn-primary" type="submit"><i data-lucide="save"></i>Guardar datos</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <script src="zima-ui.js"></script>
   <script>
     if (window.lucide && typeof lucide.createIcons === 'function') {
       lucide.createIcons({attrs:{"stroke-width":1.9}});
@@ -1201,7 +1041,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     /* Web App ACTUAL de ZIMA 360.
        Se fuerza esta URL para evitar que el navegador reutilice una URL antigua guardada. */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxrA58PXId5baP3sOXKJ2U71erwjfTC4SbRmNQ7p63KoSKLa--P3yFM1eWP1-GVf_XV7g/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzcTUFKBSpOF5G1Nh3-B9yEkRkihYIik3npJDLXloSgIxbAJ5PYhnW1fvoQYySBEyaY7Q/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
 
     /* =========================================================
@@ -1256,7 +1096,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         const n=params.get('nombre') || params.get('name');
         const r=params.get('rol') || params.get('role');
         const p=params.get('peaje') || params.get('office');
-        const f=params.get('foto') || params.get('photo');
         const tokenUrl=params.get('token') || params.get('sessionToken') || '';
         const t=tokenUrl || obtenerTokenLocal();
 
@@ -1266,7 +1105,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             nombre:n || u || '',
             rol:r || 'PEAJE',
             peaje:p || '',
-            foto:f || '',
             estado:'ACTIVO',
             token:t || '',
             sessionToken:t || '',
@@ -1277,6 +1115,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
       /* 2) Sesiones JSON guardadas por el login. */
       const claves=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO'];
+
       for(const storage of [localStorage, sessionStorage]){
         for(const clave of claves){
           try{
@@ -1313,7 +1152,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           nombre:nombre || usuario,
           rol:rol || 'PEAJE',
           peaje:peaje || '',
-          foto:'',
           estado:get('ZIMA360_ESTADO') || 'ACTIVO',
           loginAt:get('ZIMA360_LOGIN_AT') || get('ZIMA_LAST_LOGIN') || ''
         };
@@ -1327,15 +1165,10 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       name: RAW_SESSION?.nombre || RAW_SESSION?.NOMBRE || RAW_SESSION?.name || RAW_SESSION?.NAME || '',
       role: String(RAW_SESSION?.rol || RAW_SESSION?.ROL || RAW_SESSION?.role || RAW_SESSION?.ROLE || 'PEAJE').toUpperCase(),
       office: RAW_SESSION?.peaje || RAW_SESSION?.PEAJE || RAW_SESSION?.office || RAW_SESSION?.OFFICE || '',
-      foto: RAW_SESSION?.foto || RAW_SESSION?.FOTO || RAW_SESSION?.photo || RAW_SESSION?.PHOTO || '',
-      email: RAW_SESSION?.email || RAW_SESSION?.EMAIL || '',
-      telefono: RAW_SESSION?.telefono || RAW_SESSION?.TELEFONO || '',
-      cargo: RAW_SESSION?.cargo || RAW_SESSION?.CARGO || '',
       estado: RAW_SESSION?.estado || RAW_SESSION?.ESTADO || 'ACTIVO',
       loginAt: RAW_SESSION?.loginAt || RAW_SESSION?.ULTIMO_INGRESO || '',
       token: RAW_SESSION?.token || RAW_SESSION?.sessionToken || RAW_SESSION?.SESSION_TOKEN || obtenerTokenLocal()
     };
-    let PROFILE_FOTO_DATA = SESSION.foto || '';
 
     function tieneSesion(){
       return Boolean(SESSION.user || SESSION.name);
@@ -1343,12 +1176,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     function esAdministrador(){
       return ['ADMIN','INTERVENTORIA','ADMINISTRADOR'].includes(SESSION.role);
-    }
-
-    function esGranAdministrador(){
-      const peaje=String(SESSION.office||'').trim().toUpperCase();
-      const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
-      return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role) && peajeGlobal;
     }
 
     function normalizarTexto(v){
@@ -1443,119 +1270,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       return data;
     }
 
-    async function apiPost(action,params={}){
-      const payload={action:String(action||'save'),...params};
-
-      if(window.google && google.script && google.script.run){
-        const data=await onlineRun('apiPost',payload);
-        if(data && data.ok===false) throw new Error(data.error || data.mensaje || 'El servidor rechazó la operación.');
-        return data;
-      }
-
-      try{
-        const r=await fetch(API_URL,{
-          method:'POST',
-          redirect:'follow',
-          mode:'cors',
-          cache:'no-store',
-          credentials:'omit',
-          headers:{'Content-Type':'text/plain;charset=utf-8','Accept':'application/json'},
-          body:JSON.stringify(payload)
-        });
-        if(!r.ok) throw new Error('HTTP '+r.status);
-        const text=await r.text();
-        let data;
-        try{ data=JSON.parse(text); }
-        catch(e){ throw new Error('La Web App no devolvió JSON válido.'); }
-        if(!data || typeof data!=='object') throw new Error('Respuesta inválida de la Web App.');
-        if(data.ok===false) throw new Error(data.error || data.mensaje || 'El servidor rechazó la operación.');
-        return data;
-      }catch(fetchError){
-        const payloadText=JSON.stringify(payload);
-        if(payloadText.length>6000){
-          await postViaHiddenForm(payload);
-          return {
-            ok:true,
-            mensaje:'Cambios enviados al servidor.',
-            nombre:payload.nombre||'',
-            email:payload.email||'',
-            telefono:payload.telefono||'',
-            cargo:payload.cargo||'',
-            foto:payload.foto||''
-          };
-        }
-        const data=await zimaJsonp(payload);
-        if(data && data.ok===false) throw new Error(data.error || data.mensaje || 'El servidor rechazó la operación.');
-        return data;
-      }
-    }
-
-    function zimaJsonp(params={}){
-      return new Promise(function(resolve,reject){
-        const callback='__zima_dashboard_'+Date.now()+'_'+Math.random().toString(36).slice(2);
-        const script=document.createElement('script');
-        const query=new URLSearchParams({...params,callback});
-        const timer=setTimeout(function(){
-          cleanup();
-          reject(new Error('Tiempo agotado al conectar con el Web App.'));
-        },25000);
-        function cleanup(){
-          clearTimeout(timer);
-          try{delete window[callback];}catch(e){window[callback]=undefined;}
-          script.remove();
-        }
-        window[callback]=function(data){
-          cleanup();
-          resolve(data);
-        };
-        script.onerror=function(){
-          cleanup();
-          reject(new Error('No fue posible acceder al Web App de ZIMA 360.'));
-        };
-        script.src=API_URL+'?'+query.toString();
-        document.head.appendChild(script);
-      });
-    }
-
-    function postViaHiddenForm(payload){
-      return new Promise(function(resolve,reject){
-        const iframeName='zimaDashboardPost_'+Date.now();
-        const iframe=document.createElement('iframe');
-        const form=document.createElement('form');
-        let settled=false;
-        const finish=function(){
-          if(settled) return;
-          settled=true;
-          setTimeout(function(){
-            try{form.remove();}catch(e){}
-            try{iframe.remove();}catch(e){}
-          },700);
-          resolve({ok:true});
-        };
-        iframe.name=iframeName;
-        iframe.style.display='none';
-        iframe.onload=finish;
-        iframe.onerror=function(){
-          reject(new Error('No se pudo enviar la información al servidor.'));
-        };
-        form.method='POST';
-        form.action=API_URL;
-        form.target=iframeName;
-        form.style.display='none';
-        Object.keys(payload).forEach(function(key){
-          const input=document.createElement('input');
-          input.type='hidden';
-          input.name=key;
-          input.value=payload[key]==null?'':String(payload[key]);
-          form.appendChild(input);
-        });
-        document.body.appendChild(iframe);
-        document.body.appendChild(form);
-        form.submit();
-        setTimeout(finish,8000);
-      });
-    }
-
     function money(n){
       return new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0}).format(Number(n||0));
     }
@@ -1570,9 +1284,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
     function go(page){location.href=page;}
-    function obtenerEstado(row){return row?.estado ?? row?.ESTADO ?? row?.status ?? row?.estatus ?? '';}
-    function normalizarEstado(v){const e=String(v||'').trim().toUpperCase();if(e==='ENTREGADO')return 'ENTREGADA';if(e==='CERRADO')return 'CERRADA';return e;}
-    function statusClass(v){const e=normalizarEstado(v);return ['BORRADOR','APROBADO','ENTREGADA','CERRADA','ANULADA'].includes(e)?e:'BORRADOR';}
+    function statusClass(v){return ['BORRADOR','ENTREGADA','CERRADA'].includes(v)?v:'BORRADOR';}
 
     function iniciales(nombre){
       const partes=String(nombre||'Usuario ZIMA').trim().split(/\s+/).filter(Boolean);
@@ -1580,359 +1292,30 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       return partes.slice(0,2).map(x=>x.charAt(0).toUpperCase()).join('');
     }
 
-    function pintarAvatar(el,foto,nombre){
-      if(!el) return;
-      const src=String(foto||'').trim();
-      const esFuenteImagen=/^(data:image\/|https?:\/\/|blob:)/i.test(src);
-      if(src && esFuenteImagen){
-        el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'">';
-        const image=el.querySelector('img');
-        if(image){
-          image.addEventListener('error',function(){
-            el.textContent=iniciales(nombre);
-          },{once:true});
-        }
-      }else{
-        el.textContent=iniciales(nombre);
-      }
-    }
-
-    function guardarPerfilSesion(perfil){
-      perfil=perfil||{};
-      const src=String(perfil.foto||perfil.FOTO||perfil.photo||'').trim();
-      SESSION.foto=src;
-      if(perfil.nombre) SESSION.name=perfil.nombre;
-      if(perfil.rol) SESSION.role=perfil.rol;
-      if(perfil.peaje) SESSION.office=perfil.peaje;
-      SESSION.email=String(perfil.email||perfil.EMAIL||'').trim();
-      SESSION.telefono=String(perfil.telefono||perfil.TELEFONO||'').trim();
-      SESSION.cargo=String(perfil.cargo||perfil.CARGO||'').trim();
-      const displayName=SESSION.name||SESSION.user||'Usuario ZIMA';
-      const office=SESSION.office||'';
-      pintarAvatar(document.querySelector('.avatar'),src,displayName);
-      const profileStrong=document.querySelector('.profile-text strong');
-      const profileSpan=document.querySelector('.profile-text span');
-      const branch=document.querySelector('.branch-name');
-      if(profileStrong) profileStrong.textContent=displayName;
-      if(profileSpan) profileSpan.textContent=SESSION.role + (office ? ' \u00b7 '+office : '');
-      if(branch && office) branch.textContent=office;
-      document.querySelectorAll('.admin-only').forEach(function(item){
-        item.style.display=esGranAdministrador()?'flex':'none';
-      });
-    }
-
-    function guardarFotoSesion(foto){
-      const src=String(foto||'').trim();
-      if(!src) return;
-      guardarPerfilSesion({foto:src});
-    }
-
-    function perfilPeajeIncompleto(perfil){
-      perfil=perfil||SESSION;
-      const rol=String(perfil.rol||perfil.role||SESSION.role||'').trim().toUpperCase();
-      if(rol!=='PEAJE') return false;
-      return !String(perfil.email||perfil.EMAIL||SESSION.email||'').trim() ||
-        !String(perfil.telefono||perfil.TELEFONO||SESSION.telefono||'').trim() ||
-        !String(perfil.cargo||perfil.CARGO||SESSION.cargo||'').trim();
-    }
-
-    function abrirPerfilModal(){
-      const modal=document.getElementById('profileModal');
-      if(!modal) return;
-      const set=function(id,value){
-        const el=document.getElementById(id);
-        if(el) el.value=value||'';
-      };
-      set('profileNombre',SESSION.name||SESSION.user||'');
-      set('profileEmail',SESSION.email||'');
-      set('profileTelefono',SESSION.telefono||'');
-      set('profileCargo',SESSION.cargo||'');
-      PROFILE_FOTO_DATA=SESSION.foto||'';
-      const fotoInput=document.getElementById('profileFoto');
-      if(fotoInput) fotoInput.value='';
-      pintarAvatar(document.getElementById('profileFotoPreview'),PROFILE_FOTO_DATA,SESSION.name||SESSION.user);
-      setText('profileError','');
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden','false');
-    }
-
-    function cerrarPerfilModal(){
-      const modal=document.getElementById('profileModal');
-      if(!modal) return;
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden','true');
-    }
-
-    function leerArchivoFotoPerfil(file){
-      return new Promise(function(resolve,reject){
-        if(!file){
-          resolve(PROFILE_FOTO_DATA||'');
-          return;
-        }
-        if(!/^image\//.test(file.type||'')){
-          reject(new Error('Seleccione una imagen válida.'));
-          return;
-        }
-        if(file.size > 6 * 1024 * 1024){
-          reject(new Error('La foto no debe pesar más de 6 MB.'));
-          return;
-        }
-        const reader=new FileReader();
-        reader.onerror=function(){reject(new Error('No fue posible leer la foto.'));};
-        reader.onload=function(){
-          const img=new Image();
-          img.onerror=function(){reject(new Error('No fue posible procesar la foto.'));};
-          img.onload=function(){
-            const render=function(max,quality){
-              const scale=Math.min(1,max/Math.max(img.width,img.height));
-              const canvas=document.createElement('canvas');
-              canvas.width=Math.max(1,Math.round(img.width*scale));
-              canvas.height=Math.max(1,Math.round(img.height*scale));
-              const ctx=canvas.getContext('2d');
-              ctx.drawImage(img,0,0,canvas.width,canvas.height);
-              return canvas.toDataURL('image/jpeg',quality);
-            };
-            let data=render(320,0.76);
-            if(data.length>45000) data=render(240,0.68);
-            if(data.length>45000) data=render(180,0.6);
-            if(data.length>49000){
-              reject(new Error('La foto sigue muy pesada. Pruebe con otra imagen.'));
-              return;
-            }
-            resolve(data);
-          };
-          img.src=String(reader.result||'');
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function setupPerfilModal(){
-      const form=document.getElementById('profileForm');
-      const close=document.getElementById('profileClose');
-      const later=document.getElementById('profileLater');
-      const fotoInput=document.getElementById('profileFoto');
-      const avatar=document.querySelector('.avatar');
-      if(avatar){
-        avatar.setAttribute('role','button');
-        avatar.setAttribute('tabindex','0');
-        avatar.setAttribute('title','Ver perfil');
-        avatar.addEventListener('click',abrirPerfilModal);
-        avatar.addEventListener('keydown',function(event){
-          if(event.key==='Enter'||event.key===' '){
-            event.preventDefault();
-            abrirPerfilModal();
-          }
-        });
-      }
-      if(close) close.addEventListener('click',cerrarPerfilModal);
-      if(later) later.addEventListener('click',cerrarPerfilModal);
-      if(fotoInput){
-        fotoInput.addEventListener('change',async function(){
-          const errorEl=document.getElementById('profileError');
-          try{
-            if(errorEl) errorEl.textContent='';
-            PROFILE_FOTO_DATA=await leerArchivoFotoPerfil(fotoInput.files && fotoInput.files[0]);
-            pintarAvatar(document.getElementById('profileFotoPreview'),PROFILE_FOTO_DATA,document.getElementById('profileNombre').value||SESSION.name||SESSION.user);
-          }catch(error){
-            fotoInput.value='';
-            if(errorEl) errorEl.textContent=error && error.message ? error.message : 'No fue posible cargar la foto.';
-          }
-        });
-      }
-      if(!form) return;
-      form.addEventListener('submit',async function(event){
-        event.preventDefault();
-        const errorEl=document.getElementById('profileError');
-        const submit=form.querySelector('button[type="submit"]');
-        try{
-          PROFILE_FOTO_DATA=await leerArchivoFotoPerfil(document.getElementById('profileFoto').files && document.getElementById('profileFoto').files[0]);
-        }catch(error){
-          if(errorEl) errorEl.textContent=error && error.message ? error.message : 'No fue posible cargar la foto.';
-          return;
-        }
-        const payload={
-          token:SESSION.token,
-          nombre:document.getElementById('profileNombre').value.trim(),
-          email:document.getElementById('profileEmail').value.trim(),
-          telefono:document.getElementById('profileTelefono').value.trim(),
-          cargo:document.getElementById('profileCargo').value.trim(),
-          foto:PROFILE_FOTO_DATA
-        };
-        if(!payload.nombre){
-          if(errorEl) errorEl.textContent='El nombre es obligatorio.';
-          return;
-        }
-        try{
-          if(errorEl) errorEl.textContent='';
-          if(submit) submit.disabled=true;
-          const perfil=await apiPost('actualizarperfil',payload);
-          guardarPerfilSesion(perfil);
-          cerrarPerfilModal();
-          await refrescarFotoPerfil(false);
-        }catch(error){
-          if(errorEl) errorEl.textContent=error && error.message ? error.message : 'No fue posible guardar los datos.';
-        }finally{
-          if(submit) submit.disabled=false;
-        }
-      });
-    }
-
-    async function refrescarFotoPerfil(mostrarAviso=true){
-      if(!SESSION.token) return;
-      try{
-        const perfil=await apiGet('perfil',{token:SESSION.token});
-        if(perfil && perfil.ok!==false){
-          guardarPerfilSesion(perfil);
-          if(mostrarAviso && perfilPeajeIncompleto(perfil)){
-            abrirPerfilModal();
-          }
-          return;
-        }
-      }catch(e){}
-      if(!esGranAdministrador()) return;
-      try{
-        let usuarios=[];
-        if(window.google && google.script && google.script.run){
-          usuarios=await onlineRun('listarUsuarios');
-        }else{
-          const data=await apiGet('usuarios',{token:SESSION.token});
-          usuarios=Array.isArray(data.usuarios)?data.usuarios:[];
-        }
-        usuarios=Array.isArray(usuarios)?usuarios:[];
-        const actual=usuarios.find(function(u){
-          return String(u.USUARIO||u.usuario||'').trim().toLowerCase() ===
-            String(SESSION.user||'').trim().toLowerCase();
-        });
-        const foto=actual && (actual.FOTO || actual.foto || actual.photo);
-        if(foto) guardarFotoSesion(foto);
-      }catch(e){}
-    }
-
     function setText(id, value){
       const el=document.getElementById(id);
       if(el) el.textContent=String(value ?? '');
     }
 
-    function renderNotifications(data, status){
-      const list=document.getElementById('notificationList');
-      if(!list) return;
-      const rows=Array.isArray(data)?data:[];
-      const entregadas=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='ENTREGADA').length;
-      const cerradas=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='CERRADA').length;
-      const borradores=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='BORRADOR').length;
-      const total=rows.reduce((sum,item)=>sum+Number(item.total||0),0);
-      setText('notificationStatus',status || (rows.length?'Actualizado':'Sin datos'));
-      list.innerHTML=[
-        {icon:'database',title:'Planillas sincronizadas',text:`${rows.length} registros disponibles para ${SESSION.office || 'este acceso'}.`},
-        {icon:'send',title:'Estados por revisar',text:`${entregadas} entregadas, ${cerradas} cerradas y ${borradores} en borrador.`},
-        {icon:'wallet',title:'Valor administrado',text:`Acumulado visible: ${money(total)} COP.`}
-      ].map(item=>`<div class="notification-item" role="menuitem">
-        <div class="notification-icon"><i data-lucide="${item.icon}"></i></div>
-        <div class="notification-copy"><strong>${esc(item.title)}</strong><span>${esc(item.text)}</span></div>
-      </div>`).join('');
-      if(window.lucide && typeof lucide.createIcons === 'function'){
-        lucide.createIcons({attrs:{"stroke-width":1.9}});
-      }
-    }
-
-    function setupNotifications(){
-      const button=document.getElementById('notificationButton');
-      const panel=document.getElementById('notificationPanel');
-      if(!button || !panel) return;
-      button.addEventListener('click',function(event){
-        event.stopPropagation();
-        const isOpen=panel.classList.toggle('open');
-        button.setAttribute('aria-expanded',String(isOpen));
-      });
-      panel.addEventListener('click',function(event){event.stopPropagation();});
-      document.addEventListener('click',function(){
-        panel.classList.remove('open');
-        button.setAttribute('aria-expanded','false');
-      });
-      document.addEventListener('keydown',function(event){
-        if(event.key==='Escape'){
-          panel.classList.remove('open');
-          button.setAttribute('aria-expanded','false');
-        }
-      });
-      renderNotifications([], 'Listo');
-    }
-
-    function cerrarBienvenidaIngreso(){
-      const modal=document.getElementById('zimaWelcomeModal');
-      if(!modal) return;
-      modal.classList.remove('open');
-      modal.setAttribute('aria-hidden','true');
-      document.body.style.overflow='';
-    }
-
-    function mostrarBienvenidaIngreso(){
-      const modal=document.getElementById('zimaWelcomeModal');
-      if(!modal || !tieneSesion()) return;
-
-      try{
-        if(sessionStorage.getItem('ZIMA_SHOW_WELCOME')!=='1') return;
-        sessionStorage.removeItem('ZIMA_SHOW_WELCOME');
-      }catch(e){
-        return;
-      }
-
-      const displayName=SESSION.name || SESSION.user || 'Usuario ZIMA';
-      const office=SESSION.office || (esAdministrador() ? 'Administracion central' : 'Peaje no asignado');
-      const title=document.getElementById('zimaWelcomeTitle');
-      const officeEl=document.getElementById('zimaWelcomeOffice');
-      const message=document.getElementById('zimaWelcomeMessage');
-      const close=document.getElementById('zimaWelcomeClose');
-
-      if(title) title.textContent='Bienvenido, '+displayName;
-      if(officeEl) officeEl.textContent=office;
-      if(message) message.textContent='Que tengas un excelente turno en '+office+'. Te deseamos un trabajo seguro, ordenado y eficiente.';
-
-      modal.classList.add('open');
-      modal.setAttribute('aria-hidden','false');
-      document.body.style.overflow='hidden';
-
-      if(close) close.focus();
-      if(window.lucide && typeof lucide.createIcons === 'function'){
-        lucide.createIcons({attrs:{"stroke-width":1.9}});
-      }
-
-      window.clearTimeout(window.__zimaWelcomeTimer);
-      window.__zimaWelcomeTimer=window.setTimeout(cerrarBienvenidaIngreso,6500);
-    }
-
-    document.addEventListener('click',function(event){
-      const modal=document.getElementById('zimaWelcomeModal');
-      if(!modal || !modal.classList.contains('open')) return;
-      if(event.target===modal || event.target.closest('#zimaWelcomeClose')){
-        cerrarBienvenidaIngreso();
-      }
-    });
-
-    document.addEventListener('keydown',function(event){
-      if(event.key==='Escape') cerrarBienvenidaIngreso();
-    });
-
     function setupSession(){
       if(!tieneSesion()){
-        setText('welcomeTitle','Sesi\u00f3n no disponible');
-        setText('welcomeSubtitle','No se recibi\u00f3 el usuario logueado. Regrese al inicio de sesi\u00f3n.');
-        setText('loginUser','Sesi\u00f3n no disponible');
+        setText('welcomeTitle','Sesión no disponible');
+        setText('welcomeSubtitle','No se recibió el usuario logueado. Regrese al inicio de sesión.');
+        setText('loginUser','Sesión no disponible');
         document.querySelector('.branch-name').textContent='Acceso no identificado';
-        document.querySelector('.profile-text strong').textContent='Sin sesi\u00f3n';
+        document.querySelector('.profile-text strong').textContent='Sin sesión';
         document.querySelector('.profile-text span').textContent='Acceso no identificado';
         document.querySelector('.avatar').textContent='--';
-        setText('syncLabel','Sin sesi\u00f3n');
+        setText('syncLabel','Sin sesión');
         return false;
       }
 
-      const office=SESSION.office || (esAdministrador() ? 'Administraci\u00f3n central' : 'Peaje no asignado');
+      const office=SESSION.office || (esAdministrador() ? 'Administración central' : 'Peaje no asignado');
       const displayName=SESSION.name || SESSION.user || 'Usuario ZIMA';
 
       setText('welcomeTitle',`Bienvenido, ${displayName}`);
-      setText('welcomeSubtitle',`Centro de operaciones \u00b7 ${office}. Administra y controla la operaci\u00f3n de efectivo desde un solo lugar.`);
-      setText('loginUser',`${displayName} \u00b7 ${SESSION.user}${office ? ' \u00b7 '+office : ''}`);
+      setText('welcomeSubtitle',`Centro de operaciones · ${office}. Administra y controla la operación de efectivo desde un solo lugar.`);
+      setText('loginUser',`${displayName} · ${SESSION.user}${office ? ' · '+office : ''}`);
       setText('chartYear',new Date().getFullYear());
 
       const branch=document.querySelector('.branch-name');
@@ -1942,11 +1325,17 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
       if(branch) branch.textContent=office;
       if(profileStrong) profileStrong.textContent=displayName;
-      if(profileSpan) profileSpan.textContent=SESSION.role + (office ? ' \u00b7 '+office : '');
-      pintarAvatar(avatar,SESSION.foto,displayName);
-      document.querySelectorAll('.admin-only').forEach(function(item){
-        item.style.display=esGranAdministrador()?'flex':'none';
-      });
+      if(profileSpan) profileSpan.textContent=SESSION.role + (office ? ' · '+office : '');
+      if(avatar) avatar.textContent=iniciales(displayName);
+
+      // Mantener compatibilidad con las demás páginas.
+      localStorage.setItem('ZIMA_USER_NAME',displayName);
+      localStorage.setItem('ZIMA_PEAJE',office);
+      localStorage.setItem('ZIMA360_USUARIO',SESSION.user);
+      localStorage.setItem('ZIMA360_NOMBRE',displayName);
+      localStorage.setItem('ZIMA360_ROL',SESSION.role);
+      localStorage.setItem('ZIMA360_PEAJE',office);
+      localStorage.setItem('ZIMA360_ESTADO',SESSION.estado || 'ACTIVO');
 
       registrarIngreso();
       return true;
@@ -1956,31 +1345,44 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const token =
         SESSION.token ||
         localStorage.getItem('ZIMA_SESSION_TOKEN') ||
-        localStorage.getItem('ZIMA360_SESSION_TOKEN') ||
-        localStorage.getItem('ZIMA_TOKEN') ||
         localStorage.getItem('ZIMA_SESSION') ||
         sessionStorage.getItem('ZIMA_SESSION_TOKEN') ||
-        sessionStorage.getItem('ZIMA360_SESSION_TOKEN') ||
         sessionStorage.getItem('ZIMA_SESSION') ||
         '';
 
-      return ZimaUI.confirmLogout({
-        detail:(SESSION.name||SESSION.user||'Usuario ZIMA') + (SESSION.office ? ' - ' + SESSION.office : ''),
-        beforeClear:async function(){
-          if(!token)return;
-          try{
-            if(window.google && google.script && google.script.run){
-              await onlineRun('apiPost',{action:'logout',token:token});
-            }else{
-              await fetch(API_URL,{
-                method:'POST',
-                headers:{'Content-Type':'text/plain;charset=utf-8'},
-                body:JSON.stringify({action:'logout',token:token})
-              });
-            }
-          }catch(e){}
+      /* Invalidar también la sesión del backend cuando existe token. */
+      if(token){
+        try{
+          if(window.google && google.script && google.script.run){
+            await onlineRun('apiPost',{action:'logout',token:token});
+          }else{
+            await fetch(API_URL,{
+              method:'POST',
+              headers:{'Content-Type':'application/json'},
+              body:JSON.stringify({action:'logout',token:token})
+            });
+          }
+        }catch(e){
+          /* Aunque falle la petición remota, se limpia la sesión local. */
         }
+      }
+
+      const keys=[
+        'ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO',
+        'ZIMA360_USUARIO','ZIMA360_NOMBRE','ZIMA360_ROL','ZIMA360_PEAJE',
+        'ZIMA360_ESTADO','ZIMA360_LOGIN_AT','ZIMA_USER','ZIMA_USER_NAME',
+        'ZIMA_PEAJE','ZIMA_OFFICE','ZIMA_ROLE','ZIMA_ROL','ZIMA_LAST_LOGIN',
+        'ZIMA_SESSION_TOKEN','ZIMA_API_URL'
+      ];
+
+      [localStorage,sessionStorage].forEach(storage=>{
+        keys.forEach(key=>{
+          try{ storage.removeItem(key); }catch(e){}
+        });
       });
+
+      /* Regresar al login sin tocar el diseño ni otras páginas. */
+      window.location.href='login.html';
     }
 
     function registrarIngreso(){
@@ -2038,7 +1440,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       chart.innerHTML=values.map((value,i)=>{
         const height=value?Math.max((value/max)*100,4):0;
         return `<div class="bar-col" title="${labels[i]}: ${esc(money(value))}">
-          <div class="bar-value">${value?esc(compactMoney(value)):'-'}</div>
+          <div class="bar-value">${value?esc(compactMoney(value)):'—'}</div>
           <div class="bar-track"><div class="bar-fill ${i===new Date().getMonth()?'current':''}" style="--bar-height:${height}%"></div></div>
           <div class="bar-label">${labels[i]}</div>
         </div>`;
@@ -2070,15 +1472,14 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const msg=document.getElementById('msg');
       const label=document.getElementById('syncLabel');
       if(!tieneSesion()){
-        setText('syncLabel','Sin sesi\u00f3n');
-        msg.innerHTML='<div class="notice error">No se recibi\u00f3 el usuario logueado. Regrese al inicio de sesi\u00f3n.</div>';
+        setText('syncLabel','Sin sesión');
+        msg.innerHTML='<div class="notice error">No se recibió el usuario logueado. Regrese al inicio de sesión.</div>';
         renderChart([]);
-        renderNotifications([], 'Sin sesi\u00f3n');
         return;
       }
       try{
-        setText('syncLabel','Sincronizando...');
-        msg.innerHTML='<div class="notice">Consultando información actualizada...</div>';
+        setText('syncLabel','Sincronizando…');
+        msg.innerHTML='<div class="notice">Consultando información actualizada…</div>';
         const data=await syncRows();
         const total=data.reduce((sum,item)=>sum+Number(item.total||0),0);
         const month=new Date().getMonth();
@@ -2090,10 +1491,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         setText('n',data.length);
         setText('t',money(total));
         setText('monthTotal',money(currentMonthTotal));
-        setText('e',data.filter(x=>normalizarEstado(obtenerEstado(x))==='ENTREGADA').length);
-        setText('c',data.filter(x=>normalizarEstado(obtenerEstado(x))==='CERRADA').length);
+        setText('e',data.filter(x=>String(x.estado||'').toUpperCase()==='ENTREGADA').length);
+        setText('c',data.filter(x=>String(x.estado||'').toUpperCase()==='CERRADA').length);
         renderChart(data);
-        renderNotifications(data, 'Actualizado');
         msg.innerHTML='';
         setText('syncLabel','Actualizado ahora');
       }catch(err){
@@ -2115,10 +1515,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
           setText('n',data.length);
           setText('t',money(total));
           setText('monthTotal',money(currentMonthTotal));
-          setText('e',data.filter(x=>normalizarEstado(obtenerEstado(x))==='ENTREGADA').length);
-          setText('c',data.filter(x=>normalizarEstado(obtenerEstado(x))==='CERRADA').length);
+          setText('e',data.filter(x=>String(x.estado||'').toUpperCase()==='ENTREGADA').length);
+          setText('c',data.filter(x=>String(x.estado||'').toUpperCase()==='CERRADA').length);
           renderChart(data);
-          renderNotifications(data, 'Conectado');
           msg.innerHTML='';
           setText('syncLabel','Conectado');
           return;
@@ -2128,15 +1527,10 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         /* No mostrar mensajes técnicos de sesión/conexión en el dashboard. */
         msg.innerHTML='';
         renderChart([]);
-        renderNotifications([], 'Sin conexión');
       }
     }
 
-    setupNotifications();
-    setupPerfilModal();
     if(setupSession()){
-      mostrarBienvenidaIngreso();
-      refrescarFotoPerfil();
       cargar();
     }
   </script>

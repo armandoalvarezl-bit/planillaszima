@@ -1,907 +1,691 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#001b46">
-  <title>Sistema en mantenimiento | UJECA</title>
-  <script src="maintenance-redirect.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="icon" type="image/png" href="img/logo.png">
-  <style>
-    :root{
-      --blue-950:#00102b;
-      --blue-900:#001b46;
-      --blue-600:#1267ff;
-      --blue-400:#3198ff;
-      --orange:#ffad1f;
-      --orange-dark:#fb8c00;
-      --ink:#07183a;
-      --muted:#24416e;
-      --line:#cfe0f6;
-      --white:#ffffff;
-      --shadow:0 28px 90px rgba(0,15,48,.42);
-    }
-
-    *{box-sizing:border-box}
-
-    html{
-      min-height:100%;
-      text-size-adjust:100%;
-    }
-
-    body{
-      margin:0;
-      min-height:100vh;
-      font-family:"Outfit",Arial,sans-serif;
-      color:var(--ink);
-      background:
-        linear-gradient(90deg,rgba(0,16,43,.82),rgba(0,35,86,.54) 48%,rgba(0,16,43,.86)),
-        url("img/WhatsApp Image 2026-02-19 at 18.27.17.jpeg") center/cover fixed no-repeat;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:clamp(12px,2.4vw,36px);
-      overflow-x:hidden;
-    }
-
-    body::before,
-    body::after{
-      content:"";
-      position:fixed;
-      width:240px;
-      height:38px;
-      background:var(--orange);
-      transform:rotate(-48deg);
-      z-index:0;
-      pointer-events:none;
-      box-shadow:0 0 0 18px rgba(0,58,136,.78);
-    }
-
-    body::before{
-      top:35px;
-      left:-90px;
-    }
-
-    body::after{
-      right:-90px;
-      bottom:38px;
-    }
-
-    .maintenance{
-      width:min(1280px,100%);
-      min-height:min(650px,calc(100vh - 24px));
-      position:relative;
-      z-index:1;
-      display:grid;
-      grid-template-columns:minmax(0,1.08fr) minmax(320px,.78fr);
-      background:var(--white);
-      border:1px solid rgba(64,151,255,.64);
-      border-radius:12px;
-      box-shadow:var(--shadow);
-      overflow:hidden;
-    }
-
-    .main-panel{
-      position:relative;
-      padding:clamp(22px,3.4vw,46px);
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      min-width:0;
-      background:
-        radial-gradient(circle at 82% 34%,rgba(49,152,255,.11),transparent 15rem),
-        linear-gradient(135deg,#fff 0%,#fff 64%,#eff6ff 100%);
-    }
-
-    .main-panel::after{
-      content:"";
-      position:absolute;
-      top:0;
-      right:0;
-      width:36%;
-      height:42%;
-      background:linear-gradient(135deg,transparent 49%,rgba(7,24,58,.045) 50%);
-      pointer-events:none;
-    }
-
-    .brand{
-      position:relative;
-      z-index:1;
-      display:flex;
-      align-items:center;
-      gap:18px;
-      margin-bottom:clamp(18px,2.4vw,28px);
-      min-width:0;
-    }
-
-    .brand-mark{
-      width:clamp(64px,6.6vw,92px);
-      height:clamp(50px,4.8vw,64px);
-      flex:none;
-      display:grid;
-      place-items:center;
-    }
-
-    .brand-mark img{
-      width:100%;
-      height:100%;
-      object-fit:contain;
-    }
-
-    .brand-line{
-      width:2px;
-      height:42px;
-      background:linear-gradient(180deg,var(--blue-600),rgba(18,103,255,.12));
-      flex:none;
-    }
-
-    .brand-copy strong{
-      display:block;
-      color:var(--ink);
-      font-size:clamp(1.42rem,2vw,2rem);
-      line-height:1;
-      font-weight:900;
-      letter-spacing:.02em;
-    }
-
-    .brand-copy span{
-      display:block;
-      margin-top:6px;
-      color:var(--muted);
-      font-size:clamp(.92rem,1.2vw,1.12rem);
-      line-height:1.25;
-      font-weight:700;
-    }
-
-    .status-pill{
-      position:relative;
-      z-index:1;
-      width:max-content;
-      max-width:100%;
-      min-height:42px;
-      display:inline-flex;
-      align-items:center;
-      gap:12px;
-      padding:8px 16px 8px 10px;
-      border-radius:999px;
-      background:#fffaf0;
-      color:var(--ink);
-      border:2px solid var(--orange);
-      font-size:clamp(.74rem,1vw,.92rem);
-      font-weight:900;
-      letter-spacing:.1em;
-      text-transform:uppercase;
-      box-shadow:0 12px 30px rgba(251,140,0,.12);
-    }
-
-    .status-icon{
-      width:28px;
-      height:28px;
-      display:grid;
-      place-items:center;
-      border-radius:50%;
-      background:linear-gradient(180deg,#ffc34d,var(--orange-dark));
-      color:white;
-      font-size:1.05rem;
-      font-weight:900;
-      flex:none;
-      animation:spin 6s linear infinite;
-    }
-
-    .headline-row{
-      position:relative;
-      z-index:1;
-      display:grid;
-      grid-template-columns:minmax(0,1fr) minmax(145px,.34fr);
-      gap:clamp(8px,1.5vw,18px);
-      align-items:center;
-      margin-top:18px;
-    }
-
-    h1{
-      margin:0;
-      color:var(--ink);
-      font-size:clamp(2.25rem,4.2vw,4.35rem);
-      line-height:.94;
-      letter-spacing:0;
-      font-weight:900;
-    }
-
-    h1 span{
-      display:block;
-      color:var(--blue-600);
-    }
-
-    .underline{
-      width:60px;
-      height:6px;
-      margin:14px 0 0;
-      border-radius:999px;
-      background:var(--orange-dark);
-    }
-
-    .illustration{
-      min-height:clamp(130px,14vw,190px);
-      position:relative;
-      display:grid;
-      place-items:center;
-    }
-
-    .halo{
-      position:absolute;
-      width:clamp(148px,16vw,210px);
-      height:clamp(122px,13vw,172px);
-      border-radius:50%;
-      background:linear-gradient(180deg,#eaf4ff,#d8ecff);
-      transform:rotate(-8deg);
-    }
-
-    .sun{
-      position:absolute;
-      top:18px;
-      width:clamp(44px,4.4vw,60px);
-      height:clamp(44px,4.4vw,60px);
-      border-radius:50%;
-      background:linear-gradient(180deg,#ffce57,#ffad1f);
-    }
-
-    .sun::before,
-    .sun::after{
-      content:"";
-      position:absolute;
-      width:12px;
-      height:48px;
-      border-radius:999px;
-      background:var(--orange-dark);
-      top:-38px;
-      left:31px;
-      box-shadow:-38px 24px 0 var(--orange-dark),38px 24px 0 var(--orange-dark);
-    }
-
-    .sun::after{
-      transform:rotate(42deg);
-      box-shadow:none;
-    }
-
-    .laptop{
-      position:relative;
-      width:clamp(116px,11.5vw,158px);
-      height:clamp(78px,7.8vw,104px);
-      border-radius:10px 10px 4px 4px;
-      background:linear-gradient(135deg,#063a8f,#1b74ff);
-      border:9px solid #06285e;
-      box-shadow:0 18px 25px rgba(7,24,58,.22);
-      transform:rotate(4deg);
-      display:grid;
-      place-items:center;
-      animation:float 3.8s ease-in-out infinite;
-    }
-
-    .laptop::after{
-      content:"";
-      position:absolute;
-      width:123%;
-      height:24px;
-      left:-31px;
-      bottom:-37px;
-      border-radius:4px 4px 18px 18px;
-      background:linear-gradient(180deg,#0c2d66,#07183a);
-      transform:skewX(12deg);
-    }
-
-    .gear{
-      width:44px;
-      height:44px;
-      border-radius:50%;
-      border:11px solid #fff;
-      position:relative;
-      filter:drop-shadow(0 4px 2px rgba(0,0,0,.08));
-    }
-
-    .gear::before,
-    .gear::after{
-      content:"";
-      position:absolute;
-      inset:-17px 9px;
-      background:#fff;
-      border-radius:4px;
-    }
-
-    .gear::after{
-      transform:rotate(90deg);
-    }
-
-    .cone{
-      position:absolute;
-      right:2px;
-      bottom:35px;
-      width:clamp(40px,4.3vw,58px);
-      height:clamp(50px,5vw,70px);
-      background:linear-gradient(90deg,transparent 18%,#fff 18% 30%,transparent 30% 68%,#fff 68% 80%,transparent 80%), linear-gradient(180deg,#ffb238,#f27d00);
-      clip-path:polygon(50% 0,90% 84%,10% 84%);
-      filter:drop-shadow(0 10px 10px rgba(7,24,58,.18));
-      animation:floatCone 4.4s ease-in-out infinite;
-    }
-
-    .lead{
-      position:relative;
-      z-index:1;
-      margin:20px 0 0;
-      max-width:52ch;
-      color:#11356f;
-      font-size:clamp(.96rem,1.08vw,1.08rem);
-      line-height:1.42;
-      font-weight:500;
-    }
-
-    .info-grid{
-      position:relative;
-      z-index:1;
-      display:grid;
-      grid-template-columns:repeat(3,minmax(120px,1fr));
-      gap:12px;
-      margin-top:24px;
-    }
-
-    .info-item{
-      min-height:112px;
-      padding:clamp(12px,1.25vw,15px);
-      border:1px solid var(--line);
-      border-radius:10px;
-      background:linear-gradient(180deg,#fff,#fbfdff);
-      box-shadow:0 16px 28px rgba(7,24,58,.07);
-    }
-
-    .info-icon{
-      width:clamp(36px,3.2vw,44px);
-      height:clamp(36px,3.2vw,44px);
-      display:grid;
-      place-items:center;
-      border-radius:50%;
-      margin-bottom:8px;
-      background:linear-gradient(180deg,#3d8bff,#125fff);
-      color:white;
-      box-shadow:0 12px 24px rgba(18,103,255,.22);
-    }
-
-    .info-item:nth-child(2) .info-icon{
-      background:linear-gradient(180deg,#ffc34d,#fb8c00);
-      box-shadow:0 12px 24px rgba(251,140,0,.2);
-    }
-
-    .info-icon svg{
-      width:23px;
-      height:23px;
-      stroke:currentColor;
-      stroke-width:2.4;
-      fill:none;
-      stroke-linecap:round;
-      stroke-linejoin:round;
-    }
-
-    .info-item span{
-      display:block;
-      margin-bottom:6px;
-      color:var(--ink);
-      font-size:clamp(.9rem,1vw,1.02rem);
-      font-weight:900;
-      text-transform:uppercase;
-    }
-
-    .info-item strong{
-      display:block;
-      color:#11356f;
-      font-size:clamp(.9rem,1vw,1rem);
-      line-height:1.25;
-      font-weight:600;
-    }
-
-    .side-panel{
-      position:relative;
-      padding:clamp(24px,3vw,46px) clamp(20px,2.6vw,38px);
-      background:
-        radial-gradient(circle at 18% 16%,rgba(49,152,255,.24),transparent 18rem),
-        linear-gradient(180deg,#001d4a 0%,#000d2a 100%);
-      color:white;
-      display:flex;
-      flex-direction:column;
-      justify-content:space-between;
-      gap:24px;
-      overflow:hidden;
-      border-left:1px solid rgba(64,151,255,.34);
-    }
-
-    .side-panel::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:
-        linear-gradient(90deg,rgba(0,16,43,.18),rgba(0,16,43,.72)),
-        url("img/WhatsApp Image 2026-02-19 at 18.27.17.jpeg") center/cover no-repeat;
-      opacity:.13;
-      pointer-events:none;
-    }
-
-    .side-content,
-    .progress-wrap,
-    .notice,
-    .signature{
-      position:relative;
-      z-index:1;
-    }
-
-    .side-kicker{
-      display:flex;
-      align-items:center;
-      gap:16px;
-      color:var(--blue-400);
-      font-size:.84rem;
-      font-weight:900;
-      letter-spacing:.08em;
-      text-transform:uppercase;
-    }
-
-    .side-kicker::after{
-      content:"";
-      width:82px;
-      height:3px;
-      border-radius:999px;
-      background:linear-gradient(90deg,rgba(255,255,255,.8),rgba(255,255,255,.22));
-    }
-
-    .side-content h2{
-      margin:14px 0;
-      font-size:clamp(1.78rem,2.95vw,3.35rem);
-      line-height:1.06;
-      letter-spacing:0;
-      font-weight:900;
-    }
-
-    .side-content h2 span{
-      color:var(--orange);
-    }
-
-    .side-content p{
-      max-width:39ch;
-      margin:0;
-      color:rgba(255,255,255,.9);
-      line-height:1.4;
-      font-size:clamp(.95rem,1.05vw,1.02rem);
-      font-weight:600;
-    }
-
-    .progress-head{
-      display:grid;
-      grid-template-columns:auto minmax(0,1fr) auto;
-      align-items:center;
-      gap:10px;
-      margin-bottom:10px;
-      color:white;
-      font-size:.94rem;
-      font-weight:900;
-      min-width:0;
-    }
-
-    .progress-head span{
-      min-width:0;
-    }
-
-    .progress-head .mini-gear{
-      width:30px;
-      height:30px;
-      display:grid;
-      place-items:center;
-      border-radius:50%;
-      background:var(--orange);
-      color:var(--blue-950);
-      font-weight:900;
-      animation:spin 5s linear infinite;
-    }
-
-    .progress-line{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
-      align-items:center;
-      gap:12px;
-    }
-
-    .progress{
-      width:100%;
-      height:14px;
-      border-radius:999px;
-      background:rgba(90,154,235,.32);
-      overflow:hidden;
-      box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
-    }
-
-    .progress span{
-      display:block;
-      width:70%;
-      height:100%;
-      border-radius:inherit;
-      background:linear-gradient(90deg,var(--orange),#ffd55e);
-      box-shadow:0 0 20px rgba(255,173,31,.34);
-      position:relative;
-      animation:progressPulse 3.4s ease-in-out infinite;
-    }
-
-    .progress span::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      background:linear-gradient(90deg,transparent,rgba(255,255,255,.62),transparent);
-      transform:translateX(-100%);
-      animation:shine 1.8s ease-in-out infinite;
-    }
-
-    .percent{
-      color:white;
-      font-size:1rem;
-      font-weight:900;
-    }
-
-    .notice{
-      display:grid;
-      grid-template-columns:auto 1fr;
-      gap:14px;
-      align-items:center;
-      padding:clamp(18px,2vw,22px) clamp(18px,2.2vw,24px);
-      border-radius:10px;
-      background:rgba(0,61,144,.42);
-      border:1px solid rgba(49,152,255,.72);
-      color:rgba(255,255,255,.92);
-      line-height:1.35;
-      font-size:.95rem;
-      font-weight:700;
-      box-shadow:0 18px 42px rgba(0,9,34,.18);
-    }
-
-    .notice-icon{
-      width:38px;
-      height:38px;
-      display:grid;
-      place-items:center;
-      border-radius:50%;
-      background:linear-gradient(180deg,#3d8bff,#125fff);
-      color:white;
-      font-size:1.4rem;
-      font-weight:900;
-    }
-
-    .notice-text{
-      padding-left:14px;
-      border-left:4px solid var(--blue-400);
-    }
-
-    .signature{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      gap:16px;
-      color:#8cc7ff;
-      font-size:1rem;
-      font-style:italic;
-      font-weight:500;
-    }
-
-    .signature::before,
-    .signature::after{
-      content:"";
-      width:34px;
-      height:2px;
-      background:var(--blue-600);
-      border-radius:999px;
-    }
-
-    @keyframes spin{
-      to{transform:rotate(360deg)}
-    }
-
-    @keyframes float{
-      0%,100%{transform:rotate(4deg) translateY(0)}
-      50%{transform:rotate(4deg) translateY(-10px)}
-    }
-
-    @keyframes floatCone{
-      0%,100%{transform:translateY(0)}
-      50%{transform:translateY(-6px)}
-    }
-
-    @keyframes progressPulse{
-      0%,100%{width:64%}
-      50%{width:82%}
-    }
-
-    @keyframes shine{
-      0%{transform:translateX(-100%)}
-      100%{transform:translateX(160%)}
-    }
-
-    @media (max-width:1120px){
-      body{
-        padding:16px;
-      }
-
-      .maintenance{
-        grid-template-columns:1fr;
-        min-height:0;
-      }
-
-      .side-panel{
-        border-left:0;
-        border-top:1px solid rgba(64,151,255,.34);
-        min-height:0;
-      }
-    }
-
-    @media (max-width:900px){
-      body{
-        align-items:flex-start;
-      }
-
-      .maintenance{
-        width:min(760px,100%);
-      }
-
-      .headline-row{
-        grid-template-columns:minmax(0,1fr) minmax(150px,220px);
-      }
-
-      .info-grid{
-        grid-template-columns:repeat(3,minmax(0,1fr));
-      }
-    }
-
-    @media (max-width:720px){
-      body::before,
-      body::after{
-        width:170px;
-        height:26px;
-        box-shadow:0 0 0 12px rgba(0,58,136,.78);
-      }
-
-      .main-panel,
-      .side-panel{
-        padding:clamp(20px,6vw,26px);
-      }
-
-      .brand{
-        align-items:flex-start;
-        margin-bottom:30px;
-        gap:12px;
-      }
-
-      .brand-mark{
-        width:76px;
-        height:58px;
-      }
-
-      .brand-copy strong{
-        font-size:1.42rem;
-      }
-
-      .brand-copy span{
-        font-size:.96rem;
-      }
-
-      .headline-row{
-        grid-template-columns:1fr;
-        margin-top:20px;
-      }
-
-      .illustration{
-        min-height:165px;
-        order:-1;
-      }
-
-      .info-grid{
-        grid-template-columns:1fr;
-        margin-top:24px;
-      }
-
-      .info-item{
-        min-height:0;
-        display:grid;
-        grid-template-columns:auto 1fr;
-        column-gap:14px;
-        align-items:center;
-      }
-
-      .info-icon{
-        grid-row:1 / span 2;
-        margin-bottom:0;
-      }
-
-      .side-kicker{
-        align-items:flex-start;
-        flex-direction:column;
-        gap:12px;
-      }
-
-      .progress-head,
-      .progress-line,
-      .notice{
-        grid-template-columns:1fr;
-      }
-
-      .notice-text{
-        padding-left:0;
-        padding-top:16px;
-        border-left:0;
-        border-top:4px solid var(--blue-400);
-      }
-    }
-
-    @media (max-width:430px){
-      body{
-        padding:10px;
-      }
-
-      .maintenance{
-        min-height:calc(100vh - 20px);
-        border-radius:10px;
-      }
-
-      .status-pill{
-        width:100%;
-        justify-content:center;
-        text-align:center;
-        letter-spacing:.08em;
-        font-size:.78rem;
-      }
-
-      h1{
-        font-size:clamp(2.15rem,12vw,2.7rem);
-      }
-
-      .side-content h2{
-        font-size:clamp(1.85rem,9.5vw,2.25rem);
-      }
-
-      .brand-line{
-        display:none;
-      }
-
-      .illustration{
-        transform:scale(.88);
-        transform-origin:center;
-        margin-block:-10px;
-      }
-
-      .signature{
-        gap:12px;
-        font-size:.98rem;
-      }
-    }
-
-    @media (max-height:760px) and (min-width:1121px){
-      body{
-        align-items:flex-start;
-      }
-
-      .maintenance{
-        min-height:0;
-      }
-
-      .main-panel,
-      .side-panel{
-        justify-content:flex-start;
-      }
-
-      .brand{
-        margin-bottom:22px;
-      }
-
-      .headline-row{
-        margin-top:18px;
-      }
-
-      .lead,
-      .info-grid{
-        margin-top:22px;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Planillas ZIMA - Mantenimiento</title>
+
+    <meta name="description"
+          content="La plataforma de Planillas de Transportadora ZIMA se encuentra temporalmente en mantenimiento.">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --azul-zima: #123b78;
+            --azul-claro: #eaf3fc;
+            --naranja-ani: #dc6b35;
+            --amarillo: #ffc400;
+            --azul-ani: #123c82;
+            --rojo-ani: #d90b2f;
+            --texto: #183354;
+            --gris: #64748b;
+            --blanco: #ffffff;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 90% 20%,
+                    #eaf4ff 0%,
+                    #f7fbff 28%,
+                    #ffffff 60%
+                );
+            color: var(--texto);
+            overflow-x: hidden;
+        }
+
+        /* =========================
+           CONTENEDOR PRINCIPAL
+        ========================== */
+
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .container {
+            width: min(1180px, 92%);
+            margin: auto;
+        }
+
+        /* =========================
+           HEADER
+        ========================== */
+
+        header {
+            padding: 35px 0 20px;
+        }
+
+        .logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .logo-ani {
+            width: 135px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .logo-zima {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .separator {
+            width: 1px;
+            height: 80px;
+            background: #cbd5e1;
+        }
+
+        /* =========================
+           CONTENIDO
+        ========================== */
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 50px;
+            padding: 40px 0 70px;
+        }
+
+        /* =========================
+           TEXTO
+        ========================== */
+
+        .content h1 {
+            font-size: clamp(42px, 5vw, 68px);
+            line-height: 1.05;
+            font-weight: 800;
+            color: var(--azul-zima);
+            margin-bottom: 20px;
+        }
+
+        .line {
+            width: 100px;
+            height: 5px;
+            background: var(--naranja-ani);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .content p {
+            font-size: 19px;
+            line-height: 1.7;
+            color: #52657d;
+            max-width: 590px;
+        }
+
+        /* =========================
+           TARJETA
+        ========================== */
+
+        .notice {
+            margin-top: 35px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(234, 243, 252, 0.9);
+            border: 1px solid #dceaf7;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 560px;
+        }
+
+        .clock {
+            min-width: 65px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: var(--azul-zima);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .clock::before {
+            content: "";
+            width: 30px;
+            height: 30px;
+            border: 3px solid white;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .clock::after {
+            content: "";
+            position: absolute;
+            width: 3px;
+            height: 12px;
+            background: white;
+            top: 19px;
+            border-radius: 5px;
+            transform-origin: bottom;
+            transform: rotate(0deg);
+        }
+
+        .notice h2 {
+            color: var(--azul-zima);
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .notice p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #53677f;
+        }
+
+        /* =========================
+           ILUSTRACIÓN
+        ========================== */
+
+        .illustration {
+            position: relative;
+            min-height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-bg {
+            position: absolute;
+            width: 460px;
+            height: 460px;
+            border-radius: 50%;
+            background: linear-gradient(
+                135deg,
+                #eef7ff,
+                #dbeefe
+            );
+            z-index: 0;
+        }
+
+        .monitor {
+            position: relative;
+            z-index: 2;
+            width: 390px;
+            height: 270px;
+            background: white;
+            border: 14px solid #315e8e;
+            border-radius: 18px;
+            box-shadow:
+                0 25px 60px rgba(18, 59, 120, .18);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(
+                145deg,
+                #f8fcff,
+                #eef6fd
+            );
+        }
+
+        .gear {
+            font-size: 90px;
+            color: var(--azul-zima);
+            line-height: 1;
+            animation: rotate 8s linear infinite;
+        }
+
+        .maintenance-text {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--azul-zima);
+        }
+
+        .stand {
+            position: absolute;
+            z-index: 1;
+            bottom: 35px;
+            width: 130px;
+            height: 65px;
+            background: #315e8e;
+            clip-path: polygon(
+                20% 0,
+                80% 0,
+                100% 100%,
+                0 100%
+            );
+        }
+
+        /* =========================
+           CONO
+        ========================== */
+
+        .cone {
+            position: absolute;
+            right: 5%;
+            bottom: 35px;
+            z-index: 4;
+            width: 75px;
+            height: 115px;
+        }
+
+        .cone-top {
+            width: 0;
+            height: 0;
+            border-left: 32px solid transparent;
+            border-right: 32px solid transparent;
+            border-bottom: 85px solid #f28b22;
+            margin: auto;
+        }
+
+        .cone-stripe {
+            position: absolute;
+            top: 45px;
+            left: 12px;
+            width: 51px;
+            height: 14px;
+            background: white;
+            transform: rotate(-8deg);
+        }
+
+        .cone-base {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 75px;
+            height: 20px;
+            border-radius: 7px;
+            background: #f28b22;
+        }
+
+        /* =========================
+           CASCO
+        ========================== */
+
+        .helmet {
+            position: absolute;
+            left: 5%;
+            bottom: 25px;
+            z-index: 4;
+            width: 125px;
+            height: 58px;
+            background: #ffc928;
+            border-radius: 70px 70px 25px 25px;
+            box-shadow: 0 8px 15px rgba(0,0,0,.12);
+        }
+
+        .helmet::after {
+            content: "";
+            position: absolute;
+            bottom: -7px;
+            left: -12px;
+            width: 150px;
+            height: 15px;
+            border-radius: 20px;
+            background: #f0b500;
+        }
+
+        /* =========================
+           BARRERA
+        ========================== */
+
+        .barrier {
+            position: absolute;
+            bottom: 38px;
+            left: 0;
+            width: 190px;
+            height: 55px;
+            background:
+                repeating-linear-gradient(
+                    -45deg,
+                    var(--azul-zima) 0,
+                    var(--azul-zima) 20px,
+                    #ffc928 20px,
+                    #ffc928 40px
+                );
+            border-radius: 7px;
+            z-index: 5;
+            box-shadow: 0 8px 20px rgba(0,0,0,.12);
+        }
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        footer {
+            padding: 25px 0 30px;
+            text-align: center;
+        }
+
+        .footer-line {
+            width: 80%;
+            height: 1px;
+            background: #cbd5e1;
+            margin: 0 auto 20px;
+        }
+
+        footer p {
+            color: #5c7089;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        footer strong {
+            color: var(--azul-zima);
+        }
+
+        /* =========================
+           BARRA ANI
+        ========================== */
+
+        .ani-bar {
+            display: flex;
+            width: 110px;
+            height: 7px;
+            margin: 22px auto 0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .ani-bar span:nth-child(1) {
+            flex: 1;
+            background: var(--amarillo);
+        }
+
+        .ani-bar span:nth-child(2) {
+            flex: 1;
+            background: var(--azul-ani);
+        }
+
+        .ani-bar span:nth-child(3) {
+            flex: 1;
+            background: var(--rojo-ani);
+        }
+
+        /* =========================
+           ANIMACIONES
+        ========================== */
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media (max-width: 900px) {
+
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .content p {
+                margin: auto;
+            }
+
+            .line {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .notice {
+                margin-left: auto;
+                margin-right: auto;
+                text-align: left;
+            }
+
+            .illustration {
+                min-height: 400px;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            header {
+                padding-top: 25px;
+            }
+
+            .logos {
+                gap: 20px;
+            }
+
+            .logo-ani {
+                width: 95px;
+            }
+
+            .logo-zima {
+                width: 125px;
+            }
+
+            .separator {
+                height: 55px;
+            }
+
+            .hero {
+                padding-top: 20px;
+            }
+
+            .content h1 {
+                font-size: 42px;
+            }
+
+            .content p {
+                font-size: 17px;
+            }
+
+            .notice {
+                padding: 18px;
+            }
+
+            .illustration {
+                min-height: 320px;
+                transform: scale(.75);
+                margin: -30px 0;
+            }
+
+            footer {
+                padding-bottom: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="zima-ui-modern.css">
 </head>
+
 <body>
-  <main class="maintenance" aria-labelledby="titulo-mantenimiento">
-    <section class="main-panel">
-      <div class="brand" aria-label="UJECA">
-        <div class="brand-mark">
-          <img src="img/logo.png" alt="Logo UJECA">
-        </div>
-        <div class="brand-line" aria-hidden="true"></div>
-        <div class="brand-copy">
-          <strong>UJECA</strong>
-          <span>Congreso Trascendentales 2026</span>
-        </div>
-      </div>
 
-      <div class="status-pill">
-        <span class="status-icon" aria-hidden="true">⚙</span>
-        Sistema en mantenimiento
-      </div>
+<div class="page">
 
-      <div class="headline-row">
-        <div>
-          <h1 id="titulo-mantenimiento">Mejorando <span>la plataforma</span></h1>
-          <div class="underline" aria-hidden="true"></div>
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header>
+        <div class="container">
+
+            <div class="logos">
+
+                <!-- LOGO ANI -->
+                <img
+                    src="img/logo-ani.png"
+                    alt="ANI"
+                    class="logo-ani"
+                >
+
+                <div class="separator"></div>
+
+                <!-- LOGO ZIMA -->
+                <img
+                    src="img/logo-zima.png"
+                    alt="ZIMA Seguridad Ltda."
+                    class="logo-zima"
+                >
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- =========================
+         CONTENIDO
+    ========================== -->
+
+    <main>
+
+        <div class="container">
+
+            <section class="hero">
+
+                <!-- TEXTO -->
+
+                <div class="content">
+
+                    <h1>
+                        ¡Estamos en
+                        mantenimiento!
+                    </h1>
+
+                    <div class="line"></div>
+
+                    <p>
+                        Estamos realizando mejoras en la página
+                        de <strong>Planillas de Transportadora ZIMA</strong>
+                        para brindarte una experiencia más rápida,
+                        segura y eficiente.
+                    </p>
+
+
+                    <div class="notice">
+
+                        <div class="clock"></div>
+
+                        <div>
+                            <h2>
+                                Volveremos pronto
+                            </h2>
+
+                            <p>
+                                Agradecemos tu comprensión.
+                                Intenta nuevamente más tarde.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ILUSTRACIÓN -->
+
+                <div class="illustration">
+
+                    <div class="circle-bg"></div>
+
+                    <div class="monitor">
+
+                        <div class="screen">
+
+                            <div class="gear">
+                                ⚙
+                            </div>
+
+                            <div class="maintenance-text">
+                                MANTENIMIENTO
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="stand"></div>
+
+                    <div class="barrier"></div>
+
+                    <div class="helmet"></div>
+
+                    <div class="cone">
+
+                        <div class="cone-top"></div>
+
+                        <div class="cone-stripe"></div>
+
+                        <div class="cone-base"></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
         </div>
 
-        <div class="illustration" aria-hidden="true">
-          <div class="halo"></div>
-          <div class="sun"></div>
-          <div class="laptop">
-            <div class="gear"></div>
-          </div>
-          <div class="cone"></div>
-        </div>
-      </div>
+    </main>
 
-      <p class="lead">
-        Estamos haciendo ajustes técnicos para ofrecer un sistema más seguro, estable y fácil de usar.
-      </p>
 
-      <div class="info-grid" aria-label="Estado del mantenimiento">
-        <div class="info-item">
-          <div class="info-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.6 3 8 7 10 4-2 7-5.4 7-10V6l-7-3Z"></path></svg>
-          </div>
-          <span>Estado</span>
-          <strong>Actualización en proceso</strong>
-        </div>
-        <div class="info-item">
-          <div class="info-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M8 2v4"></path><path d="M16 2v4"></path><path d="M4 9h16"></path><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 13h3"></path><path d="M13 13h3"></path><path d="M8 17h3"></path><path d="M13 17h3"></path></svg>
-          </div>
-          <span>Datos</span>
-          <strong>Información resguardada</strong>
-        </div>
-        <div class="info-item">
-          <div class="info-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path><path d="M12 14v2"></path></svg>
-          </div>
-          <span>Acceso</span>
-          <strong>Acceso pausado</strong>
-        </div>
-      </div>
-    </section>
+    <!-- =========================
+         FOOTER
+    ========================== -->
 
-    <aside class="side-panel" aria-label="Información del proceso">
-      <div class="side-content">
-        <div class="side-kicker">Mantenimiento programado</div>
-        <h2>Una versión más clara y rápida <span>viene en camino.</span></h2>
-        <p>
-          Estamos preparando todo para continuar los procesos del Congreso con mayor estabilidad.
-        </p>
-      </div>
+    <footer>
 
-      <div class="progress-wrap" aria-label="Progreso visual de mantenimiento">
-        <div class="progress-head">
-          <span class="mini-gear" aria-hidden="true">⚙</span>
-          <span>Optimización del sistema</span>
-          <span>En progreso</span>
-        </div>
-        <div class="progress-line">
-          <div class="progress" aria-hidden="true">
-            <span></span>
-          </div>
-          <span class="percent">70%</span>
-        </div>
-      </div>
+        <div class="container">
 
-      <div class="notice">
-        <span class="notice-icon" aria-hidden="true">i</span>
-        <div class="notice-text">
-          No necesitas realizar ninguna acción. Esta pantalla es solo informativa.
-        </div>
-      </div>
+            <div class="footer-line"></div>
 
-      <div class="signature">Juntos en una misma visión</div>
-    </aside>
-  </main>
+            <p>
+                Si necesitas ayuda, comunícate con nuestro
+                equipo de soporte.
+            </p>
+
+            <p>
+                <strong>
+                    Gracias por confiar en nosotros.
+                </strong>
+            </p>
+
+            <!-- COLORES ANI -->
+
+            <div class="ani-bar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+        </div>
+
+    </footer>
+
+</div>
+
 </body>
 </html>

@@ -518,7 +518,6 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="zima-ui-modern.css">
 </head>
 
 <body>

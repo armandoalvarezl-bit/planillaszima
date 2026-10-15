@@ -7,7 +7,6 @@ const ZIMA = {
   SHEET_AUDITORIA: 'AUDITORIA',
   SHEET_CONFIG: 'CONFIG',
   SHEET_USUARIOS: 'USUARIOS',
-  SHEET_SOPORTE: 'SOPORTE',
 
   SESSION_PREFIX: 'ZIMA_SESSION_',
   SESSION_SECONDS: 21600, // 6 horas
@@ -49,26 +48,7 @@ const ZIMA = {
     'PEAJE',
     'ESTADO',
     'FECHA_CREACION',
-    'ULTIMO_INGRESO',
-    'EMAIL',
-    'TELEFONO',
-    'CARGO',
-    'FOTO'
-  ],
-
-  SOPORTE_HEADERS: [
-    'timestamp',
-    'tipo',
-    'titulo',
-    'mensaje',
-    'pagina',
-    'usuario',
-    'nombre',
-    'rol',
-    'peaje',
-    'navegador',
-    'captura',
-    'estado'
+    'ULTIMO_INGRESO'
   ]
 };
 
@@ -132,14 +112,6 @@ function setupSistema() {
   const usuarios =
     prepararHojaUsuarios_(ss);
 
-  const soporte =
-    prepararHojaSoporte_(ss);
-
-  const configActual =
-    leerConfigMap_(
-      config
-    );
-
   const configValues = [
     ['PARAMETRO', 'VALOR'],
     ['SISTEMA', 'ZIMA 360'],
@@ -150,13 +122,7 @@ function setupSistema() {
     ['HOJA_AUDITORIA', ZIMA.SHEET_AUDITORIA],
     ['HOJA_CONFIG', ZIMA.SHEET_CONFIG],
     ['HOJA_USUARIOS', ZIMA.SHEET_USUARIOS],
-    ['HOJA_SOPORTE', ZIMA.SHEET_SOPORTE],
     ['WEB_APP_URL', obtenerWebAppUrl_() || ''],
-    [
-      'CORREOS_NOTIFICACION',
-      configActual.CORREOS_NOTIFICACION ||
-      'sistemaplanillaszima@gmail.com'
-    ],
     ['FECHA_CONFIGURACION', new Date()]
   ];
 
@@ -184,8 +150,7 @@ function setupSistema() {
       planillas: planillas.getName(),
       auditoria: auditoria.getName(),
       config: config.getName(),
-      usuarios: usuarios.getName(),
-      soporte: soporte.getName()
+      usuarios: usuarios.getName()
     }
   };
 }
@@ -494,163 +459,7 @@ function prepararHojaUsuarios_(ss) {
     sh.setFrozenRows(1);
   }
 
-  const currentHeaders =
-    sh
-      .getRange(
-        1,
-        1,
-        1,
-        Math.max(
-          sh.getLastColumn(),
-          1
-        )
-      )
-      .getValues()[0]
-      .map(function(header) {
-        return String(header || '').trim();
-      });
-
-  ZIMA.USUARIOS_HEADERS.forEach(function(header) {
-    if (currentHeaders.indexOf(header) === -1) {
-      sh
-        .getRange(
-          1,
-          sh.getLastColumn() + 1
-        )
-        .setValue(header)
-        .setFontWeight('bold');
-      currentHeaders.push(header);
-    }
-  });
-
   return sh;
-}
-
-
-function prepararHojaSoporte_(ss) {
-
-  let sh =
-    ss.getSheetByName(
-      ZIMA.SHEET_SOPORTE
-    );
-
-  if (!sh) {
-    sh = ss.insertSheet(
-      ZIMA.SHEET_SOPORTE
-    );
-  }
-
-  if (sh.getLastRow() === 0) {
-    sh
-      .getRange(
-        1,
-        1,
-        1,
-        ZIMA.SOPORTE_HEADERS.length
-      )
-      .setValues([
-        ZIMA.SOPORTE_HEADERS
-      ]);
-
-    sh.setFrozenRows(1);
-
-    sh
-      .getRange(
-        1,
-        1,
-        1,
-        ZIMA.SOPORTE_HEADERS.length
-      )
-      .setFontWeight('bold');
-  }
-
-  return sh;
-}
-
-
-function leerConfigMap_(
-  sh
-) {
-
-  const map = {};
-
-  if (
-    !sh ||
-    sh.getLastRow() < 2
-  ) {
-    return map;
-  }
-
-  const values =
-    sh
-      .getRange(
-        1,
-        1,
-        sh.getLastRow(),
-        Math.max(
-          sh.getLastColumn(),
-          2
-        )
-      )
-      .getValues();
-
-  values.slice(1).forEach(
-    function(row) {
-
-      const key =
-        String(
-          row[0] ||
-          ''
-        )
-          .trim()
-          .toUpperCase();
-
-      if (key) {
-        map[key] =
-          row[1];
-      }
-    }
-  );
-
-  return map;
-}
-
-
-function obtenerValorConfig_(
-  parametro
-) {
-
-  try {
-
-    const ss =
-      getSpreadsheet_();
-
-    const sh =
-      ss.getSheetByName(
-        ZIMA.SHEET_CONFIG
-      );
-
-    const config =
-      leerConfigMap_(
-        sh
-      );
-
-    return String(
-      config[
-        String(
-          parametro ||
-          ''
-        )
-          .trim()
-          .toUpperCase()
-      ] ||
-      ''
-    ).trim();
-
-  } catch (e) {
-
-    return '';
-  }
 }
 
 
@@ -677,10 +486,6 @@ function crearUsuariosIniciales_(ss) {
       'TODOS',
       'ACTIVO',
       new Date(),
-      '',
-      '',
-      '',
-      'Gran Administrador',
       ''
     ],
 
@@ -693,10 +498,6 @@ function crearUsuariosIniciales_(ss) {
       'TODOS',
       'ACTIVO',
       new Date(),
-      '',
-      '',
-      '',
-      'Interventoría',
       ''
     ]
 
@@ -842,9 +643,9 @@ function autenticarUsuario(
           2,
           1,
           lastRow - 1,
-          ZIMA.USUARIOS_HEADERS.length
+          9
         )
-        .getValues();
+        .getDisplayValues();
 
     for (
       let i = 0;
@@ -888,29 +689,6 @@ function autenticarUsuario(
         )
           .trim()
           .toUpperCase();
-
-      const email =
-        String(
-          fila[9] || ''
-        ).trim();
-
-      const telefono =
-        String(
-          fila[10] || ''
-        ).trim();
-
-      const cargo =
-        String(
-          fila[11] || ''
-        ).trim();
-
-      const foto =
-        obtenerFotoUsuarioPersistente_(
-          usuarioBD,
-          String(
-            fila[12] || ''
-          ).trim()
-        );
 
       const usuarioCoincide =
         usuarioBD.toLowerCase() ===
@@ -983,18 +761,6 @@ function autenticarUsuario(
           estado:
             estado,
 
-          email:
-            email,
-
-          telefono:
-            telefono,
-
-          cargo:
-            cargo,
-
-          foto:
-            foto,
-
           loginAt:
             new Date().toISOString()
         };
@@ -1003,10 +769,6 @@ function autenticarUsuario(
           crearSesion_(
             usuarioSesion
           );
-
-        notificarIngresoPlataforma_(
-          usuarioSesion
-        );
 
         return {
 
@@ -1039,18 +801,6 @@ function autenticarUsuario(
           estado:
             estado,
 
-          email:
-            email,
-
-          telefono:
-            telefono,
-
-          cargo:
-            cargo,
-
-          foto:
-            foto,
-
           usuarioData: {
             usuario:
               usuarioBD,
@@ -1068,19 +818,7 @@ function autenticarUsuario(
               'TODOS',
 
             estado:
-              estado,
-
-            email:
-              email,
-
-            telefono:
-              telefono,
-
-            cargo:
-              cargo,
-
-            foto:
-              foto
+              estado
           },
 
           mensaje:
@@ -1399,14 +1137,6 @@ function crearUsuario(datos) {
     );
   }
 
-  const fotoUsuario =
-    String(datos.foto || '').trim();
-
-  guardarFotoUsuarioPersistente_(
-    usuario,
-    fotoUsuario
-  );
-
   sh.appendRow([
 
     Utilities.getUuid(),
@@ -1426,15 +1156,7 @@ function crearUsuario(datos) {
 
     new Date(),
 
-    '',
-
-    String(datos.email || '').trim(),
-
-    String(datos.telefono || '').trim(),
-
-    String(datos.cargo || '').trim(),
-
-    fotoUsuario
+    ''
 
   ]);
 
@@ -1450,607 +1172,7 @@ function crearUsuario(datos) {
       rol,
     peaje:
       peaje ||
-      'TODOS',
-    email:
-      String(datos.email || '').trim(),
-    telefono:
-      String(datos.telefono || '').trim(),
-    cargo:
-      String(datos.cargo || '').trim(),
-    foto:
-      fotoUsuario
-  };
-}
-
-
-function actualizarUsuario(datos) {
-
-  const ss =
-    getSpreadsheet_();
-
-  const sh =
-    prepararHojaUsuarios_(ss);
-
-  datos =
-    datos || {};
-
-  const usuario =
-    String(
-      datos.usuario ||
-      ''
-    ).trim();
-
-  if (!usuario) {
-    throw new Error(
-      'El usuario es obligatorio.'
-    );
-  }
-
-  const nombre =
-    String(
-      datos.nombre ||
-      ''
-    ).trim();
-
-  const rol =
-    String(
-      datos.rol ||
-      ''
-    )
-      .trim()
-      .toUpperCase();
-
-  const peaje =
-    String(
-      datos.peaje ||
-      ''
-    ).trim();
-
-  const estado =
-    String(
-      datos.estado ||
-      'ACTIVO'
-    )
-      .trim()
-      .toUpperCase();
-
-  if (!nombre) {
-    throw new Error(
-      'El nombre es obligatorio.'
-    );
-  }
-
-  if (
-    rol !== 'ADMIN' &&
-    rol !== 'ADMINISTRADOR' &&
-    rol !== 'INTERVENTORIA' &&
-    rol !== 'PEAJE'
-  ) {
-    throw new Error(
-      'Rol no válido.'
-    );
-  }
-
-  if (
-    estado !== 'ACTIVO' &&
-    estado !== 'INACTIVO'
-  ) {
-    throw new Error(
-      'Estado no válido.'
-    );
-  }
-
-  if (
-    rol === 'PEAJE' &&
-    !peaje
-  ) {
-    throw new Error(
-      'Debe indicar el peaje del usuario.'
-    );
-  }
-
-  const headers =
-    sh
-      .getRange(
-        1,
-        1,
-        1,
-        sh.getLastColumn()
-      )
-      .getValues()[0]
-      .map(function(header) {
-        return String(header || '').trim();
-      });
-
-  const col = function(name) {
-    const index =
-      headers.indexOf(name);
-
-    if (index === -1) {
-      throw new Error(
-        'Columna de usuario no configurada: ' +
-        name
-      );
-    }
-
-    return index + 1;
-  };
-
-  const datosHoja =
-    sh.getDataRange()
-      .getValues();
-
-  for (let i = 1; i < datosHoja.length; i++) {
-    if (
-      String(datosHoja[i][col('USUARIO') - 1] || '').trim().toLowerCase() ===
-      usuario.toLowerCase()
-    ) {
-      const row =
-        i + 1;
-
-      sh.getRange(row, col('NOMBRE')).setValue(nombre);
-      sh.getRange(row, col('ROL')).setValue(rol);
-      sh.getRange(row, col('PEAJE')).setValue(peaje || 'TODOS');
-      sh.getRange(row, col('ESTADO')).setValue(estado);
-      sh.getRange(row, col('EMAIL')).setValue(String(datos.email || '').trim());
-      sh.getRange(row, col('TELEFONO')).setValue(String(datos.telefono || '').trim());
-      sh.getRange(row, col('CARGO')).setValue(String(datos.cargo || '').trim());
-      const fotoUsuario =
-        String(datos.foto || '').trim();
-
-      sh.getRange(row, col('FOTO')).setValue(fotoUsuario);
-
-      guardarFotoUsuarioPersistente_(
-        usuario,
-        fotoUsuario
-      );
-
-      const nuevaContrasena =
-        String(
-          datos.nuevaContrasena ||
-          datos.password ||
-          ''
-        );
-
-      if (nuevaContrasena) {
-        if (nuevaContrasena.length < 6) {
-          throw new Error(
-            'La contraseña debe tener al menos 6 caracteres.'
-          );
-        }
-
-        sh.getRange(row, col('CONTRASENA'))
-          .setValue(
-            hashContrasena_(nuevaContrasena)
-          );
-      }
-
-      const perfilActualizado = {
-        ok: true,
-        mensaje:
-          'Perfil actualizado correctamente.',
-        usuario:
-          usuario,
-        nombre:
-          nombre,
-        rol:
-          rol,
-        peaje:
-          peaje ||
-          'TODOS',
-        estado:
-          estado,
-        email:
-          String(datos.email || '').trim(),
-        telefono:
-          String(datos.telefono || '').trim(),
-        cargo:
-          String(datos.cargo || '').trim(),
-        foto:
-          fotoUsuario
-      };
-
-      actualizarSesionCacheSiCorresponde_(
-        datos,
-        perfilActualizado
-      );
-
-      return perfilActualizado;
-    }
-  }
-
-  throw new Error(
-    'Usuario no encontrado.'
-  );
-}
-
-
-function actualizarPerfilPropio_(datos) {
-
-  datos =
-    datos || {};
-
-  const contexto =
-    obtenerContextoUsuario_(
-      datos
-    );
-
-  if (!contexto.ok) {
-    return contexto;
-  }
-
-  const sesion =
-    contexto.sesion;
-
-  const ss =
-    getSpreadsheet_();
-
-  const sh =
-    prepararHojaUsuarios_(ss);
-
-  const headers =
-    sh
-      .getRange(
-        1,
-        1,
-        1,
-        sh.getLastColumn()
-      )
-      .getValues()[0]
-      .map(function(header) {
-        return String(header || '').trim();
-      });
-
-  const col = function(name) {
-    const index =
-      headers.indexOf(name);
-
-    if (index === -1) {
-      throw new Error(
-        'Columna de usuario no configurada: ' +
-        name
-      );
-    }
-
-    return index + 1;
-  };
-
-  const datosHoja =
-    sh.getDataRange()
-      .getValues();
-
-  const usuarioSesion =
-    String(
-      sesion.usuario ||
-      ''
-    )
-      .trim()
-      .toLowerCase();
-
-  for (let i = 1; i < datosHoja.length; i++) {
-
-    if (
-      String(
-        datosHoja[i][col('USUARIO') - 1] ||
-        ''
-      )
-        .trim()
-        .toLowerCase() !==
-      usuarioSesion
-    ) {
-      continue;
-    }
-
-    const row =
-      i + 1;
-
-    const nombre =
-      String(
-        datos.nombre ||
-        datosHoja[i][col('NOMBRE') - 1] ||
-        sesion.nombre ||
-        sesion.usuario ||
-        ''
-      ).trim();
-
-    if (!nombre) {
-      throw new Error(
-        'El nombre es obligatorio.'
-      );
-    }
-
-    const email =
-      String(
-        datos.email ||
-        ''
-      ).trim();
-
-    const telefono =
-      String(
-        datos.telefono ||
-        ''
-      ).trim();
-
-    const cargo =
-      String(
-        datos.cargo ||
-        ''
-      ).trim();
-
-    const fotoUsuario =
-      String(
-        datos.foto ||
-        ''
-      ).trim();
-
-    sh.getRange(row, col('NOMBRE')).setValue(nombre);
-    sh.getRange(row, col('EMAIL')).setValue(email);
-    sh.getRange(row, col('TELEFONO')).setValue(telefono);
-    sh.getRange(row, col('CARGO')).setValue(cargo);
-    sh.getRange(row, col('FOTO')).setValue(fotoUsuario);
-
-    guardarFotoUsuarioPersistente_(
-      sesion.usuario,
-      fotoUsuario
-    );
-
-    const perfilActualizado = {
-      ok: true,
-      mensaje:
-        'Datos guardados correctamente.',
-      usuario:
-        sesion.usuario,
-      nombre:
-        nombre,
-      rol:
-        datosHoja[i][col('ROL') - 1] ||
-        sesion.rol ||
-        '',
-      peaje:
-        datosHoja[i][col('PEAJE') - 1] ||
-        sesion.peaje ||
-        '',
-      estado:
-        datosHoja[i][col('ESTADO') - 1] ||
-        sesion.estado ||
-        '',
-      email:
-        email,
-      telefono:
-        telefono,
-      cargo:
-        cargo,
-      foto:
-        fotoUsuario
-    };
-
-    actualizarSesionCacheSiCorresponde_(
-      datos,
-      perfilActualizado
-    );
-
-    return perfilActualizado;
-  }
-
-  throw new Error(
-    'Usuario no encontrado.'
-  );
-}
-
-
-function fotoKeyUsuario_(
-  usuario
-) {
-
-  return 'ZIMA_FOTO_' +
-    String(usuario || '')
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9_.-]/g, '_');
-}
-
-
-function guardarFotoUsuarioPersistente_(
-  usuario,
-  foto
-) {
-
-  const key =
-    fotoKeyUsuario_(
-      usuario
-    );
-
-  foto =
-    String(
-      foto || ''
-    ).trim();
-
-  try {
-
-    const props =
-      PropertiesService
-        .getScriptProperties();
-
-    if (foto) {
-      props.setProperty(
-        key,
-        foto
-      );
-    } else {
-      props.deleteProperty(
-        key
-      );
-    }
-
-  } catch (e) {}
-}
-
-
-function obtenerFotoUsuarioPersistente_(
-  usuario,
-  fotoHoja
-) {
-
-  fotoHoja =
-    String(
-      fotoHoja || ''
-    ).trim();
-
-  if (fotoHoja) {
-    return fotoHoja;
-  }
-
-  try {
-
-    return String(
-      PropertiesService
-        .getScriptProperties()
-        .getProperty(
-          fotoKeyUsuario_(
-            usuario
-          )
-        ) ||
-        ''
-    ).trim();
-
-  } catch (e) {
-
-    return '';
-  }
-}
-
-
-function actualizarSesionCacheSiCorresponde_(
-  datos,
-  perfil
-) {
-
-  const token =
-    String(
-      datos.token ||
-      datos.sessionToken ||
-      datos.sesion ||
-      ''
-    ).trim();
-
-  if (!token) {
-    return;
-  }
-
-  const sesionActual =
-    obtenerSesion_(
-      token
-    );
-
-  if (
-    !sesionActual ||
-    String(sesionActual.usuario || '').trim().toLowerCase() !==
-      String(perfil.usuario || '').trim().toLowerCase()
-  ) {
-    return;
-  }
-
-  const sesionNueva =
-    Object.assign(
-      {},
-      sesionActual,
-      {
-        usuario:
-          perfil.usuario,
-        nombre:
-          perfil.nombre,
-        rol:
-          perfil.rol,
-        peaje:
-          perfil.peaje,
-        estado:
-          perfil.estado,
-        email:
-          perfil.email || '',
-        telefono:
-          perfil.telefono || '',
-        cargo:
-          perfil.cargo || '',
-        foto:
-          perfil.foto || ''
-      }
-    );
-
-  CacheService
-    .getScriptCache()
-    .put(
-      ZIMA.SESSION_PREFIX + token,
-      JSON.stringify(sesionNueva),
-      ZIMA.SESSION_SECONDS
-    );
-}
-
-
-function obtenerPerfilUsuario_(params) {
-
-  const contexto =
-    obtenerContextoUsuario_(
-      params
-    );
-
-  if (!contexto.ok) {
-    return contexto;
-  }
-
-  const sesion =
-    contexto.sesion;
-
-  const usuarioHoja =
-    buscarUsuario_(
-      sesion.usuario
-    );
-
-  if (!usuarioHoja) {
-    return {
-      ok: false,
-      error:
-        'Usuario no encontrado.'
-    };
-  }
-
-  return {
-    ok: true,
-    usuario:
-      usuarioHoja.USUARIO ||
-      sesion.usuario,
-    nombre:
-      usuarioHoja.NOMBRE ||
-      sesion.nombre ||
-      usuarioHoja.USUARIO ||
-      '',
-    rol:
-      usuarioHoja.ROL ||
-      sesion.rol ||
-      '',
-    peaje:
-      usuarioHoja.PEAJE ||
-      sesion.peaje ||
-      '',
-    estado:
-      usuarioHoja.ESTADO ||
-      sesion.estado ||
-      '',
-    email:
-      usuarioHoja.EMAIL ||
-      '',
-    telefono:
-      usuarioHoja.TELEFONO ||
-      '',
-    cargo:
-      usuarioHoja.CARGO ||
-      '',
-    foto:
-      obtenerFotoUsuarioPersistente_(
-        usuarioHoja.USUARIO ||
-        sesion.usuario,
-        usuarioHoja.FOTO ||
-        ''
-      )
+      'TODOS'
   };
 }
 
@@ -2121,134 +1243,6 @@ function listarUsuarios() {
       delete copia.CONTRASENA;
       return copia;
     });
-}
-
-
-/* ============================================================
-   LISTAR PEAJES
-   ============================================================ */
-
-function listarPeajes_(params) {
-
-  params =
-    params || {};
-
-  const contexto =
-    obtenerContextoUsuario_(
-      params
-    );
-
-  if (!contexto.ok) {
-    return contexto;
-  }
-
-  const sesion =
-    contexto.sesion;
-
-  const mapa = {};
-
-  const agregar = function(value) {
-
-    const nombre =
-      String(
-        value || ''
-      ).trim();
-
-    const key =
-      normalizarPeaje_(
-        nombre
-      );
-
-    if (
-      !key ||
-      key === 'TODOS' ||
-      key === 'ADMINISTRACION CENTRAL' ||
-      key === 'ADMINISTRACIÓN CENTRAL'
-    ) {
-      return;
-    }
-
-    if (!mapa[key]) {
-      mapa[key] =
-        nombre;
-    }
-  };
-
-  let planillas = [];
-
-  try {
-    planillas =
-      readAllRows_(
-        getPlanillasSheet_()
-      );
-  } catch (e) {
-    planillas = [];
-  }
-
-  if (
-    !esUsuarioGlobal_(
-      sesion
-    )
-  ) {
-
-    const peajeSesion =
-      normalizarPeaje_(
-        sesion.peaje
-      );
-
-    planillas =
-      planillas.filter(
-        function(row) {
-          return normalizarPeaje_(
-            row.peaje
-          ) === peajeSesion;
-        }
-      );
-  }
-
-  planillas.forEach(
-    function(row) {
-      agregar(
-        row.peaje
-      );
-    }
-  );
-
-  try {
-
-    listarUsuarios()
-      .forEach(
-        function(usuario) {
-
-          if (
-            esUsuarioGlobal_(
-              sesion
-            ) ||
-            normalizarPeaje_(
-              usuario.PEAJE
-            ) === normalizarPeaje_(
-              sesion.peaje
-            )
-          ) {
-            agregar(
-              usuario.PEAJE
-            );
-          }
-        }
-      );
-
-  } catch (e) {}
-
-  return {
-    ok: true,
-    peajes:
-      Object
-        .keys(mapa)
-        .sort()
-        .map(function(key) {
-          return mapa[key];
-        })
-  };
 }
 
 
@@ -2386,19 +1380,6 @@ function doGet(e) {
     }
 
     if (
-      action === 'soporte' ||
-      action === 'reportarsoporte'
-    ) {
-
-      return jsonOutput_(
-        registrarSoporte_(
-          params
-        ),
-        callback
-      );
-    }
-
-    if (
       action === 'save' ||
       action === 'create' ||
       action === 'update' ||
@@ -2449,112 +1430,6 @@ function doGet(e) {
     }
 
     if (
-      action === 'soportes' ||
-      action === 'listasoporte'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          params
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(
-          contexto,
-          callback
-        );
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede consultar soporte.'
-        }, callback);
-      }
-
-      return jsonOutput_(
-        listarSoporte_(
-          params
-        ),
-        callback
-      );
-    }
-
-    if (
-      action === 'crearusuario' ||
-      action === 'actualizarusuario' ||
-      action === 'cambiarcontrasenausuario' ||
-      action === 'cambiarestadousuario'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          params
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(
-          contexto,
-          callback
-        );
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede modificar usuarios.'
-        }, callback);
-      }
-
-      if (action === 'crearusuario') {
-        return jsonOutput_(
-          crearUsuario(
-            params
-          ),
-          callback
-        );
-      }
-
-      if (action === 'actualizarusuario') {
-        return jsonOutput_(
-          actualizarUsuario(
-            params
-          ),
-          callback
-        );
-      }
-
-      if (action === 'cambiarcontrasenausuario') {
-        return jsonOutput_(
-          cambiarContrasenaUsuario(
-            params.usuario,
-            params.nuevaContrasena ||
-            params.password
-          ),
-          callback
-        );
-      }
-
-      return jsonOutput_(
-        cambiarEstadoUsuario(
-          params.usuario,
-          params.estado
-        ),
-        callback
-      );
-    }
-
-    if (
       action === 'sesion'
     ) {
 
@@ -2581,40 +1456,8 @@ function doGet(e) {
         peaje:
           contexto.sesion.peaje,
         estado:
-          contexto.sesion.estado,
-        email:
-          contexto.sesion.email || '',
-        telefono:
-          contexto.sesion.telefono || '',
-        cargo:
-          contexto.sesion.cargo || '',
-        foto:
-          contexto.sesion.foto || ''
+          contexto.sesion.estado
       }, callback);
-    }
-
-    if (
-      action === 'perfil'
-    ) {
-
-      return jsonOutput_(
-        obtenerPerfilUsuario_(
-          params
-        ),
-        callback
-      );
-    }
-
-    if (
-      action === 'actualizarperfil'
-    ) {
-
-      return jsonOutput_(
-        actualizarPerfilPropio_(
-          params
-        ),
-        callback
-      );
     }
 
     return jsonOutput_(
@@ -2716,30 +1559,6 @@ function doPost(e) {
     }
 
     if (
-      action === 'soporte' ||
-      action === 'reportarsoporte'
-    ) {
-
-      return jsonOutput_(
-        registrarSoporte_(
-          payload
-        )
-      );
-    }
-
-    if (
-      action ===
-      'actualizarperfil'
-    ) {
-
-      return jsonOutput_(
-        actualizarPerfilPropio_(
-          payload
-        )
-      );
-    }
-
-    if (
       action ===
       'crearusuario'
     ) {
@@ -2767,39 +1586,6 @@ function doPost(e) {
 
       return jsonOutput_(
         crearUsuario(
-          payload
-        )
-      );
-    }
-
-    if (
-      action ===
-      'actualizarusuario'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          payload
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(contexto);
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede actualizar usuarios.'
-        });
-      }
-
-      return jsonOutput_(
-        actualizarUsuario(
           payload
         )
       );
@@ -2928,12 +1714,6 @@ function apiGet(params) {
         params
       );
 
-    case 'peajes':
-
-      return listarPeajes_(
-        params
-      );
-
     case 'config':
 
       return obtenerConfiguracion();
@@ -2941,19 +1721,6 @@ function apiGet(params) {
     case 'sesion':
 
       return obtenerSesionRespuesta_(
-        params
-      );
-
-    case 'perfil':
-
-      return obtenerPerfilUsuario_(
-        params
-      );
-
-    case 'soportes':
-    case 'listasoporte':
-
-      return listarSoporte_(
         params
       );
 
@@ -3000,19 +1767,7 @@ function obtenerSesionRespuesta_(params) {
       contexto.sesion.peaje,
 
     estado:
-      contexto.sesion.estado,
-
-    email:
-      contexto.sesion.email || '',
-
-    telefono:
-      contexto.sesion.telefono || '',
-
-    cargo:
-      contexto.sesion.cargo || '',
-
-    foto:
-      contexto.sesion.foto || ''
+      contexto.sesion.estado
   };
 }
 
@@ -3052,19 +1807,6 @@ function apiPost(data) {
     case 'delete':
 
       return eliminarPlanilla_(
-        data
-      );
-
-    case 'soporte':
-    case 'reportarsoporte':
-
-      return registrarSoporte_(
-        data
-      );
-
-    case 'actualizarperfil':
-
-      return actualizarPerfilPropio_(
         data
       );
 
@@ -3216,15 +1958,6 @@ function guardarPlanilla_(data) {
       clean.peaje
     );
 
-    const notificacion =
-      notificarCambioPlanilla_(
-        'CREACION',
-        clean,
-        sesion,
-        'Planilla creada por ' +
-        sesion.usuario
-      );
-
     return {
 
       ok: true,
@@ -3247,10 +1980,7 @@ function guardarPlanilla_(data) {
         sesion.rol,
 
       peaje:
-        sesion.peaje,
-
-      notificacion:
-        notificacion
+        sesion.peaje
     };
 
   } finally {
@@ -3426,15 +2156,6 @@ function actualizarPlanilla_(data) {
       sesion.usuario
     );
 
-    const notificacion =
-      notificarCambioPlanilla_(
-      'ACTUALIZACION',
-      merged,
-      sesion,
-      'Planilla actualizada por ' +
-      sesion.usuario
-      );
-
     return {
 
       ok: true,
@@ -3451,10 +2172,7 @@ function actualizarPlanilla_(data) {
         sesion.usuario,
 
       peaje:
-        sesion.peaje,
-
-      notificacion:
-        notificacion
+        sesion.peaje
     };
 
   } finally {
@@ -3546,9 +2264,6 @@ function eliminarPlanilla_(data) {
       };
     }
 
-    const fechaAnulacion =
-      new Date();
-
     sh
       .getRange(
         found.rowNumber,
@@ -3568,47 +2283,20 @@ function eliminarPlanilla_(data) {
         )
       )
       .setValue(
-        fechaAnulacion
-      );
-
-    const anulada =
-      Object.assign(
-        {},
-        current,
-        {
-          estado:
-            'ANULADA',
-
-          updatedAt:
-            fechaAnulacion,
-
-          usuario:
-            sesion.usuario
-        }
+        new Date()
       );
 
     registrarAuditoria_(
       'DELETE',
-      anulada,
+      current,
       'Planilla anulada por ' +
       sesion.usuario
     );
 
-    const notificacion =
-      notificarCambioPlanilla_(
-      'ANULACION',
-      anulada,
-      sesion,
-      'Planilla anulada por ' +
-      sesion.usuario
-      );
-
     return {
       ok: true,
       message:
-        'Planilla anulada correctamente.',
-      notificacion:
-        notificacion
+        'Planilla anulada correctamente.'
     };
 
   } finally {
@@ -3689,10 +2377,12 @@ function listarPlanillas_(params) {
       .toLowerCase();
 
   const estado =
-    normalizarEstadoPlanilla_(
+    String(
       params.estado ||
       ''
-    );
+    )
+      .trim()
+      .toUpperCase();
 
   const fecha =
     String(
@@ -3706,10 +2396,10 @@ function listarPlanillas_(params) {
 
         if (
           estado &&
-          normalizarEstadoPlanilla_(
+          String(
             row.estado ||
             ''
-          ) !==
+          ).toUpperCase() !==
           estado
         ) {
           return false;
@@ -3953,10 +2643,9 @@ function obtenerDashboard_(params) {
       function(r) {
 
         return String(
-          normalizarEstadoPlanilla_(
-            r.estado
-          )
-        ) !==
+          r.estado ||
+          ''
+        ).toUpperCase() !==
         'ANULADA';
 
       }
@@ -3979,9 +2668,10 @@ function obtenerDashboard_(params) {
     activas.filter(
       function(r) {
 
-        return normalizarEstadoPlanilla_(
-          r.estado
-        ) ===
+        return String(
+          r.estado ||
+          ''
+        ).toUpperCase() ===
         'ENTREGADA';
 
       }
@@ -3991,9 +2681,10 @@ function obtenerDashboard_(params) {
     activas.filter(
       function(r) {
 
-        return normalizarEstadoPlanilla_(
-          r.estado
-        ) ===
+        return String(
+          r.estado ||
+          ''
+        ).toUpperCase() ===
         'CERRADA';
 
       }
@@ -4339,29 +3030,6 @@ function normalizarPeaje_(value) {
 }
 
 
-function normalizarEstadoPlanilla_(
-  value
-) {
-
-  const estado =
-    String(
-      value ||
-      ''
-    )
-      .trim()
-      .toUpperCase();
-
-  if (
-    estado ===
-    'ENTREGADO'
-  ) {
-    return 'ENTREGADA';
-  }
-
-  return estado;
-}
-
-
 /* ============================================================
    NORMALIZACIÓN DE DATOS
    ============================================================ */
@@ -4416,19 +3084,18 @@ function normalizarDatos_(data) {
     );
 
   result.tula =
-    result.total;
+    number_(
+      data.tula
+    );
 
   result.billetes =
-    0;
+    number_(
+      data.billetes
+    );
 
   result.fecha =
     normalizeDateString_(
       data.fecha
-    );
-
-  result.estado =
-    normalizarEstadoPlanilla_(
-      result.estado
     );
 
   return result;
@@ -4488,15 +3155,10 @@ function validarPlanilla_(d) {
     'ANULADA'
   ];
 
-  d.estado =
-    normalizarEstadoPlanilla_(
-      d.estado
-    );
-
   if (
     d.estado &&
     estadosPermitidos.indexOf(
-      d.estado
+      d.estado.toUpperCase()
     ) === -1
   ) {
 
@@ -4851,11 +3513,7 @@ function serializarRegistro_(
       } else {
 
         copy[key] =
-          key === 'estado'
-            ? normalizarEstadoPlanilla_(
-                value
-              )
-            : value;
+          value;
       }
     }
   );
@@ -5149,939 +3807,6 @@ function registrarAuditoria_(
     email
 
   ]);
-}
-
-
-/* ============================================================
-   SOPORTE EN LINEA
-   ============================================================ */
-
-function recortarSoporte_(
-  value,
-  max
-) {
-
-  value =
-    String(
-      value == null
-        ? ''
-        : value
-    );
-
-  max =
-    max ||
-    6000;
-
-  if (value.length <= max) {
-    return value;
-  }
-
-  return value.substring(0, max) +
-    '\n...[recortado]';
-}
-
-
-function registrarSoporte_(
-  data
-) {
-
-  data =
-    data ||
-    {};
-
-  let contexto =
-    null;
-
-  try {
-    contexto =
-      obtenerContextoUsuario_(
-        data
-      );
-  } catch (e) {
-    contexto =
-      null;
-  }
-
-  const sesion =
-    contexto &&
-    contexto.ok
-      ? contexto.sesion
-      : {
-        usuario:
-          data.usuario ||
-          data.user ||
-          '',
-
-        nombre:
-          data.nombre ||
-          data.name ||
-          '',
-
-        rol:
-          data.rol ||
-          data.role ||
-          '',
-
-        peaje:
-          data.peaje ||
-          ''
-      };
-
-  const fecha =
-    Utilities.formatDate(
-      new Date(),
-      Session.getScriptTimeZone(),
-      'yyyy-MM-dd HH:mm:ss'
-    );
-
-  const tipo =
-    String(
-      data.tipo ||
-      data.type ||
-      'manual'
-    ).trim();
-
-  const titulo =
-    String(
-      data.titulo ||
-      data.title ||
-      'Solicitud de soporte'
-    ).trim();
-
-  const mensaje =
-    recortarSoporte_(
-      data.mensaje ||
-      data.message ||
-      data.error ||
-      ''
-    );
-
-  const captura =
-    recortarSoporte_(
-      data.captura ||
-      data.capture ||
-      data.detalle ||
-      ''
-    );
-
-  const pagina =
-    String(
-      data.pagina ||
-      data.page ||
-      ''
-    ).trim();
-
-  const navegador =
-    String(
-      data.navegador ||
-      data.userAgent ||
-      ''
-    ).trim();
-
-  try {
-    const sh =
-      prepararHojaSoporte_(
-        getSpreadsheet_()
-      );
-
-    sh.appendRow([
-      new Date(),
-      tipo,
-      titulo,
-      mensaje,
-      pagina,
-      sesion.usuario || '',
-      sesion.nombre || '',
-      sesion.rol || '',
-      sesion.peaje || '',
-      navegador,
-      captura,
-      'ABIERTO'
-    ]);
-  } catch (e) {
-    console.error(
-      'No fue posible guardar el soporte en hoja: ' +
-      errorMessage_(
-        e
-      )
-    );
-  }
-
-  const asunto =
-    'ZIMA 360 - Soporte ' +
-    tipo.toUpperCase() +
-    ' - ' +
-    titulo;
-
-  const html =
-    '<div style="font-family:Arial,sans-serif;color:#172033;line-height:1.45">' +
-    '<div style="border-left:5px solid #f4c20d;padding:4px 0 4px 14px;margin-bottom:16px">' +
-    '<div style="font-size:12px;color:#6b7280;font-weight:bold;letter-spacing:1px;text-transform:uppercase">ZIMA 360</div>' +
-    '<div style="font-size:20px;font-weight:800;color:#111827">Reporte de soporte en linea</div>' +
-    '</div>' +
-    '<table style="border-collapse:collapse;width:100%;max-width:760px">' +
-    filaHtmlPlanillaPdf_('Fecha', fecha) +
-    filaHtmlPlanillaPdf_('Tipo', tipo) +
-    filaHtmlPlanillaPdf_('Titulo', titulo) +
-    filaHtmlPlanillaPdf_('Mensaje', mensaje) +
-    filaHtmlPlanillaPdf_('Pagina', pagina) +
-    filaHtmlPlanillaPdf_('Usuario', sesion.usuario || '') +
-    filaHtmlPlanillaPdf_('Nombre', sesion.nombre || '') +
-    filaHtmlPlanillaPdf_('Rol', sesion.rol || '') +
-    filaHtmlPlanillaPdf_('Peaje', sesion.peaje || '') +
-    filaHtmlPlanillaPdf_('Navegador', navegador) +
-    '</table>' +
-    '<p style="margin:18px 0 8px;color:#4b5563"><b>Captura tecnica del error</b></p>' +
-    '<pre style="white-space:pre-wrap;background:#f6f8fb;border:1px solid #d8dee8;padding:12px;border-radius:6px;max-width:760px">' +
-    htmlEscape_(
-      captura ||
-      'Sin captura tecnica.'
-    ) +
-    '</pre>' +
-    '</div>';
-
-  const texto =
-    [
-      'ZIMA 360 - Reporte de soporte',
-      'Fecha: ' + fecha,
-      'Tipo: ' + tipo,
-      'Titulo: ' + titulo,
-      'Mensaje: ' + mensaje,
-      'Pagina: ' + pagina,
-      'Usuario: ' + (sesion.usuario || ''),
-      'Nombre: ' + (sesion.nombre || ''),
-      'Rol: ' + (sesion.rol || ''),
-      'Peaje: ' + (sesion.peaje || ''),
-      'Navegador: ' + navegador,
-      '',
-      'Captura tecnica:',
-      captura
-    ].join('\n');
-
-  const destinatarios =
-    obtenerEmailsUsuariosNotificacion_(
-      sesion
-    );
-
-  if (!destinatarios.length) {
-    return {
-      ok: false,
-      error:
-        'No hay correos de soporte configurados.'
-    };
-  }
-
-  MailApp.sendEmail({
-    to:
-      destinatarios.join(','),
-
-    subject:
-      asunto.substring(0, 240),
-
-    body:
-      texto,
-
-    htmlBody:
-      html
-  });
-
-  return {
-    ok: true,
-    enviadoA:
-      destinatarios.join(','),
-    fecha:
-      fecha
-  };
-}
-
-
-function listarSoporte_(
-  params
-) {
-
-  params =
-    params ||
-    {};
-
-  const contexto =
-    obtenerContextoUsuario_(
-      params
-    );
-
-  if (!contexto.ok) {
-    return contexto;
-  }
-
-  if (
-    !esUsuarioAdministrador_(
-      contexto.sesion
-    )
-  ) {
-    return {
-      ok: false,
-      error:
-        'Solo un administrador puede consultar soporte.'
-    };
-  }
-
-  const sh =
-    prepararHojaSoporte_(
-      getSpreadsheet_()
-    );
-
-  const lastRow =
-    sh.getLastRow();
-
-  if (lastRow < 2) {
-    return {
-      ok: true,
-      rows: [],
-      total: 0
-    };
-  }
-
-  const values =
-    sh
-      .getRange(
-        2,
-        1,
-        lastRow - 1,
-        ZIMA.SOPORTE_HEADERS.length
-      )
-      .getValues();
-
-  const rows =
-    values
-      .map(function(row, index) {
-        const item = {
-          rowNumber:
-            index + 2
-        };
-
-        ZIMA.SOPORTE_HEADERS.forEach(function(header, colIndex) {
-          const value =
-            row[colIndex];
-
-          item[header] =
-            value instanceof Date
-              ? value.toISOString()
-              : value;
-        });
-
-        return item;
-      })
-      .reverse();
-
-  return {
-    ok: true,
-    rows:
-      rows,
-    total:
-      rows.length
-  };
-}
-
-
-/* ============================================================
-   NOTIFICACIONES DE SEGUIMIENTO
-   ============================================================ */
-
-function emailValido_(
-  value
-) {
-
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-    String(
-      value ||
-      ''
-    ).trim()
-  );
-}
-
-
-function extraerEmails_(
-  value
-) {
-
-  const emails = [];
-
-  String(
-    value ||
-    ''
-  )
-    .split(/[,\s;]+/)
-    .forEach(function(email) {
-
-      email =
-        String(
-          email ||
-          ''
-        ).trim();
-
-      if (
-        emailValido_(
-          email
-        ) &&
-        emails.indexOf(email) === -1
-      ) {
-        emails.push(email);
-      }
-    });
-
-  return emails;
-}
-
-
-function obtenerEmailsUsuariosNotificacion_(
-  sesion
-) {
-
-  const emails = [];
-
-  const agregar = function(value) {
-
-    extraerEmails_(
-      value
-    ).forEach(function(email) {
-      if (emails.indexOf(email) === -1) {
-        emails.push(email);
-      }
-    });
-  };
-
-  agregar(
-    obtenerValorConfig_(
-      'CORREOS_NOTIFICACION'
-    ) ||
-    'sistemaplanillaszima@gmail.com'
-  );
-
-  return emails;
-}
-
-
-function obtenerEmailNotificacion_(
-  sesion
-) {
-
-  return obtenerEmailsUsuariosNotificacion_(
-    sesion
-  ).join(',');
-}
-
-
-function htmlEscape_(
-  value
-) {
-
-  return String(
-    value == null
-      ? ''
-      : value
-  )
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-
-function formatoMonedaCorreo_(
-  value
-) {
-
-  const numero =
-    number_(
-      value
-    );
-
-  return '$ ' +
-    numero
-      .toFixed(0)
-      .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
-
-
-function nombreArchivoPlanillaPdf_(
-  row,
-  accion
-) {
-
-  const codigo =
-    String(
-      row &&
-      (
-        row.codigo ||
-        row.id
-      ) ||
-      'planilla'
-    )
-      .trim()
-      .replace(/[^a-z0-9_.-]/gi, '_');
-
-  return 'ZIMA_' +
-    String(
-      accion ||
-      'PLANILLA'
-    )
-      .trim()
-      .toUpperCase()
-      .replace(/[^A-Z0-9_.-]/g, '_') +
-    '_' +
-    codigo +
-    '.pdf';
-}
-
-
-function filaHtmlPlanillaPdf_(
-  label,
-  value
-) {
-
-  return '<tr>' +
-    '<th>' +
-    htmlEscape_(
-      label
-    ) +
-    '</th>' +
-    '<td>' +
-    htmlEscape_(
-      value
-    ) +
-    '</td>' +
-    '</tr>';
-}
-
-
-function construirHtmlPlanillaPdf_(
-  row,
-  accion,
-  sesion,
-  detalle
-) {
-
-  row =
-    row ||
-    {};
-
-  sesion =
-    sesion ||
-    {};
-
-  const fechaPlanilla =
-    normalizeDateString_(
-      row.fecha
-    );
-
-  const fechaGeneracion =
-    Utilities.formatDate(
-      new Date(),
-      Session.getScriptTimeZone(),
-      'yyyy-MM-dd HH:mm:ss'
-    );
-
-  const filas = [
-    filaHtmlPlanillaPdf_('Codigo', row.codigo || ''),
-    filaHtmlPlanillaPdf_('ID', row.id || ''),
-    filaHtmlPlanillaPdf_('Peaje', row.peaje || ''),
-    filaHtmlPlanillaPdf_('Razon', row.razon || ''),
-    filaHtmlPlanillaPdf_('Moneda', row.moneda || ''),
-    filaHtmlPlanillaPdf_('Lugar de entrega', row.lugarEntrega || ''),
-    filaHtmlPlanillaPdf_('Recibe', row.recibe || ''),
-    filaHtmlPlanillaPdf_('Ciudad', row.ciudad || ''),
-    filaHtmlPlanillaPdf_('Lugar de recibo', row.lugarRecibo || ''),
-    filaHtmlPlanillaPdf_('Fecha', fechaPlanilla),
-    filaHtmlPlanillaPdf_('Concepto', row.concepto || ''),
-    filaHtmlPlanillaPdf_('Total entregado', formatoMonedaCorreo_(row.total)),
-    filaHtmlPlanillaPdf_('Observacion valor', row.obsValor || ''),
-    filaHtmlPlanillaPdf_('Valor tula', formatoMonedaCorreo_(row.tula)),
-    filaHtmlPlanillaPdf_('Valor billetes', formatoMonedaCorreo_(row.billetes)),
-    filaHtmlPlanillaPdf_('Valor en letras', row.letras || ''),
-    filaHtmlPlanillaPdf_('Observaciones', row.observaciones || ''),
-    filaHtmlPlanillaPdf_('Entregado por', row.entregadoNombre || ''),
-    filaHtmlPlanillaPdf_('Firma entregado', row.entregadoFirma || ''),
-    filaHtmlPlanillaPdf_('Revisado por', row.revisadoNombre || ''),
-    filaHtmlPlanillaPdf_('Firma revisado', row.revisadoFirma || ''),
-    filaHtmlPlanillaPdf_('Estado', row.estado || ''),
-    filaHtmlPlanillaPdf_('Usuario responsable', sesion.usuario || row.usuario || ''),
-    filaHtmlPlanillaPdf_('Nombre responsable', sesion.nombre || ''),
-    filaHtmlPlanillaPdf_('Rol responsable', sesion.rol || ''),
-    filaHtmlPlanillaPdf_('Fecha de generacion', fechaGeneracion)
-  ].join('');
-
-  return '<!doctype html>' +
-    '<html><head><meta charset="UTF-8">' +
-    '<style>' +
-    '@page{size:letter;margin:22mm 16mm}' +
-    'body{font-family:Arial,sans-serif;color:#172033;font-size:12px}' +
-    '.brand{border-bottom:4px solid #f4c20d;padding-bottom:12px;margin-bottom:18px}' +
-    '.kicker{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#6b7280;font-weight:bold}' +
-    'h1{font-size:22px;margin:5px 0 4px;color:#111827}' +
-    '.sub{color:#4b5563;line-height:1.45}' +
-    '.badge{display:inline-block;background:#111827;color:#fff;padding:6px 10px;border-radius:4px;font-size:11px;font-weight:bold;margin-top:8px}' +
-    'table{width:100%;border-collapse:collapse;margin-top:16px}' +
-    'th,td{border:1px solid #d8dee8;padding:8px 9px;vertical-align:top}' +
-    'th{width:32%;background:#f5f7fb;text-align:left;color:#374151}' +
-    '.footer{margin-top:18px;color:#6b7280;font-size:10px;line-height:1.5}' +
-    '</style></head><body>' +
-    '<div class="brand">' +
-    '<div class="kicker">ZIMA 360 · Seguimiento de planillas</div>' +
-    '<h1>Planilla ' +
-    htmlEscape_(
-      row.codigo ||
-      row.id ||
-      ''
-    ) +
-    '</h1>' +
-    '<div class="sub">' +
-    htmlEscape_(
-      detalle ||
-      ''
-    ) +
-    '</div>' +
-    '<div class="badge">' +
-    htmlEscape_(
-      accion ||
-      'PLANILLA'
-    ) +
-    '</div>' +
-    '</div>' +
-    '<table>' +
-    filas +
-    '</table>' +
-    '<div class="footer">' +
-    'Este PDF fue generado automaticamente por ZIMA 360 como soporte del movimiento registrado.' +
-    '</div>' +
-    '</body></html>';
-}
-
-
-function crearPdfPlanilla_(
-  row,
-  accion,
-  sesion,
-  detalle
-) {
-
-  const html =
-    construirHtmlPlanillaPdf_(
-      row,
-      accion,
-      sesion,
-      detalle
-    );
-
-  const nombre =
-    nombreArchivoPlanillaPdf_(
-      row,
-      accion
-    );
-
-  return Utilities
-    .newBlob(
-      html,
-      'text/html',
-      nombre.replace(/\.pdf$/i, '.html')
-    )
-    .getAs(
-      MimeType.PDF
-    )
-    .setName(
-      nombre
-    );
-}
-
-
-function construirHtmlCorreoCambio_(
-  accion,
-  row,
-  sesion,
-  detalle,
-  fechaCambio
-) {
-
-  return '<div style="font-family:Arial,sans-serif;color:#172033;line-height:1.45">' +
-    '<div style="border-left:5px solid #f4c20d;padding:4px 0 4px 14px;margin-bottom:16px">' +
-    '<div style="font-size:12px;color:#6b7280;font-weight:bold;letter-spacing:1px;text-transform:uppercase">ZIMA 360</div>' +
-    '<div style="font-size:20px;font-weight:800;color:#111827">Seguimiento de planilla</div>' +
-    '</div>' +
-    '<p>Se registr&oacute; una <b>' +
-    htmlEscape_(
-      accion
-    ) +
-    '</b> en el sistema.</p>' +
-    '<table style="border-collapse:collapse;width:100%;max-width:680px">' +
-    filaHtmlPlanillaPdf_('Detalle', detalle || '') +
-    filaHtmlPlanillaPdf_('Fecha del cambio', fechaCambio) +
-    filaHtmlPlanillaPdf_('Codigo', row.codigo || '') +
-    filaHtmlPlanillaPdf_('ID', row.id || '') +
-    filaHtmlPlanillaPdf_('Peaje', row.peaje || '') +
-    filaHtmlPlanillaPdf_('Fecha planilla', normalizeDateString_(row.fecha)) +
-    filaHtmlPlanillaPdf_('Estado', row.estado || '') +
-    filaHtmlPlanillaPdf_('Total', formatoMonedaCorreo_(row.total)) +
-    filaHtmlPlanillaPdf_('Usuario', sesion && sesion.usuario || '') +
-    filaHtmlPlanillaPdf_('Nombre', sesion && sesion.nombre || '') +
-    filaHtmlPlanillaPdf_('Rol', sesion && sesion.rol || '') +
-    '</table>' +
-    '<p style="margin-top:16px;color:#4b5563">Se adjunta una copia en PDF de la planilla.</p>' +
-    '</div>';
-}
-
-
-function construirHtmlCorreoIngreso_(
-  sesion,
-  fechaIngreso
-) {
-
-  sesion =
-    sesion ||
-    {};
-
-  return '<div style="font-family:Arial,sans-serif;color:#172033;line-height:1.45">' +
-    '<div style="border-left:5px solid #f4c20d;padding:4px 0 4px 14px;margin-bottom:16px">' +
-    '<div style="font-size:12px;color:#6b7280;font-weight:bold;letter-spacing:1px;text-transform:uppercase">ZIMA 360</div>' +
-    '<div style="font-size:20px;font-weight:800;color:#111827">Ingreso a la plataforma</div>' +
-    '</div>' +
-    '<p>Se registr&oacute; un inicio de sesi&oacute;n correcto.</p>' +
-    '<table style="border-collapse:collapse;width:100%;max-width:680px">' +
-    filaHtmlPlanillaPdf_('Fecha de ingreso', fechaIngreso) +
-    filaHtmlPlanillaPdf_('Usuario', sesion.usuario || '') +
-    filaHtmlPlanillaPdf_('Nombre', sesion.nombre || '') +
-    filaHtmlPlanillaPdf_('Rol', sesion.rol || '') +
-    filaHtmlPlanillaPdf_('Peaje', sesion.peaje || '') +
-    filaHtmlPlanillaPdf_('Email perfil', sesion.email || '') +
-    '</table>' +
-    '</div>';
-}
-
-
-function notificarIngresoPlataforma_(
-  sesion
-) {
-
-  try {
-
-    const destino =
-      obtenerEmailNotificacion_(
-        sesion
-      );
-
-    if (!destino) {
-      return {
-        ok: false,
-        enviado: false,
-        error:
-          'No hay correos de notificación configurados.'
-      };
-    }
-
-    const zona =
-      Session.getScriptTimeZone();
-
-    const fechaIngreso =
-      Utilities.formatDate(
-        new Date(),
-        zona,
-        'yyyy-MM-dd HH:mm:ss'
-      );
-
-    const asunto =
-      'ZIMA 360 - Ingreso a la plataforma - ' +
-      (
-        sesion &&
-        sesion.usuario ||
-        ''
-      );
-
-    const lineas = [
-      'Ingreso a la plataforma ZIMA 360',
-      '',
-      'Fecha de ingreso: ' + fechaIngreso,
-      '',
-      'Usuario',
-      'Usuario: ' + (sesion && sesion.usuario || ''),
-      'Nombre: ' + (sesion && sesion.nombre || ''),
-      'Rol: ' + (sesion && sesion.rol || ''),
-      'Peaje: ' + (sesion && sesion.peaje || ''),
-      'Email perfil: ' + (sesion && sesion.email || '')
-    ];
-
-    MailApp.sendEmail({
-      to:
-        destino,
-
-      subject:
-        asunto,
-
-      body:
-        lineas.join('\n'),
-
-      htmlBody:
-        construirHtmlCorreoIngreso_(
-          sesion,
-          fechaIngreso
-        )
-    });
-
-    return {
-      ok: true,
-      enviado: true,
-      destinatarios:
-        destino
-    };
-
-  } catch (e) {
-
-    console.error(
-      'No fue posible enviar notificacion de ingreso: ' +
-      errorMessage_(
-        e
-      )
-    );
-
-    return {
-      ok: false,
-      enviado: false,
-      error:
-        'No fue posible enviar el correo de ingreso: ' +
-        errorMessage_(
-          e
-        )
-    };
-  }
-}
-
-
-function notificarCambioPlanilla_(
-  accion,
-  row,
-  sesion,
-  detalle
-) {
-
-  try {
-
-    const destino =
-      obtenerEmailNotificacion_(
-        sesion
-      );
-
-    if (!destino) {
-      return {
-        ok: false,
-        enviado: false,
-        error:
-          'No hay correos de notificación configurados. Complete CORREOS_NOTIFICACION en CONFIG o el EMAIL de un ADMIN/INTERVENTORIA activo.'
-      };
-    }
-
-    const zona =
-      Session.getScriptTimeZone();
-
-    const fechaCambio =
-      Utilities.formatDate(
-        new Date(),
-        zona,
-        'yyyy-MM-dd HH:mm:ss'
-      );
-
-    const fechaPlanilla =
-      normalizeDateString_(
-        row.fecha
-      );
-
-    const asunto =
-      'ZIMA 360 - ' +
-      accion +
-      ' de planilla ' +
-      (
-        row.codigo ||
-        row.id ||
-        ''
-      );
-
-    const lineas = [
-      'Seguimiento ZIMA 360',
-      '',
-      'Accion: ' + accion,
-      'Detalle: ' + (detalle || ''),
-      'Fecha del cambio: ' + fechaCambio,
-      '',
-      'Planilla',
-      'Codigo: ' + (row.codigo || ''),
-      'ID: ' + (row.id || ''),
-      'Peaje: ' + (row.peaje || ''),
-      'Fecha: ' + fechaPlanilla,
-      'Estado: ' + (row.estado || ''),
-      'Total: ' + number_(row.total),
-      '',
-      'Usuario responsable',
-      'Usuario: ' + (sesion && sesion.usuario || ''),
-      'Nombre: ' + (sesion && sesion.nombre || ''),
-      'Rol: ' + (sesion && sesion.rol || ''),
-      '',
-      'Se adjunta una copia en PDF de la planilla.'
-    ];
-
-    const pdf =
-      crearPdfPlanilla_(
-        row,
-        accion,
-        sesion,
-        detalle
-      );
-
-    MailApp.sendEmail({
-      to:
-        destino,
-
-      subject:
-        asunto,
-
-      body:
-        lineas.join('\n'),
-
-      htmlBody:
-        construirHtmlCorreoCambio_(
-          accion,
-          row,
-          sesion,
-          detalle,
-          fechaCambio
-        ),
-
-      attachments: [
-        pdf
-      ]
-    });
-
-    return {
-      ok: true,
-      enviado: true,
-      destinatarios:
-        destino
-    };
-
-  } catch (e) {
-
-    console.error(
-      'No fue posible enviar notificacion de planilla: ' +
-      errorMessage_(
-        e
-      )
-    );
-
-    return {
-      ok: false,
-      enviado: false,
-      error:
-        'No fue posible enviar el correo: ' +
-        errorMessage_(
-          e
-        )
-    };
-  }
 }
 
 

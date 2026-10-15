@@ -1,11 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" type="image/png" href="img/logo.png">
 
-  <title>ZIMA 360 &middot; Iniciar sesi&oacute;n</title>
+  <title>ZIMA 360 · Iniciar sesión</title>
 
   <style>
     * {
@@ -205,61 +204,6 @@
       font-size: 11px;
     }
 
-    .announcement-modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(6, 18, 38, .76);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      z-index: 1000;
-    }
-
-    .announcement-modal.open {
-      display: flex;
-    }
-
-    .announcement-dialog {
-      width: min(820px, 100%);
-      position: relative;
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 28px 90px rgba(0,0,0,.38);
-      overflow: hidden;
-    }
-
-    .announcement-dialog img {
-      display: block;
-      width: 100%;
-      height: auto;
-      max-height: min(82vh, 820px);
-      object-fit: contain;
-      background: #eef6ff;
-    }
-
-    .announcement-close {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 40px;
-      height: 40px;
-      border: 1px solid rgba(255,255,255,.72);
-      border-radius: 50%;
-      background: rgba(11,31,66,.82);
-      color: #fff;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      font-size: 24px;
-      line-height: 1;
-      box-shadow: 0 10px 24px rgba(8,18,36,.22);
-    }
-
-    .announcement-close:hover {
-      background: #061426;
-    }
-
     @media (max-width: 480px) {
       .login-card {
         padding: 32px 24px 27px;
@@ -269,126 +213,9 @@
       .logo {
         width: 185px;
       }
-
-      .announcement-modal {
-        padding: 12px;
-      }
-
-      .announcement-dialog {
-        border-radius: 12px;
-      }
-
-      .announcement-close {
-        top: 8px;
-        right: 8px;
-        width: 36px;
-        height: 36px;
-      }
     }
   </style>
   <link rel="stylesheet" href="zima-ui-modern.css">
-  <style id="login-success-polish">
-    .login-success-modal {
-      z-index: 1200 !important;
-      background:
-        radial-gradient(circle at 50% 28%, rgba(247, 198, 0, .22), transparent 34%),
-        rgba(0, 32, 42, .68) !important;
-      backdrop-filter: blur(10px);
-    }
-
-    .login-success-box {
-      width: min(430px, calc(100vw - 34px)) !important;
-      padding: 0 !important;
-      border: 1px solid rgba(255, 255, 255, .72) !important;
-      border-radius: 18px !important;
-      overflow: hidden;
-      text-align: left !important;
-      color: #17202b !important;
-      box-shadow: 0 28px 80px rgba(0, 0, 0, .34) !important;
-    }
-
-    .login-success-head {
-      display: grid;
-      grid-template-columns: 58px 1fr;
-      gap: 14px;
-      align-items: center;
-      padding: 22px 24px 17px;
-      background: linear-gradient(135deg, #fff 0%, #f7fbff 100%);
-    }
-
-    .login-success-icon {
-      width: 58px !important;
-      height: 58px !important;
-      margin: 0 !important;
-      background: #f7c600 !important;
-      color: #003747 !important;
-      box-shadow: 0 12px 24px rgba(247, 198, 0, .28);
-    }
-
-    .login-success-title {
-      color: #003747 !important;
-      font-size: 21px !important;
-      letter-spacing: 0 !important;
-    }
-
-    .login-success-text {
-      margin-top: 5px !important;
-      color: #5f6d7c !important;
-      font-size: 13px !important;
-    }
-
-    .login-success-meta {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      padding: 0 24px 20px;
-      background: #fff;
-    }
-
-    .login-success-step {
-      min-height: 64px;
-      padding: 11px 10px;
-      border: 1px solid #e7edf4;
-      border-radius: 10px;
-      background: #fbfdff;
-    }
-
-    .login-success-step span {
-      display: block;
-      width: 8px;
-      height: 8px;
-      margin-bottom: 9px;
-      border-radius: 50%;
-      background: #20b486;
-      box-shadow: 0 0 0 4px rgba(32, 180, 134, .12);
-    }
-
-    .login-success-step strong {
-      display: block;
-      color: #1f2a37;
-      font-size: 11px;
-      line-height: 1.25;
-    }
-
-    .login-success-step small {
-      display: block;
-      margin-top: 3px;
-      color: #7a8795;
-      font-size: 9px;
-      line-height: 1.3;
-    }
-
-    .login-success-progress {
-      height: 5px !important;
-      margin: 0 !important;
-      background: #e8edf3 !important;
-    }
-
-    .login-success-progress span {
-      background: linear-gradient(90deg, #003747, #f7c600) !important;
-      animation-duration: .9s !important;
-    }
-  </style>
 </head>
 
 <body>
@@ -412,7 +239,7 @@
       </div>
 
       <div class="system-subtitle">
-        SFT &middot; EFICIENCIA &middot; CONTROL &middot; CONFIANZA
+        SFT · EFICIENCIA · CONTROL · CONFIANZA
       </div>
 
       <!-- LOGIN -->
@@ -437,7 +264,7 @@
 
         <div class="field">
           <label for="password">
-            Contrase&ntilde;a
+            Contraseña
           </label>
 
           <div class="input-box">
@@ -447,7 +274,7 @@
               id="password"
               name="password"
               autocomplete="current-password"
-              placeholder="Ingrese su contrase&ntilde;a"
+              placeholder="Ingrese su contraseña"
               required
             >
 
@@ -455,9 +282,9 @@
               type="button"
               class="password-toggle"
               id="togglePassword"
-              title="Mostrar contrase&ntilde;a"
+              title="Mostrar contraseña"
             >
-              ver
+              👁
             </button>
 
           </div>
@@ -480,13 +307,13 @@
 
       <div class="connection">
         <span class="connection-dot"></span>
-        Sistema conectado en l&iacute;nea
+        Sistema conectado en línea
       </div>
 
     </div>
 
     <div class="footer">
-      ZIMA 360 &middot; Sistema de Gesti&oacute;n
+      ZIMA 360 · Sistema de Gestión
     </div>
 
   </div>
@@ -494,19 +321,10 @@
 
   <div class="login-success-modal" id="loginSuccessModal" aria-hidden="true">
     <div class="login-success-box" role="status" aria-live="polite">
-      <div class="login-success-head">
-        <div class="login-success-icon">&#10003;</div>
-        <div>
-          <div class="login-success-title">Acceso confirmado</div>
-          <div class="login-success-text" id="loginSuccessText">
-            Validando sesi&oacute;n...
-          </div>
-        </div>
-      </div>
-      <div class="login-success-meta" aria-hidden="true">
-        <div class="login-success-step"><span></span><strong>Credenciales</strong><small>Verificadas</small></div>
-        <div class="login-success-step"><span></span><strong>Perfil</strong><small>Sincronizado</small></div>
-        <div class="login-success-step"><span></span><strong>Panel</strong><small>Abriendo</small></div>
+      <div class="login-success-icon">✓</div>
+      <div class="login-success-title">Acceso correcto</div>
+      <div class="login-success-text" id="loginSuccessText">
+        Validando sesión...
       </div>
       <div class="login-success-progress">
         <span></span>
@@ -514,14 +332,7 @@
     </div>
   </div>
 
-  <div class="announcement-modal" id="announcementModal" aria-hidden="true">
-    <div class="announcement-dialog" role="dialog" aria-modal="true" aria-label="Anuncio ZIMA 360">
-      <button class="announcement-close" type="button" id="announcementClose" aria-label="Cerrar anuncio">&times;</button>
-      <img src="img/anuncio-renovacion-zima360.png" alt="ZIMA 360 nos renovamos. Nueva plataforma, mas intuitiva y facil de usar.">
-    </div>
-  </div>
 
-<script src="zima-ui.js"></script>
 <script>
 
 /* ============================================================
@@ -529,7 +340,7 @@
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbxrA58PXId5baP3sOXKJ2U71erwjfTC4SbRmNQ7p63KoSKLa--P3yFM1eWP1-GVf_XV7g/exec";
+  "https://script.google.com/macros/s/AKfycbzcTUFKBSpOF5G1Nh3-B9yEkRkihYIik3npJDLXloSgIxbAJ5PYhnW1fvoQYySBEyaY7Q/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);
@@ -564,15 +375,6 @@ const loginSuccessModal =
 const loginSuccessText =
   document.getElementById("loginSuccessText");
 
-const announcementModal =
-  document.getElementById("announcementModal");
-
-const announcementClose =
-  document.getElementById("announcementClose");
-
-let anuncioCallback =
-  null;
-
 
 /* ============================================================
    MOSTRAR / OCULTAR CONTRASEÑA
@@ -583,12 +385,12 @@ togglePassword.addEventListener("click", function () {
   if (passwordInput.type === "password") {
 
     passwordInput.type = "text";
-    togglePassword.textContent = "Ocultar";
+    togglePassword.textContent = "🙈";
 
   } else {
 
     passwordInput.type = "password";
-    togglePassword.textContent = "Ver";
+    togglePassword.textContent = "👁";
 
   }
 
@@ -645,122 +447,6 @@ function mostrarAccesoCorrecto(datos) {
 
 }
 
-function esAdminLogin(datos) {
-
-  const rol =
-    String(
-      datos &&
-      (
-        datos.rol ||
-        datos.ROL ||
-        datos.role ||
-        ""
-      )
-    )
-      .trim()
-      .toUpperCase();
-
-  return rol === "ADMIN" || rol === "ADMINISTRADOR";
-
-}
-
-
-function irDashboard() {
-
-  window.location.href =
-    "dashboard.html";
-
-}
-
-
-function programarAnuncioSistema(datos) {
-
-  try {
-    sessionStorage.setItem("ZIMA_SHOW_WELCOME", "1");
-
-    if (!esAdminLogin(datos)) {
-      sessionStorage.setItem("ZIMA_SHOW_ANNOUNCEMENT", "1");
-    } else {
-      sessionStorage.removeItem("ZIMA_SHOW_ANNOUNCEMENT");
-    }
-  } catch (e) {}
-
-}
-
-
-function abrirAnuncioRenovacion(callback) {
-
-  anuncioCallback =
-    typeof callback === "function"
-      ? callback
-      : null;
-
-  if (!announcementModal) {
-    if (anuncioCallback) {
-      anuncioCallback();
-    }
-    return;
-  }
-
-  announcementModal.classList.add("open");
-  announcementModal.setAttribute("aria-hidden", "false");
-
-}
-
-
-function cerrarAnuncioRenovacion() {
-
-  if (announcementModal) {
-    announcementModal.classList.remove("open");
-    announcementModal.setAttribute("aria-hidden", "true");
-  }
-
-  const callback =
-    anuncioCallback;
-
-  anuncioCallback =
-    null;
-
-  if (callback) {
-    callback();
-  }
-
-}
-
-
-if (announcementClose) {
-  announcementClose.addEventListener(
-    "click",
-    cerrarAnuncioRenovacion
-  );
-}
-
-
-if (announcementModal) {
-  announcementModal.addEventListener(
-    "click",
-    function(event) {
-      if (event.target === announcementModal) {
-        cerrarAnuncioRenovacion();
-      }
-    }
-  );
-}
-
-
-document.addEventListener(
-  "keydown",
-  function(event) {
-    if (
-      event.key === "Escape" &&
-      announcementModal &&
-      announcementModal.classList.contains("open")
-    ) {
-      cerrarAnuncioRenovacion();
-    }
-  }
-);
-
 
 /* ============================================================
    GUARDAR SESIÓN
@@ -790,31 +476,6 @@ function guardarSesion(datos) {
 
     estado:
       datos.estado || "ACTIVO",
-
-    email:
-      datos.email ||
-      datos.EMAIL ||
-      (datos.usuarioData && (datos.usuarioData.email || datos.usuarioData.EMAIL)) ||
-      "",
-
-    telefono:
-      datos.telefono ||
-      datos.TELEFONO ||
-      (datos.usuarioData && (datos.usuarioData.telefono || datos.usuarioData.TELEFONO)) ||
-      "",
-
-    cargo:
-      datos.cargo ||
-      datos.CARGO ||
-      (datos.usuarioData && (datos.usuarioData.cargo || datos.usuarioData.CARGO)) ||
-      "",
-
-    foto:
-      datos.foto ||
-      datos.FOTO ||
-      datos.photo ||
-      (datos.usuarioData && (datos.usuarioData.foto || datos.usuarioData.FOTO || datos.usuarioData.photo)) ||
-      "",
 
     token:
       token,
@@ -852,10 +513,6 @@ function guardarSesion(datos) {
   localStorage.setItem("ZIMA360_NOMBRE", usuarioSesion.nombre);
   localStorage.setItem("ZIMA360_ROL", usuarioSesion.rol);
   localStorage.setItem("ZIMA360_PEAJE", usuarioSesion.peaje);
-  localStorage.setItem("ZIMA360_FOTO", usuarioSesion.foto);
-  localStorage.setItem("ZIMA360_EMAIL", usuarioSesion.email);
-  localStorage.setItem("ZIMA360_TELEFONO", usuarioSesion.telefono);
-  localStorage.setItem("ZIMA360_CARGO", usuarioSesion.cargo);
   localStorage.setItem("ZIMA_USER_NAME", usuarioSesion.nombre);
   localStorage.setItem("ZIMA_PEAJE", usuarioSesion.peaje);
 
@@ -865,11 +522,6 @@ function guardarSesion(datos) {
     localStorage.setItem("ZIMA_TOKEN", token);
     sessionStorage.setItem("ZIMA_SESSION_TOKEN", token);
   }
-
-  try {
-    sessionStorage.setItem("ZIMA360_SESION", JSON.stringify(usuarioSesion));
-    sessionStorage.setItem("ZIMA360_FOTO", usuarioSesion.foto);
-  } catch (e) {}
 
 }
 
@@ -1007,7 +659,7 @@ loginForm.addEventListener(
     if (!password) {
 
       mostrarMensaje(
-        "Ingrese la contrase\u00f1a.",
+        "Ingrese la contraseña.",
         "error"
       );
 
@@ -1098,18 +750,19 @@ loginForm.addEventListener(
           resultado
         );
 
-        programarAnuncioSistema(
-          resultado
-        );
-
 
         loginButton.textContent =
           "ACCESO CORRECTO";
 
 
         setTimeout(
-          irDashboard,
-          900
+          function () {
+
+            window.location.href =
+              "dashboard.html";
+
+          },
+          700
         );
 
 
@@ -1120,7 +773,7 @@ loginForm.addEventListener(
       mostrarMensaje(
         resultado.mensaje ||
         resultado.error ||
-        "Usuario o contrase\u00f1a incorrectos.",
+        "Usuario o contraseña incorrectos.",
         "error"
       );
 
@@ -1180,12 +833,20 @@ window.addEventListener(
 
   try {
 
-    const usuario =
+    const activa =
       localStorage.getItem(
-        "ZIMA360_SESION"
+        "ZIMA_SESION"
       );
 
-    if (usuario) {
+    const usuario =
+      localStorage.getItem(
+        "ZIMA_USUARIO"
+      );
+
+    if (
+      activa === "ACTIVA" &&
+      usuario
+    ) {
 
       // No redirigimos automáticamente
       // para evitar bloquear el login.
@@ -1195,7 +856,7 @@ window.addEventListener(
   } catch (e) {
 
     console.warn(
-      "No se pudo consultar la sesi\u00f3n local."
+      "No se pudo consultar la sesión local."
     );
 
   }
@@ -1206,6 +867,3 @@ window.addEventListener(
 
 </body>
 </html>
-
-
-
