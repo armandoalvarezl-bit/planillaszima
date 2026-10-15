@@ -1,0 +1,2139 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inscripción Oficial</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui-theme.css">
+<link rel="icon" type="image/png" href="img/logo.png">
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Outfit',sans-serif;}
+
+body{
+min-height:100vh;
+padding-top:0;
+font-style:normal;
+background:
+radial-gradient(circle at 12% 0%,rgba(199,57,47,.16),transparent 30rem),
+radial-gradient(circle at 90% 14%,rgba(35,79,94,.10),transparent 28rem),
+linear-gradient(135deg,#fff9f5 0%,#f6efe9 44%,#eef4f6 100%);
+color:var(--ui-ink);
+}
+
+.container{
+width:min(1120px,100%);
+margin:0 auto;
+padding:42px 24px 58px;
+}
+
+.form-hero{
+display:grid;
+grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);
+gap:22px;
+align-items:stretch;
+margin-bottom:22px;
+}
+
+.form-hero-main,
+.form-hero-side{
+background:rgba(255,255,255,.80);
+border:1px solid rgba(124,36,36,.10);
+box-shadow:0 18px 52px rgba(61,32,24,.10);
+backdrop-filter:blur(14px);
+}
+
+.form-hero-main{
+position:relative;
+overflow:hidden;
+border-radius:24px;
+padding:30px;
+}
+
+.form-hero-main:after{
+content:"";
+position:absolute;
+right:-70px;
+top:-90px;
+width:230px;
+height:230px;
+border-radius:50%;
+background:radial-gradient(circle,rgba(199,57,47,.18),transparent 68%);
+}
+
+.eyebrow{
+display:inline-flex;
+align-items:center;
+gap:9px;
+color:#8f1d2c;
+font-size:.78rem;
+font-weight:900;
+letter-spacing:.12em;
+text-transform:uppercase;
+margin-bottom:12px;
+}
+
+.eyebrow:before{
+content:"";
+width:24px;
+height:2px;
+border-radius:999px;
+background:#c7392f;
+}
+
+.page-title{
+position:relative;
+max-width:760px;
+margin:0;
+font-weight:900;
+color:var(--ui-wine);
+font-size:clamp(2.25rem,5vw,4rem);
+letter-spacing:0;
+line-height:.96;
+}
+
+.form-hero-main p{
+position:relative;
+max-width:720px;
+margin:16px 0 0;
+color:#5f504b;
+font-size:1.05rem;
+line-height:1.62;
+font-weight:500;
+}
+
+.hero-meta{
+position:relative;
+display:flex;
+flex-wrap:wrap;
+gap:10px;
+margin-top:22px;
+}
+
+.hero-meta span{
+display:inline-flex;
+align-items:center;
+min-height:38px;
+padding:9px 13px;
+border-radius:999px;
+background:#fff;
+border:1px solid rgba(24,32,40,.10);
+color:#3f3936;
+font-weight:800;
+box-shadow:0 8px 22px rgba(31,24,20,.06);
+}
+
+.form-hero-side{
+border-radius:20px;
+padding:22px;
+display:flex;
+flex-direction:column;
+justify-content:space-between;
+gap:18px;
+}
+
+.side-label{
+color:#8a7772;
+font-size:.82rem;
+font-weight:900;
+text-transform:uppercase;
+letter-spacing:.08em;
+}
+
+.side-value{
+color:var(--ui-wine);
+font-size:1.9rem;
+font-weight:900;
+line-height:1;
+}
+
+.side-note{
+color:#5f504b;
+font-size:.95rem;
+line-height:1.5;
+font-weight:600;
+}
+
+.registration-guide{
+display:grid;
+grid-template-columns:repeat(3,minmax(0,1fr));
+gap:14px;
+margin:0 0 22px;
+}
+
+.guide-card{
+position:relative;
+display:grid;
+grid-template-columns:auto 1fr;
+gap:12px;
+align-items:start;
+padding:18px;
+border-radius:18px;
+background:rgba(255,255,255,.82);
+border:1px solid rgba(124,36,36,.10);
+box-shadow:0 14px 34px rgba(61,32,24,.08);
+}
+
+.guide-number{
+width:38px;
+height:38px;
+display:grid;
+place-items:center;
+border-radius:12px;
+background:linear-gradient(135deg,var(--ui-wine),var(--ui-red));
+color:#fff;
+font-weight:900;
+box-shadow:0 10px 22px rgba(143,29,44,.22);
+}
+
+.guide-card strong{
+display:block;
+color:var(--ui-wine);
+font-size:1rem;
+line-height:1.15;
+font-weight:900;
+}
+
+.guide-card span{
+display:block;
+margin-top:5px;
+color:#62524d;
+font-size:.92rem;
+line-height:1.45;
+font-weight:600;
+}
+
+form{
+position:relative;
+overflow:hidden;
+background:rgba(255,252,248,.96);
+padding:34px;
+border-radius:22px;
+box-shadow:0 24px 70px rgba(61,32,24,.13);
+border:1px solid rgba(124,36,36,.10);
+backdrop-filter:blur(14px);
+display:grid;
+grid-template-columns:repeat(2,minmax(0,1fr));
+gap:16px 18px;
+}
+form:before{
+content:"";
+position:absolute;
+inset:0 0 auto;
+height:7px;
+background:linear-gradient(90deg,var(--ui-wine),var(--ui-red),#f3b23f);
+}
+
+.form-intro,
+.field-note,
+.payment-guide{
+grid-column:1/-1;
+border-radius:16px;
+border:1px solid rgba(143,29,44,.10);
+background:#fff8f4;
+color:#5f504b;
+}
+
+.form-intro{
+display:flex;
+gap:14px;
+align-items:flex-start;
+padding:18px;
+margin-top:8px;
+}
+
+.form-intro strong{
+display:block;
+color:var(--ui-wine);
+font-size:1.05rem;
+font-weight:900;
+}
+
+.form-intro span{
+display:block;
+margin-top:4px;
+font-size:.95rem;
+line-height:1.5;
+font-weight:600;
+}
+
+.form-intro-icon{
+width:42px;
+height:42px;
+flex:0 0 auto;
+display:grid;
+place-items:center;
+border-radius:14px;
+background:#fff;
+color:#9b1c2b;
+box-shadow:inset 0 0 0 1px rgba(143,29,44,.10);
+}
+
+.form-intro-icon:before{
+content:"";
+width:11px;
+height:20px;
+border:solid #9b1c2b;
+border-width:0 4px 4px 0;
+transform:rotate(45deg);
+margin-top:-3px;
+}
+
+.field-note{
+padding:12px 14px;
+font-size:.92rem;
+line-height:1.45;
+font-weight:700;
+}
+
+.field-note a{
+color:#8f1d2c;
+font-weight:900;
+}
+
+.payment-guide{
+display:grid;
+grid-template-columns:minmax(0,1fr) minmax(180px,auto);
+gap:16px;
+align-items:center;
+padding:18px;
+margin-top:10px;
+background:linear-gradient(135deg,#fff8f4,#f6fbfb);
+}
+
+.payment-guide strong{
+display:block;
+color:var(--ui-wine);
+font-size:1.05rem;
+font-weight:900;
+}
+
+.payment-guide span{
+display:block;
+margin-top:5px;
+color:#5f504b;
+font-size:.94rem;
+line-height:1.45;
+font-weight:600;
+}
+
+.payment-amount{
+display:flex;
+flex-direction:column;
+gap:2px;
+align-items:center;
+justify-content:center;
+min-height:74px;
+padding:12px 16px;
+border-radius:14px;
+background:#fff;
+color:#8f1d2c;
+font-weight:900;
+text-align:center;
+box-shadow:0 10px 24px rgba(61,32,24,.08);
+}
+
+.payment-amount small{
+display:block;
+color:#6f5a55;
+font-size:.78rem;
+font-weight:800;
+text-transform:uppercase;
+letter-spacing:.05em;
+}
+
+.payment-amount strong{
+display:block;
+color:#8f1d2c;
+font-size:1.22rem;
+line-height:1.05;
+}
+
+#cupos{
+width:fit-content;
+max-width:100%;
+text-align:center;
+font-size:1rem;
+margin:0;
+color:#8f1d2c;
+font-weight:800;
+background:rgba(255,255,255,.86);
+border:1px solid rgba(143,29,44,.12);
+border-radius:999px;
+padding:10px 16px;
+box-shadow:0 10px 26px rgba(54,35,27,.07);
+}
+h3{
+grid-column:1/-1;
+display:flex;
+align-items:center;
+gap:10px;
+margin-top:26px;
+margin-bottom:0;
+color:var(--ui-wine);
+font-weight:900;
+font-size:1.05rem;
+letter-spacing:.02em;
+padding-top:8px;
+border-top:1px solid rgba(124,36,36,.08);
+}
+form h3:first-child{
+margin-top:2px;
+padding-top:0;
+border-top:0;
+}
+h3:before{
+content:"";
+width:9px;
+height:22px;
+border-radius:999px;
+background:linear-gradient(180deg,var(--ui-red),#f3b23f);
+box-shadow:0 8px 18px rgba(199,57,47,.24);
+}
+
+input,select,textarea{
+width:100%;
+padding:15px 16px;
+margin:0;
+border-radius:12px;
+border:1px solid rgba(24,32,40,.12);
+background:#fff;
+transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease,background .2s ease;
+color:var(--ui-ink);
+font:inherit;
+font-weight:600;
+min-height:52px;
+box-shadow:0 8px 20px rgba(31,24,20,.045);
+}
+input::placeholder,
+textarea::placeholder{
+color:#8a7772;
+font-weight:500;
+}
+select{
+appearance:auto;
+color:#534640;
+}
+input:focus,select:focus,textarea:focus{
+outline:none;
+border-color:rgba(199,57,47,.62);
+box-shadow:0 0 0 4px rgba(199,57,47,.12),0 12px 25px rgba(31,24,20,.08);
+background:white;
+transform:translateY(-1px);
+}
+input[readonly]{
+background:#f7f1ed;
+border-style:dashed;
+color:#70524b;
+box-shadow:none;
+cursor:not-allowed;
+}
+select:disabled{
+background:#f3f4f6;
+color:#9aa0a6;
+box-shadow:none;
+cursor:not-allowed;
+}
+textarea{
+min-height:110px;
+resize:vertical;
+}
+
+textarea,
+#camisetaOpciones,
+#galeriaCamisetas{
+grid-column:1/-1;
+}
+
+button{
+background:linear-gradient(135deg,var(--ui-wine),var(--ui-red));
+color:white;
+padding:16px 18px;
+border:none;
+border-radius:14px;
+width:100%;
+font-size:16px;
+margin-top:18px;
+cursor:pointer;
+transition:transform .2s ease,box-shadow .2s ease,filter .2s ease;
+font-weight:900;
+box-shadow:0 16px 30px rgba(143,29,44,.22);
+}
+button:hover{transform:translateY(-2px);box-shadow:0 18px 34px rgba(143,29,44,.28);filter:saturate(1.04);}
+
+.form-actions{
+grid-column:1/-1;
+display:grid;
+grid-template-columns:minmax(0,1.2fr) minmax(220px,.8fr);
+gap:12px;
+align-items:center;
+margin-top:6px;
+}
+
+.form-actions button{
+margin-top:0;
+min-height:56px;
+}
+
+button.btn-secundario{
+background:#fff;
+color:#34414d;
+border:1px solid rgba(52,65,77,.14);
+box-shadow:0 10px 22px rgba(52,65,77,.08);
+}
+
+button.btn-secundario:hover{
+box-shadow:0 12px 24px rgba(52,65,77,.12);
+}
+
+#Estado{margin-top:20px;text-align:center;font-weight:700;font-size:16px;color:#111827;}
+
+.topbar{
+position:sticky;top:0;left:0;width:100%;color:white;
+display:flex;align-items:center;z-index:1000;box-shadow:0 10px 34px rgba(50,0,0,.22);padding:0;background:rgba(40,0,2,.92);backdrop-filter:blur(18px);
+}
+.topbar-content{width:min(1510px,100%);min-height:82px;margin:auto;padding:12px 40px;display:flex;align-items:center;justify-content:space-between;gap:28px;border:0;background:transparent;border-radius:0;box-shadow:none;}
+.logo-area{display:flex;align-items:center;gap:12px;}
+.logo{height:58px;width:70px;object-fit:contain;background:rgba(255,255,255,.08);padding:5px;border-radius:14px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);}
+.titulo{display:flex;flex-direction:column;line-height:1.1;}
+.titulo strong{font-size:1.35rem;color:white;font-weight:900;}
+.titulo span{font-size:1rem;color:rgba(255,255,255,.88);margin-top:5px;}
+.menu{display:flex;flex-wrap:wrap;gap:10px;}
+.menu a{min-width:86px;color:white;text-decoration:none;font-weight:800;transition:.2s;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);padding:11px 15px;border-radius:999px;margin-left:0;text-align:center;}
+.menu a:hover{background:#fff;color:#7a1019;box-shadow:0 12px 24px rgba(0,0,0,.18);}
+
+.modal-content h2,
+.modal-confirmacion-content h2{
+font-size:1.72rem;
+line-height:1.08;
+margin:0 0 10px;
+color:var(--ui-wine);
+text-align:left;
+}
+.modal-subtitle{
+margin:8px 0 22px;
+font-size:1rem;
+line-height:1.62;
+color:#5e3a37;
+font-weight:600;
+}
+
+.modal,.modal-confirmacion,.modal-bienvenida{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(18,0,2,.62);
+backdrop-filter:blur(12px);
+align-items:center;
+justify-content:center;
+z-index:2000;
+padding:20px;
+}
+.modal-content,.modal-confirmacion-content,.modal-bienvenida-content{
+position:relative;
+background:linear-gradient(180deg,#fff,#fff8f3);
+padding:0;
+border-radius:22px;
+width:min(640px,100%);
+max-height:min(90dvh,860px);
+overflow:hidden;
+box-shadow:0 34px 90px rgba(35,0,0,.32);
+animation:zoomIn .22s ease;
+border:1px solid rgba(255,255,255,.78);
+}
+.modal-content::before,
+.modal-confirmacion-content::before,
+.modal-bienvenida-content::before{
+content:"";
+display:block;
+height:7px;
+background:linear-gradient(90deg,var(--ui-wine),var(--ui-red),#f3b23f);
+}
+.modal-body{
+padding:28px;
+}
+.modal-icon{
+width:58px;
+height:58px;
+display:grid;
+place-items:center;
+border-radius:18px;
+margin-bottom:16px;
+color:white;
+background:linear-gradient(180deg,#e22025,#b80710);
+box-shadow:0 16px 32px rgba(184,15,20,.24);
+font-size:1.65rem;
+}
+.modal-icon.success{
+background:linear-gradient(135deg,#20744f,#2f7d5c);
+box-shadow:0 16px 32px rgba(47,125,92,.24);
+}
+.modal-icon.warn{
+background:linear-gradient(135deg,#b45309,#f59e0b);
+box-shadow:0 16px 32px rgba(180,83,9,.22);
+}
+.modal-content.is-error .modal-icon{
+background:linear-gradient(180deg,#e22025,#b80710);
+}
+.modal-launch-content{
+background:#ffffff;
+padding:32px 30px 28px;
+border-radius:28px;
+width:100%;
+max-width:520px;
+box-shadow:0 32px 90px rgba(0,0,0,.22);
+position:relative;
+}
+.modal-launch-content h2{
+font-size:2.3rem;
+line-height:1;
+margin:16px 0 12px;
+color:#8b0e11;
+}
+.modal-launch-content .modal-subtitle{
+margin:0 0 24px;
+font-size:1rem;
+line-height:1.6;
+color:#4f4f4f;
+}
+.modal-launch-brand{
+display:flex;
+align-items:center;
+gap:14px;
+margin-bottom:20px;
+}
+.modal-launch-brand img{
+width:56px;
+height:56px;
+object-fit:contain;
+border-radius:18px;
+box-shadow:0 12px 35px rgba(0,0,0,.12);
+}
+.modal-launch-brand span{
+font-weight:900;
+color:#8b0e11;
+font-size:1.05rem;
+letter-spacing:.08em;
+}
+.launch-counter{
+margin:16px 0 6px;
+font-size:3.2rem;
+font-weight:900;
+color:#b80f14;
+letter-spacing:.02em;
+}
+.launch-caption{
+margin:0;
+font-size:.95rem;
+line-height:1.5;
+color:#6b6b6b;
+text-transform:uppercase;
+letter-spacing:.08em;
+}
+.modal-close{
+position:absolute;
+top:18px;
+right:18px;
+width:42px;
+height:42px;
+border:none;
+border-radius:999px;
+background:rgba(255,255,255,.92);
+color:#6b2b28;
+font-size:1.6rem;
+font-weight:800;
+line-height:1;
+cursor:pointer;
+box-shadow:0 12px 26px rgba(0,0,0,.14);
+}
+.modal-close:hover{
+background:#fff;
+}
+.modal-confirmacion-content{
+max-width:720px;
+max-height:min(88vh,860px);
+display:flex;
+flex-direction:column;
+}
+
+.modal-bienvenida-content{text-align:left;}
+.modal-bienvenida-content .icono{
+width:88px;
+height:68px;
+object-fit:contain;
+margin-bottom:16px;
+}
+.modal-bienvenida-content h1{font-size:2rem;line-height:1.05;margin:0 0 10px;color:var(--ui-wine);}
+.modal-aviso-pago h2{
+text-align:left;
+margin-bottom:12px;
+}
+.modal-aviso-pago .aviso-pago-box{
+background:#fff8f5;
+border:1px solid rgba(214,0,0,.16);
+border-radius:18px;
+padding:18px;
+margin:18px 0 22px;
+color:#4e2f2d;
+line-height:1.6;
+text-align:left;
+}
+.modal-aviso-pago .aviso-pago-box strong{
+color:var(--ui-wine);
+}
+.modal-aviso-actions{
+display:flex;
+gap:12px;
+flex-wrap:wrap;
+justify-content:flex-end;
+padding:18px 28px 26px;
+border-top:1px solid rgba(124,36,36,.08);
+background:#fffaf7;
+}
+.modal-aviso-actions a,
+.modal-aviso-actions button{
+margin-top:0;
+text-decoration:none;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+padding:14px 24px;
+border-radius:14px;
+font-weight:800;
+letter-spacing:.02em;
+}
+.modal-bienvenida-content button,
+.modal-content button,
+.modal-confirmacion-content button{
+width:auto;
+min-height:48px;
+padding:14px 24px;
+font-weight:800;
+letter-spacing:.02em;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+gap:8px;
+}
+
+.datos-confirmacion{
+background:#fffaf7;
+padding:6px 18px;
+border-radius:16px;
+border:1px solid rgba(124,36,36,.09);
+margin:6px 28px 0;
+overflow:auto;
+flex:1;
+min-height:0;
+}
+.dato-item{
+display:grid;
+grid-template-columns:minmax(150px,.8fr) minmax(0,1.2fr);
+gap:16px;
+padding:12px 0;
+border-bottom:1px solid rgba(124,36,36,.08);
+}
+.dato-item:last-child{border-bottom:none;}
+.dato-label{font-weight:900;color:var(--ui-wine);}
+.dato-item span:last-child{
+color:#352221;
+font-weight:700;
+overflow-wrap:anywhere;
+text-align:right;
+}
+
+.botones-confirmacion{
+display:flex;
+gap:12px;
+position:sticky;
+bottom:0;
+background:linear-gradient(180deg,rgba(255,250,247,.98),#fff);
+padding:18px 28px 26px;
+margin-top:16px;
+border-top:1px solid rgba(124,36,36,.08);
+}
+.botones-confirmacion button{
+flex:1;
+margin-top:0;
+border-radius:14px;
+letter-spacing:.01em;
+}
+.btn-cancelar{
+background:#f3f4f6;
+color:#3f4b58;
+box-shadow:inset 0 0 0 1px rgba(52,65,77,.08);
+}
+.btn-cancelar:hover{background:#e2e6eb;}
+.btn-primario{
+background:linear-gradient(135deg,var(--ui-wine),var(--ui-red));
+color:white;
+box-shadow:0 16px 30px rgba(143,29,44,.22);
+}
+.btn-primario:hover{transform:translateY(-1px);box-shadow:0 18px 34px rgba(143,29,44,.28);}
+
+.ticket-pago{
+  margin-top:18px;
+  padding:24px 24px 22px;
+  border-radius:24px;
+  background:linear-gradient(135deg,#fffdf8,#f8e5d8);
+  border:1px solid rgba(214,0,0,.18);
+  box-shadow:0 20px 40px rgba(0,0,0,.08);
+  color:#4a1a18;
+}
+.ticket-pago .ticket-header{
+  margin-bottom:18px;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(74,26,24,.12);
+}
+.ticket-pago .ticket-header strong{
+  display:block;
+  font-size:1rem;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#9e1d1d;
+}
+.ticket-pago .ticket-grid{
+  display:grid;
+  grid-template-columns:minmax(130px,1fr) minmax(180px,1.6fr);
+  gap:10px 18px;
+  align-items:start;
+}
+.ticket-pago .ticket-label{
+  font-size:.92rem;
+  font-weight:700;
+  color:#7e2420;
+}
+.ticket-pago .ticket-value{
+  font-size:.95rem;
+  color:#3f1c1d;
+  line-height:1.5;
+}
+.ticket-pago .ticket-total{
+  grid-column:1/-1;
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px dashed rgba(74,26,24,.16);
+  font-size:1rem;
+  font-weight:800;
+  color:#861d1d;
+}
+.ticket-pago .ticket-value span{display:block;}
+
+.camiseta-grid{
+grid-column:1/-1;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:18px;
+margin-top:14px;
+}
+.camiseta-card{
+background:#fff;
+border:1px solid rgba(24,32,40,.10);
+border-radius:16px;
+padding:14px;
+box-shadow:0 14px 34px rgba(31,24,20,.08);
+transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.camiseta-card:hover{
+transform:translateY(-3px);
+box-shadow:0 20px 42px rgba(31,24,20,.12);
+border-color:rgba(199,57,47,.22);
+}
+.camiseta-card h4{
+margin:0 0 10px;
+color:var(--ui-wine);
+font-size:16px;
+font-weight:900;
+}
+.camiseta-card img{
+width:100%;
+height:260px;
+object-fit:contain;
+background:linear-gradient(180deg,#f9fafb,#f1f3f5);
+border-radius:12px;
+display:block;
+margin-bottom:10px;
+}
+.camiseta-card p{
+margin:4px 0;
+font-size:14px;
+color:#4b5563;
+}
+.camiseta-opciones{
+grid-column:1/-1;
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:12px;
+margin-top:12px;
+padding:14px;
+border-radius:16px;
+background:#fbf7f3;
+border:1px solid rgba(143,29,44,.09);
+}
+
+.modal-carga{
+background:rgba(18,0,2,.68);
+backdrop-filter:blur(12px);
+z-index:2600;
+}
+.modal-carga-content{
+width:min(520px,100%);
+padding:0;
+border-radius:24px;
+overflow:hidden;
+background:#fffdfb;
+border:1px solid rgba(255,255,255,.78);
+box-shadow:0 34px 90px rgba(35,0,0,.34);
+animation:zoomIn .24s ease;
+}
+.carga-head{
+padding:28px 28px 24px;
+display:grid;
+grid-template-columns:auto 1fr;
+gap:18px;
+align-items:center;
+color:white;
+background:linear-gradient(135deg,#4b0003 0%,#220000 72%,#090000 100%);
+}
+.carga-logo{
+width:62px;
+height:62px;
+border-radius:18px;
+display:grid;
+place-items:center;
+background:rgba(255,255,255,.1);
+border:1px solid rgba(255,255,255,.16);
+box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.carga-logo img{
+width:48px;
+height:42px;
+object-fit:contain;
+}
+.carga-head h2{
+margin:0;
+font-size:1.65rem;
+line-height:1.05;
+font-weight:900;
+}
+.carga-head p{
+margin:8px 0 0;
+color:rgba(255,255,255,.78);
+font-size:.95rem;
+line-height:1.45;
+font-weight:600;
+}
+.carga-body{
+padding:24px 28px 28px;
+}
+.carga-progress{
+height:9px;
+border-radius:999px;
+overflow:hidden;
+background:#f1ded8;
+}
+.carga-progress span{
+display:block;
+width:58%;
+height:100%;
+border-radius:999px;
+background:linear-gradient(90deg,var(--ui-wine),var(--ui-red),#f3b23f);
+animation:cargaProgress 1.25s ease-in-out infinite alternate;
+}
+.carga-steps{
+display:grid;
+gap:12px;
+margin-top:22px;
+}
+.carga-step{
+display:grid;
+grid-template-columns:42px 1fr;
+gap:12px;
+align-items:center;
+padding:12px;
+border-radius:16px;
+background:#fff8f5;
+border:1px solid #f0dfd8;
+}
+.carga-step-dot{
+width:42px;
+height:42px;
+border-radius:14px;
+display:grid;
+place-items:center;
+background:#fff;
+border:1px solid rgba(143,29,44,.16);
+}
+.carga-spinner{
+width:20px;
+height:20px;
+border-radius:50%;
+border:3px solid rgba(143,29,44,.18);
+border-top-color:var(--ui-red);
+animation:cargaSpin .8s linear infinite;
+}
+.carga-step strong{
+display:block;
+color:var(--ui-wine);
+font-size:.98rem;
+font-weight:900;
+}
+.carga-step span{
+display:block;
+margin-top:3px;
+color:#6f5a55;
+font-size:.9rem;
+line-height:1.35;
+font-weight:600;
+}
+.carga-foot{
+margin-top:18px;
+padding-top:16px;
+border-top:1px solid #eee1dc;
+color:#76615d;
+font-size:.9rem;
+line-height:1.45;
+font-weight:700;
+text-align:center;
+}
+
+@keyframes cargaSpin{
+to{transform:rotate(360deg);}
+}
+
+@keyframes cargaProgress{
+from{width:34%;}
+to{width:92%;}
+}
+
+@keyframes zoomIn{from{transform:scale(.8);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+@media(max-width:768px){
+.container{padding:22px 14px 40px;}
+.form-hero{grid-template-columns:1fr;gap:14px;margin-bottom:16px;}
+.form-hero-main{padding:22px;border-radius:20px;}
+.form-hero-main p{font-size:.98rem;}
+.page-title{font-size:clamp(2.1rem,13vw,3rem);}
+.hero-meta span{width:100%;justify-content:center;border-radius:14px;}
+.form-hero-side{padding:18px;}
+.registration-guide{grid-template-columns:1fr;gap:10px;margin-bottom:16px;}
+.guide-card{padding:15px;}
+form{grid-template-columns:1fr;padding:24px 18px;border-radius:20px;gap:14px;}
+.form-intro{padding:15px;}
+.payment-guide{grid-template-columns:1fr;}
+.payment-amount{width:100%;text-align:center;}
+#cupos{border-radius:16px;}
+.form-actions{grid-template-columns:1fr;}
+.modal,.modal-confirmacion,.modal-bienvenida{padding:12px;}
+.modal-content,.modal-confirmacion-content,.modal-bienvenida-content{
+width:100%;
+max-height:92dvh;
+}
+.modal-body{padding:22px;}
+.modal-aviso-actions{padding:14px 22px 22px;}
+.topbar{position:static;}
+.topbar-content{flex-direction:column;align-items:flex-start;padding:12px 14px;}
+.menu{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
+.menu a{text-align:center;padding-inline:10px;}
+.modal-confirmacion-content{max-height:90vh;}
+.dato-item{
+grid-template-columns:1fr;
+gap:4px;
+}
+.dato-item span:last-child{text-align:left;}
+.botones-confirmacion{
+flex-direction:column;
+padding:14px 22px 22px;
+}
+.camiseta-card img{height:220px;}
+.carga-head{
+grid-template-columns:1fr;
+text-align:center;
+justify-items:center;
+padding:24px 22px 22px;
+}
+.carga-body{padding:22px;}
+}
+</style>
+<link rel="stylesheet" href="responsive-fixes.css">
+<style>
+.topbar{
+  background:rgba(75,0,3,.96);
+  border-bottom:1px solid rgba(255,255,255,.12);
+  box-shadow:0 14px 38px rgba(36,0,2,.18);
+}
+.topbar-content{width:min(1180px,100%);min-height:82px;}
+.menu{gap:8px;}
+.menu a{
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  border-radius:8px;
+}
+.container{width:min(1180px,100%);padding-top:28px;}
+.form-hero{
+  grid-template-columns:minmax(0,1fr) 300px;
+  align-items:stretch;
+}
+.form-hero-main,
+.form-hero-side,
+.guide-card,
+form{
+  border-radius:8px;
+  box-shadow:0 16px 42px rgba(32,21,18,.10);
+}
+.form-hero-main{
+  min-height:270px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  background:
+    linear-gradient(90deg,rgba(75,0,3,.92),rgba(100,10,16,.70)),
+    url("img/WhatsApp Image 2026-02-19 at 18.27.17.jpeg") center/cover no-repeat;
+  color:white;
+}
+.form-hero-main:after{display:none;}
+.page-title{color:#fff;font-size:clamp(2rem,4.6vw,3.8rem);}
+.form-hero-main p{color:rgba(255,255,255,.88);}
+.eyebrow{color:#ffd0d0;}
+.eyebrow:before{background:#fff;}
+.hero-meta span{
+  border-color:rgba(255,255,255,.18);
+  background:rgba(255,255,255,.13);
+  color:white;
+}
+.form-hero-side{
+  background:#fff;
+  border-left:5px solid var(--ui-red);
+}
+.registration-guide{grid-template-columns:repeat(3,minmax(0,1fr));}
+.guide-card{background:#fff;}
+form{
+  background:#fff;
+  border-color:rgba(28,37,47,.10);
+  grid-template-columns:repeat(12,minmax(0,1fr));
+  gap:15px;
+}
+form h3{
+  grid-column:1/-1;
+  margin-top:14px;
+  padding:12px 0 6px;
+  border-bottom:1px solid rgba(28,37,47,.10);
+  color:#4b0003;
+}
+form input,
+form select,
+form textarea{
+  grid-column:span 6;
+  min-height:52px;
+  border:1px solid #d6dee8;
+  border-radius:8px;
+  background:#fbfdff;
+  color:#1f2937;
+  font-weight:650;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.7);
+}
+form textarea,
+.form-intro,
+.field-note,
+.payment-guide,
+.camiseta-section,
+.form-actions,
+.aviso-pago-box{grid-column:1/-1;}
+form input:focus,
+form select:focus,
+form textarea:focus{
+  outline:3px solid rgba(200,20,29,.14);
+  border-color:#c8141d;
+}
+.form-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:12px;
+}
+.form-actions button,
+button[type="submit"]{
+  border-radius:8px;
+  min-height:52px;
+}
+@media (max-width:900px){
+  .form-hero,.registration-guide{grid-template-columns:1fr;}
+  form{grid-template-columns:1fr;}
+  form input,form select,form textarea{grid-column:1/-1;}
+}
+</style>
+<script src="maintenance-redirect.js"></script>
+</head>
+
+<body class="ui-body">
+
+<header class="topbar">
+<div class="topbar-content">
+<div class="logo-area">
+<img src="img/logo.png" class="logo">
+<div class="titulo">
+<strong>Congreso Juvenil 2026 - Trascendentales</strong>
+<span>Circuito 2 - Zona 6</span>
+</div>
+</div>
+<nav class="menu">
+<a href="home.html">Inicio</a>
+
+
+
+<a href="contacto.html">Contacto</a>
+<a href="live.html">Live</a>
+<a href="Evento.html">Eventos</a>
+</nav>
+</div>
+</header>
+
+<main class="container">
+<section class="form-hero" aria-label="Resumen de inscripcion">
+<div class="form-hero-main">
+<span class="eyebrow">Registro oficial</span>
+<h1 class="page-title">Formulario Oficial de Inscripción</h1>
+<p>Completa la informacion del participante para confirmar su lugar en el Congreso Juvenil 2026. Los datos se revisan antes del envio para evitar errores.</p>
+<div class="hero-meta">
+<span>5 al 8 de diciembre</span>
+<span>Gerizim - Sincelejo</span>
+<span>Fe + Accion</span>
+</div>
+</div>
+<aside class="form-hero-side">
+<div>
+<div class="side-label">Disponibilidad</div>
+<div class="side-value">Cupos</div>
+</div>
+<p id="cupos"></p>
+<div class="side-note">Ten a mano documento, contacto de emergencia y datos de iglesia antes de enviar.</div>
+</aside>
+</section>
+
+<section class="registration-guide" aria-label="Guia rapida de inscripcion">
+<div class="guide-card">
+<div class="guide-number">1</div>
+<div>
+<strong>Prepara tus datos</strong>
+<span>Documento, telefono, correo, iglesia y contacto de emergencia.</span>
+</div>
+</div>
+<div class="guide-card">
+<div class="guide-number">2</div>
+<div>
+<strong>Completa cada seccion</strong>
+<span>La zona y el lider de pago se asignan automaticamente.</span>
+</div>
+</div>
+<div class="guide-card">
+<div class="guide-number">3</div>
+<div>
+<strong>Revisa y confirma</strong>
+<span>Antes de registrar, veras un resumen para corregir cualquier dato.</span>
+</div>
+</div>
+</section>
+
+<form id="formulario">
+
+<div class="form-intro">
+<div class="form-intro-icon" aria-hidden="true"></div>
+<div>
+<strong>Tu inscripcion empieza aqui</strong>
+<span>Llena los campos obligatorios con informacion real. Cuando presiones enviar, la plataforma mostrara una confirmacion antes de guardar.</span>
+</div>
+</div>
+
+<h3>Datos personales</h3>
+<input name="Nombre" placeholder="Nombre completo" required>
+<input name="Documento" placeholder="Documento de identidad" required>
+<input name="Edad" type="number" placeholder="Edad" required>
+
+<select name="Sexo" required>
+<option value="">Sexo</option>
+<option>Masculino</option>
+<option>Femenino</option>
+</select>
+
+<input name="Telefono" placeholder="Teléfono" required>
+<input id="Correo" name="Correo" type="email" placeholder="Correo electrónico" required pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" oninput="validarCorreoCampo(this)" oninvalid="this.setCustomValidity('Ingresa un correo electrónico válido')">
+
+<h3>Ubicación</h3>
+<input name="Pais" value="Colombia" required>
+<input name="Departamento" placeholder="Departamento" required>
+<input name="Municipio" placeholder="Municipio" required>
+<select name="TipoZona" id="tipoZona" required>
+<option value="">Tipo de zona</option>
+<option value="Urbana">Urbana</option>
+<option value="Rural">Rural</option>
+</select>
+<input name="ZonaAsignada" id="zonaAsignada" placeholder="Zona asignada" readonly required>
+<input name="LiderAsignado" id="liderAsignado" placeholder="Lider asignado para el pago" readonly required>
+<div class="field-note">La plataforma asigna la zona y el lider de pago segun municipio, tipo de zona e iglesia. Revisa que esos datos esten bien escritos.</div>
+
+<!-- Sección para permiso de menores -->
+<div id="permisoSection" style="display:none;grid-column:1/-1;margin-top:8px;padding:12px;border-radius:12px;background:#fff8f7;border:1px solid rgba(199,57,47,.08);">
+    <p style="margin:0 0 8px;color:#5f3a36;font-weight:700">Si eres menor de edad, debes descargar y presentar un permiso firmado por tu representante.</p>
+    <p style="margin:0 0 8px">Descarga el permiso oficial: <a href="PERMISO ADOLESCENTE.docx" download>Descargar permiso</a></p>
+    <label style="display:flex;align-items:center;gap:8px;font-weight:600;color:#6b2b28;font-size:0.95rem;">
+        <input type="checkbox" id="tienePermiso" name="TienePermiso" style="width:18px;height:18px;flex:none;margin:0"> 
+        Declaro que tengo el permiso firmado y lo presentaré al momento del evento.
+    </label>
+</div>
+
+<h3>Iglesia</h3>
+<input name="Iglesia" placeholder="Nombre de la iglesia" required>
+<input name="Pastor" placeholder="Nombre del pastor" required>
+
+<select name="tipo" required>
+<option value="">Tipo de participante</option>
+<option>Joven</option>
+<option>Lider</option>
+<option>Presidente Red</option>
+<option>Secretario Red</option>
+<option>Fiscal Red</option>
+<option>Vicepresidente Red</option>
+<option>Tesorero Red</option>
+<option>Pastor</option>
+<option>Invitado</option>
+</select>
+
+<h3>Emergencia</h3>
+<input name="Emergencia_nombre" placeholder="Nombre contacto de emergencia" required>
+<input name="Emergencia_telefono" placeholder="Teléfono de emergencia" required>
+
+<h3>Salud</h3>
+<input name="Alergias" placeholder="Alergias o condiciones médicas" required>
+
+<h3>Camiseta</h3>
+<select name="DeseaCamisa" id="deseaCamisa" required>
+<option value="No">No desea camiseta</option>
+<option value="Si">Si desea camiseta</option>
+</select>
+<div id="camisetaOpciones" class="camiseta-opciones">
+<select name="TipoCamiseta" id="tipoCamiseta" disabled required>
+<option value="">Corte de camiseta</option>
+<option value="Mujer">Mujer</option>
+<option value="Hombre">Hombre</option>
+</select>
+<select name="TallaCamisa" id="tallaCamisa" disabled required>
+<option value="">Talla de camiseta</option>
+<option>XS</option>
+<option>S</option>
+<option>M</option>
+<option>L</option>
+<option>XL</option>
+<option>XXL</option>
+<option>2XL</option>
+<option>3XL</option>
+<option>4XL</option>
+<option>5XL</option>
+</select>
+<select name="ColorCamisa" id="colorCamisa" disabled required>
+<option value="">Color de camiseta</option>
+<option>Rojo</option>
+<option>Blanco</option>
+<option>Negro</option>
+</select>
+</div>
+<div id="galeriaCamisetas" class="camiseta-grid">
+<div class="camiseta-card" data-camiseta="mujer">
+<h4>Referencia mujer</h4>
+<img src="img/camiseta-mujer-blanca.jpeg" alt="Camiseta mujer color blanco">
+<p>Colores disponibles: blanco, rojo y negro.</p>
+<p id="mujerReferencia">Vista inicial: blanca.</p>
+</div>
+<div class="camiseta-card" data-camiseta="hombre">
+<h4>Referencia hombre</h4>
+<img src="img/camiseta-hombre-blanca.jpeg" alt="Camiseta hombre color blanco">
+<p>Colores disponibles: blanco, rojo y negro.</p>
+<p id="hombreReferencia">Vista inicial: blanca.</p>
+</div>
+</div>
+
+<h3>Observaciones</h3>
+<textarea name="Observaciones" rows="3" placeholder="Escribe aqui cualquier detalle importante para el equipo organizador."></textarea>
+
+<div class="payment-guide">
+<div>
+<strong>Pago despues del registro</strong>
+<span>La inscripcion base es de $250.000. Si agregas camiseta, la plataforma sumara ese valor al confirmar. Ya no se aplicar&aacute;n descuentos.</span>
+</div>
+<div class="payment-amount">
+<small>Inscripcion base</small>
+<strong>$250.000</strong>
+</div>
+</div>
+
+<div class="form-actions">
+<button type="button" onclick="prepararEnvio()" disabled>Enviar inscripción</button>
+<button class="btn-secundario" type="button" onclick="limpiarFormulario()">Limpiar formulario</button>
+</div>
+
+</form>
+<p id="Estado"></p>
+</main>
+
+<div id="modalBienvenida" class="modal-bienvenida">
+<div class="modal-bienvenida-content">
+<div class="modal-body">
+<img src="img/logo.png" class="icono">
+
+<h1>Bienvenido</h1>
+<p><strong>Importante: ya no se aplicar&aacute;n descuentos en la inscripci&oacute;n.</strong></p>
+<p>Estimado campista, por favor completa el formulario para confirmar tu inscripción. Recuerda que el evento se llevará a cabo del 5 al 8 de diciembre de 2026 en Gerizim - Sincelejo, bajo el lema Fe + Acción.</p>
+<p>Si tienes alguna pregunta, no dudes en contactarnos a través de nuestras redes sociales o correo electrónico.</p>
+<p>infocircuito@gmail.com</p>
+<button class="btn-primario" onclick="cerrarBienvenida()"><i class="bi bi-arrow-right-circle" aria-hidden="true"></i>Continuar</button>
+</div>
+</div>
+</div>
+
+<div id="modalAvisoPago" class="modal" aria-hidden="true">
+<div class="modal-content modal-aviso-pago">
+<div class="modal-body">
+<div class="modal-icon warn"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></div>
+<h2>Importante sobre tu inscripcion</h2>
+<p class="modal-subtitle">El formulario registra tus datos como preinscripcion.</p>
+<p><strong>Ya no se aplicar&aacute;n descuentos. La inscripci&oacute;n base es de $250.000, m&aacute;s el valor de la camiseta si la solicitas.</strong></p>
+<div class="aviso-pago-box">
+<strong>Para aparecer en el listado oficial de inscritos debes consignar o realizar el pago al lider de zona asignado.</strong>
+El campista no registra el pago en el portal; ese proceso lo realiza el lider autorizado de pagos.
+<br><br>
+Mientras el lider no registre el pago en el portal, tu informacion queda guardada para seguimiento, pero no se mostrara en el listado publico de inscritos.
+</div>
+</div>
+<div class="modal-aviso-actions">
+<button class="btn-primario" type="button" onclick="cerrarAvisoPago()"><i class="bi bi-check2-circle" aria-hidden="true"></i>Entendido</button>
+</div>
+</div>
+</div>
+
+<div id="modalLanzamiento" class="modal modal-lanzamiento" aria-hidden="true" style="display:none;">
+<div class="modal-launch-content">
+  <button class="modal-close" type="button" aria-label="Cerrar" onclick="document.getElementById('modalLanzamiento').style.display='none'">×</button>
+  <div class="modal-launch-brand">
+    <img src="img/logo.png" alt="Logo UJECA">
+    <span>UJECA</span>
+  </div>
+  <h2>Inscripciones cerradas</h2>
+  <p class="modal-subtitle">Las inscripciones se abrirán mañana a las 6:00 a.m.</p>
+  <div class="launch-counter" id="lanzamientoCuenta">00:00:00</div>
+  <p class="launch-caption">Tiempo restante para el inicio de inscripciones</p>
+</div>
+</div>
+
+<div id="modalConfirmacion" class="modal-confirmacion">
+<div class="modal-confirmacion-content">
+<div class="modal-body">
+<div class="modal-icon"><i class="bi bi-clipboard-check" aria-hidden="true"></i></div>
+<h2>Confirmar datos</h2>
+<p class="modal-subtitle">Revisa que la información esté correcta antes de enviar la preinscripción.</p>
+<p><strong>Recuerda: ya no se aplicar&aacute;n descuentos en la inscripci&oacute;n.</strong></p>
+</div>
+<div id="datosConfirmacionContent" class="datos-confirmacion"></div>
+<div class="botones-confirmacion">
+<button class="btn-cancelar" onclick="cancelarConfirmacion()"><i class="bi bi-pencil-square" aria-hidden="true"></i>Editar</button>
+<button class="btn-primario" onclick="enviarInscripcion()"><i class="bi bi-send-check" aria-hidden="true"></i>Confirmar y enviar</button>
+</div>
+</div>
+</div>
+
+<div id="modalCarga" class="modal modal-carga" aria-hidden="true">
+<div class="modal-carga-content">
+<div class="carga-head">
+<div class="carga-logo"><img src="img/logo.png" alt="Logo UJECA"></div>
+<div>
+<h2>Registrando preinscripción</h2>
+<p>Estamos guardando tus datos y preparando el soporte de preinscripcion.</p>
+</div>
+</div>
+<div class="carga-body">
+<div class="carga-progress" aria-hidden="true"><span></span></div>
+<div class="carga-steps">
+<div class="carga-step">
+<div class="carga-step-dot"><div class="carga-spinner"></div></div>
+<div>
+<strong>Conectando con la base oficial</strong>
+<span>Validando el registro en línea.</span>
+</div>
+</div>
+<div class="carga-step">
+<div class="carga-step-dot"><div class="carga-spinner"></div></div>
+<div>
+<strong>Asignando código y datos de pago</strong>
+<span>Calculando valor, zona y líder asignado.</span>
+</div>
+</div>
+<div class="carga-step">
+<div class="carga-step-dot"><div class="carga-spinner"></div></div>
+<div>
+<strong>Enviando soporte al correo</strong>
+<span>Por favor espera unos segundos antes de cerrar.</span>
+</div>
+</div>
+</div>
+<div class="carga-foot">No actualices la página mientras termina el proceso.</div>
+</div>
+</div>
+</div>
+
+<div id="modal" class="modal">
+<div class="modal-content">
+<div class="modal-body">
+<div id="modalResultadoIcono" class="modal-icon success"><i class="bi bi-check2-circle" aria-hidden="true"></i></div>
+<h2>Preinscripcion registrada</h2>
+<p class="modal-subtitle">Estimado campista, recibimos tus datos. Apareceras como inscrito cuando tu lider de zona registre el pago.</p>
+<p id="modalMensaje"></p>
+<div id="ticketPago" class="ticket-pago" style="display:none;"></div>
+</div>
+<div class="modal-aviso-actions">
+<button class="btn-primario" onclick="cerrarModal()"><i class="bi bi-check2" aria-hidden="true"></i>Cerrar</button>
+</div>
+</div>
+</div>
+
+<div id="modalAvisoGeneral" class="modal" aria-hidden="true">
+<div class="modal-content">
+<div class="modal-body">
+<div class="modal-icon warn"><i class="bi bi-exclamation-triangle" aria-hidden="true"></i></div>
+<h2 id="modalAvisoGeneralTitulo">Verificación requerida</h2>
+<p id="modalAvisoGeneralTexto" class="modal-subtitle"></p>
+</div>
+<div class="modal-aviso-actions">
+<button class="btn-primario" type="button" onclick="cerrarAvisoGeneral()"><i class="bi bi-check2-circle" aria-hidden="true"></i>Entendido</button>
+</div>
+</div>
+</div>
+<script src="api-config.js"></script>
+<script>
+const url=window.UJECA_API.registro;
+let datosFormulario=null;
+let totalInscritosActual=0;
+let registrosExistentes=[];
+const VALOR_INSCRIPCION_BASE=250000;
+const STORAGE_ROTACION_LIDERES="ujeca_rotacion_lideres";
+
+function obtenerInicioInscripciones(){
+    const inicio = new Date();
+    inicio.setHours(6, 0, 0, 0);
+    return inicio;
+}
+
+function iniciarControlLanzamientoInscripciones(){
+    const enviarBtn=document.querySelector('button[onclick="prepararEnvio()"]');
+    const estado=document.getElementById('Estado');
+    const modalLanzamiento=document.getElementById('modalLanzamiento');
+    const lanzamientoCuenta=document.getElementById('lanzamientoCuenta');
+    if(!enviarBtn || !estado || !modalLanzamiento || !lanzamientoCuenta) return;
+
+    const inicio = obtenerInicioInscripciones();
+    const actualizarEstado = ()=>{
+        const ahora = new Date();
+        const diff = inicio - ahora;
+        if(diff <= 0){
+            enviarBtn.disabled = false;
+            modalLanzamiento.style.display = 'none';
+            estado.innerText = "Inscripciones abiertas. Completa el formulario y presiona Enviar inscripción.";
+            return;
+        }
+        enviarBtn.disabled = true;
+        modalLanzamiento.style.display = 'flex';
+        const totalSegundos=Math.floor(diff/1000);
+        const dias=Math.floor(totalSegundos/86400);
+        const horas=Math.floor((totalSegundos%86400)/3600);
+        const minutos=Math.floor((totalSegundos%3600)/60);
+        const segundos=totalSegundos%60;
+        const cuenta = `${dias>0?dias+"d ":""}${String(horas).padStart(2,"0")}:${String(minutos).padStart(2,"0")}:${String(segundos).padStart(2,"0")}`;
+        lanzamientoCuenta.innerText = cuenta;
+        estado.innerText = `Las inscripciones se abren a las 6:00 a.m.`;
+    };
+
+    actualizarEstado();
+    setInterval(actualizarEstado,1000);
+}
+const LIDER_KATE="Katherine Bermudez - Coordinadora General - UJECA - +57 319 4480759";
+const LIDER_ANDRES="Andres Miranda";
+const LIDER_MELANIA="Melania Angulo - Area Tesoreria - +57 321 6818450";
+const LIDER_EDINSON="Edinson Banquet - Fiscalia Circuital - +57 311 4285949";
+const IGLESIAS_POR_LIDER=[
+    {
+        lider:LIDER_ANDRES,
+        iglesias:[
+            "bethel",
+            "la_bendicion_de_dios",
+            "bendicion_de_dios"
+        ]
+    },
+    {
+        lider:LIDER_KATE,
+        iglesias:[
+            "cristo_bine",
+            "cristo_bien",
+            "cristo_vive",
+            "cristo_viene",
+            "filadelfia",
+            "icacales"
+        ]
+    },
+    {
+        lider:LIDER_MELANIA,
+        iglesias:[
+            "cristo_el_rey",
+            "luz_y_vida"
+        ]
+    },
+    {
+        lider:LIDER_EDINSON,
+        iglesias:[
+            "jobo",
+            "escarralao",
+            "nuevo_belen",
+            "nuebo_belen"
+        ]
+    }
+];
+const LIDERES_POR_ZONA={
+    el_bagre:[
+        LIDER_KATE,
+        LIDER_ANDRES,
+        LIDER_MELANIA,
+        "Camila Urango - Secretaria - +57 312 6344615"
+    ],
+    zonas_rurales:[
+        LIDER_EDINSON
+    ],
+    default:[
+        LIDER_KATE
+    ]
+};
+
+window.addEventListener("load",()=>{
+    iniciarControlLanzamientoInscripciones();
+    const enviarBtn=document.querySelector('button[onclick="prepararEnvio()"]');
+    if(enviarBtn && !enviarBtn.disabled){
+        document.getElementById("modalBienvenida").style.display="flex";
+    }
+    configurarAsignacionZona();
+});
+
+function configurarPermisoMenor(){
+    const edadInput=document.querySelector('[name="Edad"]');
+    if(!edadInput) return;
+    const togglePermiso=()=>{
+        const edad=Number(edadInput.value) || 0;
+        const permisoSection=document.getElementById('permisoSection');
+        console.debug('configurarPermisoMenor: edad=', edad, 'permisoSectionExists=', !!permisoSection);
+        if(permisoSection){
+            permisoSection.style.display= edad>0 && edad<18 ? 'block' : 'none';
+        }
+    };
+    edadInput.addEventListener('input',togglePermiso);
+    edadInput.addEventListener('change',togglePermiso);
+    togglePermiso();
+}
+
+// Inicializar control de permiso para menores
+window.addEventListener('load',()=>{ configurarPermisoMenor(); });
+
+function cerrarBienvenida(){
+    document.getElementById("modalBienvenida").style.display="none";
+    const modalAvisoPago=document.getElementById("modalAvisoPago");
+    if(modalAvisoPago){
+        modalAvisoPago.style.display="flex";
+        modalAvisoPago.setAttribute("aria-hidden","false");
+    }
+}
+
+function cerrarAvisoPago(){
+    const modalAvisoPago=document.getElementById("modalAvisoPago");
+    if(!modalAvisoPago) return;
+    modalAvisoPago.style.display="none";
+    modalAvisoPago.setAttribute("aria-hidden","true");
+}
+
+function normalizarTexto(valor){
+    return String(valor || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g,"")
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g,"_");
+}
+
+function mostrarNombreZona(claveZona){
+    if(!claveZona || claveZona==="default") return "Zona general";
+    return claveZona
+        .replace(/_/g," ")
+        .replace(/\b\w/g,(letra)=>letra.toUpperCase());
+}
+
+function obtenerLiderPorIglesia(datos){
+    const iglesia=normalizarTexto(datos.Iglesia);
+    if(!iglesia) return "";
+
+    const asignacion=IGLESIAS_POR_LIDER.find((grupo)=>
+        grupo.iglesias.some((clave)=>iglesia.includes(clave))
+    );
+    return asignacion ? asignacion.lider : "";
+}
+
+function obtenerClaveZona(datos){
+    const tipoZona=String(datos.TipoZona || "").trim().toLowerCase();
+    const municipio=normalizarTexto(datos.Municipio);
+    const departamento=normalizarTexto(datos.Departamento);
+    const observaciones=normalizarTexto(datos.Observaciones);
+    const iglesia=normalizarTexto(datos.Iglesia);
+    if(tipoZona==="rural"){
+        return "zonas_rurales";
+    }
+    if(tipoZona==="urbana"){
+        return "el_bagre";
+    }
+    if(
+        municipio.includes("rural") ||
+        departamento.includes("rural") ||
+        observaciones.includes("rural") ||
+        iglesia.includes("rural") ||
+        municipio.includes("nuevo_belen") ||
+        municipio.includes("puerto_lopez")
+    ){
+        return "zonas_rurales";
+    }
+    if(
+        municipio.includes("bagre") ||
+        departamento.includes("bagre") ||
+        observaciones.includes("bagre") ||
+        iglesia.includes("bagre")
+    ){
+        return "el_bagre";
+    }
+    if(municipio && LIDERES_POR_ZONA[municipio]) return municipio;
+    if(departamento && LIDERES_POR_ZONA[departamento]) return departamento;
+    return "default";
+}
+
+function obtenerLiderMenosRepetido(claveZona, registros){
+    const lideres=LIDERES_POR_ZONA[claveZona] || LIDERES_POR_ZONA.default;
+    const conteo=new Map(lideres.map((lider)=>[lider,0]));
+    (registros || []).forEach((item)=>{
+        const lider=item.LiderAsignado || item.liderAsignado || "";
+        if(conteo.has(lider)){
+            conteo.set(lider,conteo.get(lider)+1);
+        }
+    });
+    const menorCarga=Math.min.apply(null,lideres.map((lider)=>conteo.get(lider)));
+    const candidatos=lideres.filter((lider)=>conteo.get(lider)===menorCarga);
+
+    if(candidatos.length===1){
+        return candidatos[0];
+    }
+
+    const rotaciones=obtenerRotacionesLideres();
+    const indiceActual=Number(rotaciones[claveZona] || 0);
+    const liderSeleccionado=candidatos[indiceActual % candidatos.length];
+    rotaciones[claveZona]=(indiceActual + 1) % candidatos.length;
+    guardarRotacionesLideres(rotaciones);
+    return liderSeleccionado;
+}
+
+function obtenerRotacionesLideres(){
+    try{
+        const raw=localStorage.getItem(STORAGE_ROTACION_LIDERES);
+        const data=JSON.parse(raw || "{}");
+        return data && typeof data==="object" ? data : {};
+    }catch{
+        return {};
+    }
+}
+
+function guardarRotacionesLideres(rotaciones){
+    localStorage.setItem(STORAGE_ROTACION_LIDERES, JSON.stringify(rotaciones || {}));
+}
+
+function actualizarZonaYLider(){
+    const form=document.getElementById("formulario");
+    const datos=Object.fromEntries(new FormData(form).entries());
+    const claveZona=obtenerClaveZona(datos);
+    const registrosZona=registrosExistentes.filter((item)=>obtenerClaveZona(item)===claveZona);
+    const lider=obtenerLiderPorIglesia(datos) || obtenerLiderMenosRepetido(claveZona, registrosZona);
+    document.getElementById("zonaAsignada").value=mostrarNombreZona(claveZona);
+    document.getElementById("liderAsignado").value=lider;
+}
+
+function configurarAsignacionZona(){
+    ["Departamento","Municipio","TipoZona","Observaciones","Iglesia"].forEach((campo)=>{
+        const input=document.querySelector(`[name="${campo}"]`);
+        if(input){
+            input.addEventListener("input",actualizarZonaYLider);
+            input.addEventListener("change",actualizarZonaYLider);
+        }
+    });
+    configurarCamiseta();
+    actualizarZonaYLider();
+    // Asegurar inicialización del control para permisos de menores
+    try{ if(typeof configurarPermisoMenor === 'function') configurarPermisoMenor(); }catch(e){ console.error('Error iniciando permiso menor', e); }
+}
+
+function configurarCamiseta(){
+    const deseaCamisa=document.getElementById("deseaCamisa");
+    const tipoCamiseta=document.getElementById("tipoCamiseta");
+    const tallaCamisa=document.getElementById("tallaCamisa");
+    const colorCamisa=document.getElementById("colorCamisa");
+    const galeria=document.getElementById("galeriaCamisetas");
+    if(!deseaCamisa || !tipoCamiseta || !tallaCamisa || !colorCamisa || !galeria) return;
+
+    const actualizarCamposCamisa=()=>{
+        const activa=deseaCamisa.value==="Si";
+        tipoCamiseta.disabled=!activa;
+        tallaCamisa.disabled=!activa;
+        colorCamisa.disabled=!activa;
+        galeria.style.display=activa ? "grid" : "none";
+        if(!activa){
+            tipoCamiseta.value="";
+            tallaCamisa.value="";
+            colorCamisa.value="";
+        }
+        actualizarPreviewCamisetas();
+    };
+
+    tipoCamiseta.addEventListener("change",actualizarPreviewCamisetas);
+    colorCamisa.addEventListener("change",actualizarPreviewCamisetas);
+    deseaCamisa.addEventListener("change",actualizarCamposCamisa);
+    actualizarCamposCamisa();
+}
+
+function actualizarPreviewCamisetas(){
+    const tipo=(document.getElementById("tipoCamiseta").value || "").toLowerCase();
+    const color=(document.getElementById("colorCamisa").value || "Blanco").toLowerCase();
+    const mujerCard=document.querySelector('.camiseta-card[data-camiseta="mujer"]');
+    const hombreCard=document.querySelector('.camiseta-card[data-camiseta="hombre"]');
+    const mujerImagen=mujerCard ? mujerCard.querySelector("img") : null;
+    const hombreImagen=hombreCard ? hombreCard.querySelector("img") : null;
+    const mujerTexto=document.getElementById("mujerReferencia");
+    const hombreTexto=document.getElementById("hombreReferencia");
+    const rutas={
+        blanco:{
+            mujer:"img/camiseta-mujer-blanca.jpeg",
+            hombre:"img/camiseta-hombre-blanca.jpeg"
+        },
+        rojo:{
+            mujer:"img/camiseta-mujer-roja.jpeg",
+            hombre:"img/camiseta-hombre-roja.jpeg"
+        },
+        negro:{
+            mujer:"img/camiseta-mujer-negra.jpeg",
+            hombre:"img/camiseta-hombre-negra.jpeg"
+        }
+    };
+    const seleccion=rutas[color] || rutas.blanco;
+    if(mujerCard){
+        mujerCard.style.display=!tipo || tipo==="mujer" ? "block" : "none";
+    }
+    if(hombreCard){
+        hombreCard.style.display=!tipo || tipo==="hombre" ? "block" : "none";
+    }
+    if(mujerImagen){
+        mujerImagen.src=seleccion.mujer;
+        mujerImagen.alt=`Camiseta mujer color ${color}`;
+    }
+    if(hombreImagen){
+        hombreImagen.src=seleccion.hombre;
+        hombreImagen.alt=`Camiseta hombre color ${color}`;
+    }
+    if(mujerTexto){
+        mujerTexto.innerText=`Color visible: ${color}.`;
+    }
+    if(hombreTexto){
+        hombreTexto.innerText=`Color visible: ${color}.`;
+    }
+}
+
+function esTallaGrande(talla) {
+    const valor = String(talla || "").trim().toUpperCase().replace(/\s+/g, "");
+    return ["XXL", "2XL", "3XL", "XXXL", "4XL", "5XL"].includes(valor);
+}
+
+function obtenerValorCamisa(talla) {
+    return esTallaGrande(talla) ? 45000 : 35000;
+}
+
+function formatearPrecio(valor) {
+    return "$" + Number(valor || 0).toLocaleString("es-CO");
+}
+
+function calcularPagos(datos) {
+    const valorCamisa = String(datos.DeseaCamisa || "").toLowerCase() === "si"
+        ? obtenerValorCamisa(datos.TallaCamisa)
+        : 0;
+    const valorTotal = Math.max(VALOR_INSCRIPCION_BASE + valorCamisa, 0);
+    return { valorCamisa, valorTotal };
+}
+
+async function cargarCupos(){
+    try{
+        registrosExistentes=await cargarRegistrosUJECA(window.UJECA_API.listado);
+    }catch{
+        registrosExistentes=[];
+    }
+    totalInscritosActual=registrosExistentes.length;
+    const disponibles=Math.max(500-totalInscritosActual,0);
+    document.getElementById("cupos").innerHTML="Cupos disponibles: "+disponibles+" de 500";
+    actualizarZonaYLider();
+}
+cargarCupos();
+
+function prepararEnvio(){
+    let form=document.getElementById("formulario");
+    const correoInput = document.getElementById("Correo");
+    if(correoInput){
+        const valido = validarCorreo(correoInput.value || "");
+        correoInput.setCustomValidity(valido ? "" : "Ingresa un correo electrónico válido");
+        if(!valido){
+            correoInput.reportValidity();
+            mostrarAvisoGeneral("Correo no válido","Ingresa un correo electrónico válido antes de continuar.");
+            return;
+        }
+    }
+    if(!form.reportValidity()) return;
+
+    actualizarZonaYLider();
+    let datos=Object.fromEntries(new FormData(form).entries());
+    if(datos.DeseaCamisa==="Si" && (!datos.TipoCamiseta || !datos.TallaCamisa || !datos.ColorCamisa)){
+        mostrarAvisoGeneral("Faltan datos de camiseta","Si deseas camiseta, selecciona corte, talla y color antes de enviar.");
+        return;
+    }
+    // Validación para menores de edad: debe confirmar permiso firmado
+    const edadNum = Number(datos.Edad || 0);
+    if(edadNum > 0 && edadNum < 18){
+        const tienePermiso = document.getElementById('tienePermiso') ? document.getElementById('tienePermiso').checked : false;
+        if(!tienePermiso){
+            mostrarAvisoGeneral("Permiso requerido","Si eres menor de edad, debes descargar y presentar un permiso firmado por tu representante. Marca la casilla para confirmar.");
+            return;
+        }
+    }
+    if(!validarCorreo(datos.Correo)){
+        mostrarAvisoGeneral("Correo no válido","Ingresa un correo electrónico válido antes de enviar el formulario.");
+        return;
+    }
+    datos.token="UJECA2026";
+    datos.accion="registrar";
+    datos.hoja=window.UJECA_HOJA_INSCRIPCIONES;
+    datos.HojaDestino=window.UJECA_HOJA_INSCRIPCIONES;
+    datos.FechaRegistro=new Date().toISOString().slice(0,10);
+    datos.Puesto=totalInscritosActual+1;
+    const pagos = calcularPagos(datos);
+    datos.ValorCamisa = pagos.valorCamisa;
+    datos.ValorTotal = pagos.valorTotal;
+    datos.EstadoRegistro = "Preinscrito pendiente de pago";
+    datos.ZonaAsignada=datos.ZonaAsignada || document.getElementById("zonaAsignada").value || "Zona general";
+    datos.LiderAsignado=datos.LiderAsignado || document.getElementById("liderAsignado").value || "Coordinacion General Zona 6";
+    mostrarConfirmacion(datos);
+}
+
+function validarCorreo(email){
+    return typeof email === 'string' && /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.trim());
+}
+
+function validarCorreoCampo(input){
+    if(!input) return;
+    const valido = validarCorreo(input.value || '');
+    input.setCustomValidity(valido ? '' : 'Ingresa un correo electrónico válido');
+}
+
+function mostrarConfirmacion(datos){
+    datosFormulario=datos;
+    let html="";
+    const escapar=(valor)=>window.escaparHtmlUJECA ? window.escaparHtmlUJECA(valor) : String(valor ?? "");
+    const camposOcultos=["token","accion","hoja","HojaDestino","FechaRegistro","Puesto"];
+    const etiquetas={
+        Nombre:"Nombre",
+        Documento:"Documento",
+        Edad:"Edad",
+        Sexo:"Sexo",
+        Telefono:"Telefono",
+        Correo:"Correo",
+        Pais:"Pais",
+        Departamento:"Departamento",
+        Municipio:"Municipio",
+        TipoZona:"Tipo de zona",
+        ZonaAsignada:"Zona asignada",
+        LiderAsignado:"Lider asignado para pago",
+        Iglesia:"Iglesia",
+        Pastor:"Pastor",
+        tipo:"Tipo",
+        Emergencia_nombre:"Contacto de emergencia",
+        Emergencia_telefono:"Telefono de emergencia",
+        Alergias:"Alergias",
+        DeseaCamisa:"Solicita camiseta",
+        TipoCamiseta:"Tipo de camiseta",
+        TallaCamisa:"Talla de camiseta",
+        ColorCamisa:"Color de camiseta",
+        Observaciones:"Observaciones"
+    };
+    for(let k in datos){
+        if(!camposOcultos.includes(k)&&datos[k]){
+            html+=`
+            <div class="dato-item">
+                <span class="dato-label">${escapar(etiquetas[k] || k)}</span>
+                <span>${escapar(datos[k])}</span>
+            </div>`;
+        }
+    }
+    if(datos.LiderAsignado){
+        html+=`
+        <div class="dato-item">
+            <span class="dato-label">Pago asignado</span>
+            <span>Debe pagar a ${escapar(datos.LiderAsignado)}</span>
+        </div>`;
+    }
+    document.getElementById("datosConfirmacionContent").innerHTML=html;
+    document.getElementById("modalConfirmacion").style.display="flex";
+}
+
+function cancelarConfirmacion(){
+    document.getElementById("modalConfirmacion").style.display="none";
+}
+
+function mostrarAvisoGeneral(titulo,mensaje){
+    const modal=document.getElementById("modalAvisoGeneral");
+    const tituloEl=document.getElementById("modalAvisoGeneralTitulo");
+    const textoEl=document.getElementById("modalAvisoGeneralTexto");
+    if(!modal || !tituloEl || !textoEl) return;
+    tituloEl.textContent=titulo || "Verificación requerida";
+    textoEl.textContent=mensaje || "";
+    modal.style.display="flex";
+    modal.setAttribute("aria-hidden","false");
+    const boton=modal.querySelector("button");
+    if(boton) boton.focus();
+}
+
+function cerrarAvisoGeneral(){
+    const modal=document.getElementById("modalAvisoGeneral");
+    if(!modal) return;
+    modal.style.display="none";
+    modal.setAttribute("aria-hidden","true");
+}
+
+document.addEventListener("keydown",(event)=>{
+    if(event.key === "Escape"){
+        cerrarAvisoGeneral();
+        cerrarAvisoPago();
+    }
+});
+
+function mostrarModalCarga(activo){
+    const modal = document.getElementById("modalCarga");
+    if(!modal) return;
+    modal.style.display = activo ? "flex" : "none";
+    modal.setAttribute("aria-hidden", activo ? "false" : "true");
+}
+
+function limpiarFormulario(){
+    document.getElementById("formulario").reset();
+    configurarCamiseta();
+    actualizarZonaYLider();
+}
+
+async function enviarInscripcion(){
+    document.getElementById("modalConfirmacion").style.display="none";
+    mostrarModalCarga(true);
+    try{
+        let r=await fetch(url,{
+            method:"POST",
+            headers:{
+                "Content-Type":"text/plain;charset=utf-8"
+            },
+            body:JSON.stringify(datosFormulario)
+        });
+
+        let texto=await r.text();
+        let j={};
+
+        try{
+            j=JSON.parse(texto);
+        }catch{
+            if(!r.ok) throw new Error("Respuesta no valida del servidor");
+        }
+
+        if(!r.ok){
+            throw new Error(j.error || "No se pudo registrar en la base remota");
+        }
+
+        actualizarModalResultado(false);
+        document.getElementById("modalMensaje").innerHTML="Código: "+(j.codigo || "Pendiente de asignación");
+        mostrarResumenPago(datosFormulario, j.codigo || "");
+        mostrarModalCarga(false);
+        document.getElementById("modal").style.display="flex";
+        document.getElementById("Estado").innerHTML=j.correoEnviado
+            ? "Preinscripcion registrada correctamente. Enviamos el soporte al correo indicado. Aparecera como inscrito cuando tu lider de zona registre el pago."
+            : "Preinscripcion registrada correctamente. No se pudo confirmar el envio del correo. Aparecera como inscrito cuando tu lider de zona registre el pago.";
+        limpiarFormulario();
+        cargarCupos();
+    }catch(error){
+        mostrarModalCarga(false);
+        actualizarModalResultado(true);
+        document.getElementById("modalMensaje").innerHTML="No se pudo completar la inscripción. Error: "+error.message;
+        mostrarResumenPago(datosFormulario, "");
+        document.getElementById("modal").style.display="flex";
+        document.getElementById("Estado").innerHTML="No se guardó ningún registro local. Intenta nuevamente cuando la conexión esté disponible.";
+        cargarCupos();
+    }
+}
+
+function actualizarModalResultado(esError){
+    const modal=document.getElementById("modal");
+    const icono=document.getElementById("modalResultadoIcono");
+    const titulo=modal ? modal.querySelector("h2") : null;
+    const subtitulo=modal ? modal.querySelector(".modal-subtitle") : null;
+    if(modal) modal.querySelector(".modal-content")?.classList.toggle("is-error", Boolean(esError));
+    if(icono){
+        icono.className=esError ? "modal-icon" : "modal-icon success";
+        icono.innerHTML=esError
+            ? '<i class="bi bi-x-circle" aria-hidden="true"></i>'
+            : '<i class="bi bi-check2-circle" aria-hidden="true"></i>';
+    }
+    if(titulo) titulo.textContent=esError ? "No se pudo registrar" : "Preinscripción registrada";
+    if(subtitulo){
+        subtitulo.textContent=esError
+            ? "Revisa tu conexión e intenta nuevamente. No se guardó ningún registro local."
+            : "Estimado campista, recibimos tus datos. Aparecerás como inscrito cuando tu líder de zona registre el pago. Recuerda: ya no se aplicarán descuentos en la inscripción.";
+    }
+}
+
+function mostrarResumenPago(datos, codigo){
+    const ticket=document.getElementById("ticketPago");
+    if(datos && datos.LiderAsignado){
+        const pagos = calcularPagos(datos);
+        ticket.style.display="block";
+        ticket.innerHTML=`
+            <div class="ticket-header"><strong>Resumen de pago</strong></div>
+            <div class="ticket-grid">
+                <div class="ticket-label">Campista</div><div class="ticket-value">${datos.Nombre || "Sin nombre"}</div>
+                <div class="ticket-label">Codigo</div><div class="ticket-value">${codigo || "Pendiente de asignacion"}</div>
+                <div class="ticket-label">Zona asignada</div><div class="ticket-value">${datos.ZonaAsignada || "Zona general"}</div>
+                <div class="ticket-label">Lider para pago</div><div class="ticket-value">${datos.LiderAsignado || "Coordinacion General Zona 6"}</div>
+                <div class="ticket-label">Valor congreso</div><div class="ticket-value">${formatearPrecio(VALOR_INSCRIPCION_BASE)}</div>
+                <div class="ticket-label">Valor camiseta</div><div class="ticket-value">${formatearPrecio(pagos.valorCamisa)}</div>
+                <div class="ticket-label ticket-total">Total a pagar</div><div class="ticket-value ticket-total">${formatearPrecio(pagos.valorTotal)}</div>
+            </div>
+        `;
+    }else{
+        ticket.style.display="none";
+        ticket.innerHTML="";
+    }
+}
+
+function cerrarModal(){
+    document.getElementById("modal").style.display="none";
+}
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor de Evidencias</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--rojo:#c93a31;--vino:#7f1726;--oscuro:#101722;--gris:#e5e7eb;--panel:rgba(255,255,255,.08)}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Outfit',sans-serif;background:linear-gradient(145deg,#101722,#1d1b24);color:white;text-align:center;min-height:100vh;padding:20px}
+header{width:min(1100px,100%);margin:0 auto 20px;padding:18px 22px;background:var(--panel);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.1);border-radius:22px;box-shadow:0 18px 52px rgba(0,0,0,.32)}
+header h1{margin:0;font-size:1.45rem;letter-spacing:0}
+.panel{width:min(1100px,100%);margin:0 auto;padding:24px;background:var(--panel);border:1px solid rgba(255,255,255,.1);border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,.38)}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:22px}
+.controls div{background:rgba(255,255,255,.06);padding:16px;border-radius:16px;border:1px solid rgba(255,255,255,.08)}
+label{display:block;margin-bottom:8px;font-weight:600;color:#e5e7eb}
+input,select{width:100%;min-height:46px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.1);background:#111827;color:white;font:inherit}
+input:focus,select:focus{outline:2px solid var(--rojo)}
+button{grid-column:1/-1;padding:14px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--vino),var(--rojo));color:white;font:inherit;font-weight:800;cursor:pointer;transition:.25s}
+button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(0,0,0,.5)}
+canvas{margin-top:22px;border-radius:18px;max-width:100%;background:black;box-shadow:0 12px 34px rgba(0,0,0,.35)}
+.actions{margin-top:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.actions button{grid-column:auto}
+.download{background:#16a34a}
+@media(max-width:760px){
+  body{padding:12px}
+  header h1{font-size:1.2rem}
+  .panel{padding:18px}
+  .controls,.actions{grid-template-columns:1fr}
+}
+</style>
+<link rel="stylesheet" href="responsive-fixes.css">
+<script src="maintenance-redirect.js"></script>
+</head>
+<body>
+<header>
+<h1>Generador de Evidencia Fotografica</h1>
+</header>
+
+<div class="panel">
+<div class="controls">
+<div>
+<label>Subir Imagen</label>
+<input type="file" id="upload" accept="image/*">
+</div>
+<div>
+<label>Fecha del Operativo</label>
+<input type="date" id="fecha" onclick="this.showPicker && this.showPicker()">
+</div>
+<div>
+<label>Hora (Formato militar)</label>
+<input type="time" id="hora" step="1" min="00:00:00" max="23:59:59" required onclick="this.showPicker && this.showPicker()">
+</div>
+<button onclick="addText()">Generar Texto</button>
+</div>
+<canvas id="canvas"></canvas>
+<div class="actions">
+<button class="download" onclick="downloadImage()">Descargar Imagen</button>
+<button onclick="corregirImagen()">Corregir</button>
+<button onclick="limpiarTodo()">Limpiar</button>
+</div>
+</div>
+
+<script>
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+let image=new Image();
+let originalData=null;
+
+document.getElementById('upload').addEventListener('change',e=>{
+ const file=e.target.files[0];
+ if(!file)return;
+ const reader=new FileReader();
+ reader.onload=ev=>{image.onload=()=>{canvas.width=image.width;canvas.height=image.height;ctx.drawImage(image,0,0);originalData=ctx.getImageData(0,0,canvas.width,canvas.height)};image.src=ev.target.result};
+ reader.readAsDataURL(file);
+});
+
+function formatDate(dateString){
+ if(!dateString)return'';
+ const date=new Date(dateString);
+ return date.toLocaleString('es-CO',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+}
+
+function datosAutomaticos(fecha){
+ if(!fecha)return {mun:'',dep:'',punto:''};
+ return {mun:'Segovia',dep:'Antioquia',punto:'Peaje Fragua'};
+}
+
+function addText(){
+ if(!image.src){alert('Sube una imagen primero');return}
+ ctx.drawImage(image,0,0);
+ const fechaSeleccionada=document.getElementById('fecha').value;
+ const horaSeleccionada=document.getElementById('hora').value;
+ if(horaSeleccionada && (horaSeleccionada<"00:59" || horaSeleccionada>"23:59")){alert("La hora debe estar entre 00:59 y 23:59 (formato militar)");return}
+ const fecha=(fechaSeleccionada && horaSeleccionada)? `${fechaSeleccionada}T${horaSeleccionada}` : '';
+ const formatted=formatDate(fecha);
+ const info=datosAutomaticos(fecha);
+ const texto=`${formatted}\n${info.mun}\n${info.dep}\n${info.punto}`;
+ ctx.font='bold 42px Poppins';
+ ctx.fillStyle='white';
+ ctx.strokeStyle='black';
+ ctx.lineWidth=5;
+ ctx.textAlign='right';
+ const padding=50;
+ const lines=texto.split('\n');
+ let y=canvas.height-padding-(lines.length*55);
+ lines.forEach(line=>{ctx.strokeText(line,canvas.width-padding,y);ctx.fillText(line,canvas.width-padding,y);y+=55});
+}
+
+function downloadImage(){
+ const link=document.createElement('a');
+ link.download='evidencia.png';
+ link.href=canvas.toDataURL('image/png');
+ link.click();
+}
+
+function corregirImagen(){
+ if(originalData) ctx.putImageData(originalData,0,0);
+}
+
+function limpiarTodo(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ document.getElementById('upload').value='';
+ document.getElementById('fecha').value='';
+ document.getElementById('hora').value='';
+ image.src='';
+ originalData=null;
+}
+</script>
+</body>
+</html>

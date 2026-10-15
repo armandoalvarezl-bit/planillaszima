@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Preinscripcion | Congreso Juvenil 2026</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ui-theme.css">
+<style>
+.form-frame-card{
+  padding:0;
+  overflow:hidden;
+}
+.form-frame-head{
+  padding:28px 28px 18px;
+  border-bottom:1px solid var(--ui-border);
+}
+.form-frame-head h2{
+  margin:0 0 8px;
+  color:var(--ui-wine);
+  font-size:2.25rem;
+  line-height:1.08;
+}
+.form-frame-head p{
+  margin:0;
+  color:var(--ui-muted);
+  line-height:1.6;
+}
+.form-frame{
+  width:100%;
+  height:min(980px,calc(100vh - 230px));
+  min-height:720px;
+  border:0;
+  display:block;
+  background:white;
+}
+@media(max-width:760px){
+  .form-frame-head{padding:22px;}
+  .form-frame-head h2{font-size:1.8rem;}
+  .form-frame{height:760px;min-height:680px;}
+}
+</style>
+<link rel="stylesheet" href="responsive-fixes.css">
+<script src="maintenance-redirect.js"></script>
+</head>
+<body class="ui-body">
+<div class="ui-shell">
+  <header class="ui-topbar">
+    <div class="ui-brand">
+      <div class="ui-brand-mark"><img src="img/logo.png" alt="Logo UJECA"></div>
+      <div class="ui-brand-copy">
+        <h1>Preinscripcion del congreso</h1>
+        <p>Circuito 2 - Zona 6</p>
+      </div>
+    </div>
+    <nav class="ui-nav">
+      <a href="home.html">Inicio</a>
+      <a href="form.html">Registro oficial</a>
+      <a href="Basedatos.html">Inscritos</a>
+      <a href="live.html">Live</a>
+      <a href="contacto.html">Contacto</a>
+    </nav>
+  </header>
+
+  <main class="ui-section">
+    <article class="ui-card form-frame-card">
+      <div class="form-frame-head">
+        <span class="ui-eyebrow">Formulario externo</span>
+        <h2>Formulario de preinscripcion</h2>
+        <p>Completa la informacion solicitada. Si necesitas el registro completo del sistema, usa la opcion Registro oficial.</p>
+      </div>
+      <iframe
+        class="form-frame"
+        src="https://docs.google.com/forms/d/e/1FAIpQLSfJeRfjRysZH4qcuW61IkezIdhXQoBJrIFlZGjjLMLj6QoccQ/viewform?embedded=true"
+        title="Formulario de preinscripcion">
+        Cargando formulario...
+      </iframe>
+    </article>
+  </main>
+
+  <footer class="ui-footer">(c) 2026 Union Juvenil Evangelica del Caribe</footer>
+</div>
+</body>
+</html>

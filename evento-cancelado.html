@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#001b46">
+  <title>Evento cancelado | UJECA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <style>
+    :root{
+      --blue-950:#00102b;
+      --blue-900:#001b46;
+      --blue-600:#1267ff;
+      --blue-400:#3198ff;
+      --orange:#ffad1f;
+      --orange-dark:#fb8c00;
+      --ink:#07183a;
+      --muted:#24416e;
+      --line:#cfe0f6;
+      --white:#ffffff;
+      --shadow:0 28px 90px rgba(0,15,48,.42);
+    }
+
+    *{box-sizing:border-box}
+
+    html{
+      min-height:100%;
+      text-size-adjust:100%;
+    }
+
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:"Outfit",Arial,sans-serif;
+      color:var(--ink);
+      background:
+        linear-gradient(90deg,rgba(0,16,43,.86),rgba(0,35,86,.6) 48%,rgba(0,16,43,.9)),
+        url("img/WhatsApp Image 2026-02-19 at 18.27.17.jpeg") center/cover fixed no-repeat;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:clamp(12px,2.4vw,36px);
+      overflow-x:hidden;
+    }
+
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      width:240px;
+      height:38px;
+      background:var(--orange);
+      transform:rotate(-48deg);
+      z-index:0;
+      pointer-events:none;
+      box-shadow:0 0 0 18px rgba(0,58,136,.78);
+    }
+
+    body::before{
+      top:35px;
+      left:-90px;
+    }
+
+    body::after{
+      right:-90px;
+      bottom:38px;
+    }
+
+    .announcement{
+      width:min(1280px,100%);
+      min-height:min(650px,calc(100vh - 24px));
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:minmax(0,1.08fr) minmax(320px,.78fr);
+      background:var(--white);
+      border:1px solid rgba(64,151,255,.64);
+      border-radius:12px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .main-panel{
+      position:relative;
+      padding:clamp(22px,3.4vw,46px);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      min-width:0;
+      background:
+        radial-gradient(circle at 82% 34%,rgba(255,173,31,.14),transparent 15rem),
+        linear-gradient(135deg,#fff 0%,#fff 64%,#eff6ff 100%);
+    }
+
+    .main-panel::after{
+      content:"";
+      position:absolute;
+      top:0;
+      right:0;
+      width:36%;
+      height:42%;
+      background:linear-gradient(135deg,transparent 49%,rgba(7,24,58,.045) 50%);
+      pointer-events:none;
+    }
+
+    .brand{
+      position:relative;
+      z-index:1;
+      display:flex;
+      align-items:center;
+      gap:18px;
+      margin-bottom:clamp(18px,2.4vw,28px);
+      min-width:0;
+    }
+
+    .brand-mark{
+      width:clamp(64px,6.6vw,92px);
+      height:clamp(50px,4.8vw,64px);
+      flex:none;
+      display:grid;
+      place-items:center;
+    }
+
+    .brand-mark img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+
+    .brand-line{
+      width:2px;
+      height:42px;
+      background:linear-gradient(180deg,var(--blue-600),rgba(18,103,255,.12));
+      flex:none;
+    }
+
+    .brand-copy strong{
+      display:block;
+      color:var(--ink);
+      font-size:clamp(1.42rem,2vw,2rem);
+      line-height:1;
+      font-weight:900;
+      letter-spacing:.02em;
+    }
+
+    .brand-copy span{
+      display:block;
+      margin-top:6px;
+      color:var(--muted);
+      font-size:clamp(.92rem,1.2vw,1.12rem);
+      line-height:1.25;
+      font-weight:700;
+    }
+
+    .status-pill{
+      position:relative;
+      z-index:1;
+      width:max-content;
+      max-width:100%;
+      min-height:42px;
+      display:inline-flex;
+      align-items:center;
+      gap:12px;
+      padding:8px 16px 8px 10px;
+      border-radius:999px;
+      background:#fff7ed;
+      color:var(--ink);
+      border:2px solid var(--orange);
+      font-size:clamp(.74rem,1vw,.92rem);
+      font-weight:900;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      box-shadow:0 12px 30px rgba(251,140,0,.12);
+    }
+
+    .status-icon{
+      width:28px;
+      height:28px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:linear-gradient(180deg,#ffc34d,var(--orange-dark));
+      color:white;
+      font-size:1.05rem;
+      font-weight:900;
+      flex:none;
+    }
+
+    .headline-row{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) minmax(145px,.34fr);
+      gap:clamp(8px,1.5vw,18px);
+      align-items:center;
+      margin-top:18px;
+    }
+
+    h1{
+      margin:0;
+      color:var(--ink);
+      font-size:clamp(2.25rem,4.2vw,4.35rem);
+      line-height:.94;
+      letter-spacing:0;
+      font-weight:900;
+    }
+
+    h1 span{
+      display:block;
+      color:var(--blue-600);
+    }
+
+    .underline{
+      width:60px;
+      height:6px;
+      margin:14px 0 0;
+      border-radius:999px;
+      background:var(--orange-dark);
+    }
+
+    .illustration{
+      min-height:clamp(130px,14vw,190px);
+      position:relative;
+      display:grid;
+      place-items:center;
+    }
+
+    .halo{
+      position:absolute;
+      width:clamp(148px,16vw,210px);
+      height:clamp(122px,13vw,172px);
+      border-radius:50%;
+      background:linear-gradient(180deg,#eaf4ff,#d8ecff);
+      transform:rotate(-8deg);
+    }
+
+    .calendar{
+      position:relative;
+      width:clamp(118px,11.8vw,162px);
+      height:clamp(98px,9.8vw,132px);
+      border-radius:14px;
+      background:#ffffff;
+      border:8px solid #06285e;
+      box-shadow:0 18px 25px rgba(7,24,58,.22);
+      transform:rotate(4deg);
+      overflow:hidden;
+      animation:float 3.8s ease-in-out infinite;
+    }
+
+    .calendar::before{
+      content:"";
+      position:absolute;
+      inset:0 0 auto;
+      height:34%;
+      background:linear-gradient(90deg,#1267ff,#3198ff);
+    }
+
+    .calendar::after{
+      content:"";
+      position:absolute;
+      left:50%;
+      top:62%;
+      width:78%;
+      height:10px;
+      border-radius:999px;
+      background:var(--orange-dark);
+      transform:translate(-50%,-50%) rotate(-18deg);
+      box-shadow:0 0 0 5px rgba(251,140,0,.14);
+    }
+
+    .calendar-rings{
+      position:absolute;
+      top:10px;
+      left:26px;
+      right:26px;
+      display:flex;
+      justify-content:space-between;
+      z-index:1;
+    }
+
+    .calendar-rings span{
+      width:12px;
+      height:28px;
+      border-radius:999px;
+      background:var(--orange);
+      box-shadow:0 -12px 0 #06285e;
+    }
+
+    .calendar-alert{
+      position:absolute;
+      left:50%;
+      top:63%;
+      width:clamp(42px,4.4vw,58px);
+      height:clamp(42px,4.4vw,58px);
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:#fff7ed;
+      border:4px solid var(--orange-dark);
+      color:var(--blue-950);
+      font-size:clamp(1.5rem,2.4vw,2.25rem);
+      font-weight:900;
+      transform:translate(-50%,-50%);
+      box-shadow:0 12px 22px rgba(7,24,58,.16);
+    }
+
+    .lead{
+      position:relative;
+      z-index:1;
+      margin:20px 0 0;
+      max-width:56ch;
+      color:#11356f;
+      font-size:clamp(.96rem,1.08vw,1.08rem);
+      line-height:1.42;
+      font-weight:500;
+    }
+
+    .info-grid{
+      position:relative;
+      z-index:1;
+      display:grid;
+      grid-template-columns:repeat(3,minmax(120px,1fr));
+      gap:12px;
+      margin-top:24px;
+    }
+
+    .info-item{
+      min-height:112px;
+      padding:clamp(12px,1.25vw,15px);
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:linear-gradient(180deg,#fff,#fbfdff);
+      box-shadow:0 16px 28px rgba(7,24,58,.07);
+    }
+
+    .info-icon{
+      width:clamp(36px,3.2vw,44px);
+      height:clamp(36px,3.2vw,44px);
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      margin-bottom:8px;
+      background:linear-gradient(180deg,#3d8bff,#125fff);
+      color:white;
+      box-shadow:0 12px 24px rgba(18,103,255,.22);
+    }
+
+    .info-item:nth-child(2) .info-icon{
+      background:linear-gradient(180deg,#ffc34d,#fb8c00);
+      box-shadow:0 12px 24px rgba(251,140,0,.2);
+    }
+
+    .info-icon svg{
+      width:23px;
+      height:23px;
+      stroke:currentColor;
+      stroke-width:2.4;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .info-item span{
+      display:block;
+      margin-bottom:6px;
+      color:var(--ink);
+      font-size:clamp(.9rem,1vw,1.02rem);
+      font-weight:900;
+      text-transform:uppercase;
+    }
+
+    .info-item strong{
+      display:block;
+      color:#11356f;
+      font-size:clamp(.9rem,1vw,1rem);
+      line-height:1.25;
+      font-weight:600;
+    }
+
+    .side-panel{
+      position:relative;
+      padding:clamp(24px,3vw,46px) clamp(20px,2.6vw,38px);
+      background:
+        radial-gradient(circle at 18% 16%,rgba(49,152,255,.24),transparent 18rem),
+        linear-gradient(180deg,#001d4a 0%,#000d2a 100%);
+      color:white;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      gap:24px;
+      overflow:hidden;
+      border-left:1px solid rgba(64,151,255,.34);
+    }
+
+    .side-panel::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg,rgba(0,16,43,.18),rgba(0,16,43,.72)),
+        url("img/WhatsApp Image 2026-02-19 at 18.27.17.jpeg") center/cover no-repeat;
+      opacity:.16;
+      pointer-events:none;
+    }
+
+    .side-content,
+    .notice,
+    .signature{
+      position:relative;
+      z-index:1;
+    }
+
+    .side-kicker{
+      display:flex;
+      align-items:center;
+      gap:16px;
+      color:var(--blue-400);
+      font-size:.84rem;
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+
+    .side-kicker::after{
+      content:"";
+      width:82px;
+      height:3px;
+      border-radius:999px;
+      background:linear-gradient(90deg,rgba(255,255,255,.8),rgba(255,255,255,.22));
+    }
+
+    .side-content h2{
+      margin:14px 0;
+      font-size:clamp(1.78rem,2.95vw,3.35rem);
+      line-height:1.06;
+      letter-spacing:0;
+      font-weight:900;
+    }
+
+    .side-content h2 span{
+      color:var(--orange);
+    }
+
+    .side-content p{
+      max-width:39ch;
+      margin:0;
+      color:rgba(255,255,255,.9);
+      line-height:1.4;
+      font-size:clamp(.95rem,1.05vw,1.02rem);
+      font-weight:600;
+    }
+
+    .notice{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:14px;
+      align-items:center;
+      padding:clamp(18px,2vw,22px) clamp(18px,2.2vw,24px);
+      border-radius:10px;
+      background:rgba(0,61,144,.42);
+      border:1px solid rgba(49,152,255,.72);
+      color:rgba(255,255,255,.92);
+      line-height:1.35;
+      font-size:.95rem;
+      font-weight:700;
+      box-shadow:0 18px 42px rgba(0,9,34,.18);
+    }
+
+    .notice-icon{
+      width:38px;
+      height:38px;
+      display:grid;
+      place-items:center;
+      border-radius:50%;
+      background:linear-gradient(180deg,#3d8bff,#125fff);
+      color:white;
+      font-size:1.4rem;
+      font-weight:900;
+    }
+
+    .notice-text{
+      padding-left:14px;
+      border-left:4px solid var(--blue-400);
+    }
+
+    .contact-box{
+      position:relative;
+      z-index:1;
+      display:grid;
+      gap:12px;
+      color:white;
+    }
+
+    .contact-row{
+      display:grid;
+      grid-template-columns:auto 1fr;
+      gap:12px;
+      align-items:center;
+      padding:14px;
+      border-radius:10px;
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.12);
+      font-size:.96rem;
+      font-weight:800;
+    }
+
+    .contact-row svg{
+      width:22px;
+      height:22px;
+      stroke:var(--orange);
+      stroke-width:2.4;
+      fill:none;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+    }
+
+    .signature{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:16px;
+      color:#8cc7ff;
+      font-size:1rem;
+      font-style:italic;
+      font-weight:500;
+    }
+
+    .signature::before,
+    .signature::after{
+      content:"";
+      width:34px;
+      height:2px;
+      background:var(--blue-600);
+      border-radius:999px;
+    }
+
+    @keyframes float{
+      0%,100%{transform:rotate(4deg) translateY(0)}
+      50%{transform:rotate(4deg) translateY(-10px)}
+    }
+
+    @media (max-width:1120px){
+      body{
+        padding:16px;
+      }
+
+      .announcement{
+        grid-template-columns:1fr;
+        min-height:0;
+      }
+
+      .side-panel{
+        border-left:0;
+        border-top:1px solid rgba(64,151,255,.34);
+        min-height:0;
+      }
+    }
+
+    @media (max-width:900px){
+      body{
+        align-items:flex-start;
+      }
+
+      .announcement{
+        width:min(760px,100%);
+      }
+
+      .headline-row{
+        grid-template-columns:minmax(0,1fr) minmax(150px,220px);
+      }
+
+      .info-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+      }
+    }
+
+    @media (max-width:720px){
+      body::before,
+      body::after{
+        width:170px;
+        height:26px;
+        box-shadow:0 0 0 12px rgba(0,58,136,.78);
+      }
+
+      .main-panel,
+      .side-panel{
+        padding:clamp(20px,6vw,26px);
+      }
+
+      .brand{
+        align-items:flex-start;
+        margin-bottom:30px;
+        gap:12px;
+      }
+
+      .brand-mark{
+        width:76px;
+        height:58px;
+      }
+
+      .brand-copy strong{
+        font-size:1.42rem;
+      }
+
+      .brand-copy span{
+        font-size:.96rem;
+      }
+
+      .headline-row{
+        grid-template-columns:1fr;
+        margin-top:20px;
+      }
+
+      .illustration{
+        min-height:165px;
+        order:-1;
+      }
+
+      .info-grid{
+        grid-template-columns:1fr;
+        margin-top:24px;
+      }
+
+      .info-item{
+        min-height:0;
+        display:grid;
+        grid-template-columns:auto 1fr;
+        column-gap:14px;
+        align-items:center;
+      }
+
+      .info-icon{
+        grid-row:1 / span 2;
+        margin-bottom:0;
+      }
+
+      .side-kicker{
+        align-items:flex-start;
+        flex-direction:column;
+        gap:12px;
+      }
+
+      .notice{
+        grid-template-columns:1fr;
+      }
+
+      .notice-text{
+        padding-left:0;
+        padding-top:16px;
+        border-left:0;
+        border-top:4px solid var(--blue-400);
+      }
+    }
+
+    @media (max-width:430px){
+      body{
+        padding:10px;
+      }
+
+      .announcement{
+        min-height:calc(100vh - 20px);
+        border-radius:10px;
+      }
+
+      .status-pill{
+        width:100%;
+        justify-content:center;
+        text-align:center;
+        letter-spacing:.08em;
+        font-size:.78rem;
+      }
+
+      h1{
+        font-size:clamp(2.15rem,12vw,2.7rem);
+      }
+
+      .side-content h2{
+        font-size:clamp(1.85rem,9.5vw,2.25rem);
+      }
+
+      .brand-line{
+        display:none;
+      }
+
+      .illustration{
+        transform:scale(.88);
+        transform-origin:center;
+        margin-block:-10px;
+      }
+
+      .signature{
+        gap:12px;
+        font-size:.98rem;
+      }
+    }
+
+    @media (max-height:760px) and (min-width:1121px){
+      body{
+        align-items:flex-start;
+      }
+
+      .announcement{
+        min-height:0;
+      }
+
+      .main-panel,
+      .side-panel{
+        justify-content:flex-start;
+      }
+
+      .brand{
+        margin-bottom:22px;
+      }
+
+      .headline-row{
+        margin-top:18px;
+      }
+
+      .lead,
+      .info-grid{
+        margin-top:22px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="announcement" aria-labelledby="titulo-cancelacion">
+    <section class="main-panel">
+      <div class="brand" aria-label="UJECA">
+        <div class="brand-mark">
+          <img src="img/logo.png" alt="Logo UJECA">
+        </div>
+        <div class="brand-line" aria-hidden="true"></div>
+        <div class="brand-copy">
+          <strong>UJECA</strong>
+          <span>Congreso Trascendentales 2026</span>
+        </div>
+      </div>
+
+      <div class="status-pill">
+        <span class="status-icon" aria-hidden="true">!</span>
+        Evento cancelado
+      </div>
+
+      <div class="headline-row">
+        <div>
+          <h1 id="titulo-cancelacion">Informaci&oacute;n <span>importante</span></h1>
+          <div class="underline" aria-hidden="true"></div>
+        </div>
+
+        <div class="illustration" aria-hidden="true">
+          <div class="halo"></div>
+          <div class="calendar">
+            <div class="calendar-rings"><span></span><span></span></div>
+            <div class="calendar-alert">!</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="lead">
+        Lamentamos informar que el evento Congreso Trascendentales 2026 ha sido cancelado. Agradecemos tu comprensi&oacute;n, apoyo y disposici&oacute;n durante este proceso.
+      </p>
+
+      <div class="info-grid" aria-label="Informacion sobre la cancelacion">
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path></svg>
+          </div>
+          <span>Estado</span>
+          <strong>Evento cancelado oficialmente</strong>
+        </div>
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 2v4"></path><path d="M16 2v4"></path><path d="M4 9h16"></path><rect x="4" y="5" width="16" height="16" rx="2"></rect><path d="M8 14h8"></path><path d="M8 17h5"></path></svg>
+          </div>
+          <span>Fecha</span>
+          <strong>No habr&aacute; programaci&oacute;n del evento</strong>
+        </div>
+        <div class="info-item">
+          <div class="info-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M21 15a4 4 0 0 1-4 4H7l-4 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z"></path><path d="M8 9h8"></path><path d="M8 13h5"></path></svg>
+          </div>
+          <span>Comunicado</span>
+          <strong>La organizaci&oacute;n informar&aacute; cualquier novedad</strong>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side-panel" aria-label="Informacion adicional">
+      <div class="side-content">
+        <div class="side-kicker">Comunicado oficial</div>
+        <h2>Gracias por tu paciencia y comprensi&oacute;n <span>en este momento.</span></h2>
+        <p>
+          Nuestro equipo acompa&ntilde;ar&aacute; las inquietudes relacionadas con inscripciones, pagos o informaci&oacute;n pendiente.
+        </p>
+      </div>
+
+      <div class="notice">
+        <span class="notice-icon" aria-hidden="true">i</span>
+        <div class="notice-text">
+          No necesitas realizar ning&uacute;n proceso adicional desde la plataforma. Conserva tus comprobantes y espera los canales oficiales de comunicaci&oacute;n.
+        </div>
+      </div>
+
+      <div class="contact-box" aria-label="Canales de atencion">
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"></path></svg>
+          <span>Consulta los canales oficiales de UJECA</span>
+        </div>
+        <div class="contact-row">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4z"></path><path d="m22 6-10 7L2 6"></path></svg>
+          <span>Revisa tu correo o mensajes registrados</span>
+        </div>
+      </div>
+
+      <div class="signature">Juntos en una misma visi&oacute;n</div>
+    </aside>
+  </main>
+</body>
+</html>
