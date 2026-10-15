@@ -1,226 +1,691 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cargando Plataforma...</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-body{
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background:linear-gradient(-45deg,#6a040f,#9d0208,#d00000,#dc2f02,#e85d04);
-background-size:400% 400%;
-animation:bgAnim 16s ease infinite;
-color:white;
-overflow:hidden;
-opacity:1;
-}
+    <title>Planillas ZIMA - Mantenimiento</title>
 
-/* Fondo animado */
-@keyframes bgAnim{
-0%{background-position:0% 50%}
-50%{background-position:100% 50%}
-100%{background-position:0% 50%}
-}
+    <meta name="description"
+          content="La plataforma de Planillas de Transportadora ZIMA se encuentra temporalmente en mantenimiento.">
 
-/* Canvas */
-#particles{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;}
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-/* Loader contenedor */
-.loader{
-text-align:center;
-padding:50px;
-border-radius:24px;
-background:rgba(255,255,255,.06);
-backdrop-filter:blur(20px);
-box-shadow:0 25px 70px rgba(0,0,0,.5);
-animation:fadeIn 1s ease;
-}
+        :root {
+            --azul-zima: #123b78;
+            --azul-claro: #eaf3fc;
+            --naranja-ani: #dc6b35;
+            --amarillo: #ffc400;
+            --azul-ani: #123c82;
+            --rojo-ani: #d90b2f;
+            --texto: #183354;
+            --gris: #64748b;
+            --blanco: #ffffff;
+        }
 
-/* Logo con glow */
-.logo{
-width:140px;
-margin-bottom:25px;
-animation:float 4s ease-in-out infinite, glow 2.8s ease-in-out infinite;
-}
-@keyframes glow{
-0%,100%{filter:drop-shadow(0 0 5px rgba(255,255,255,.3))}
-50%{filter:drop-shadow(0 0 28px rgba(255,255,255,.9))}
-}
-@keyframes float{
-0%,100%{transform:translateY(0)}
-50%{transform:translateY(-16px)}
-}
+        body {
+            font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+            min-height: 100vh;
+            background:
+                radial-gradient(
+                    circle at 90% 20%,
+                    #eaf4ff 0%,
+                    #f7fbff 28%,
+                    #ffffff 60%
+                );
+            color: var(--texto);
+            overflow-x: hidden;
+        }
 
-/* Loader circular 3D */
-.circle{
-width:100px;height:100px;margin:20px auto;
-border-radius:50%;
-border:4px solid rgba(255,255,255,.15);
-border-top:4px solid white;
-animation:spin 1.2s linear infinite;
-box-shadow:0 0 35px rgba(255,255,255,.6);
-}
-@keyframes spin{to{transform:rotate(360deg)}}
+        /* =========================
+           CONTENEDOR PRINCIPAL
+        ========================== */
 
-/* Texto typewriter */
-h1{font-weight:600;font-size:22px;min-height:30px;letter-spacing:.5px;}
-#estado{opacity:.85;font-size:15px;margin-top:8px;}
+        .page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
 
-/* Barra de progreso */
-.bar{
-width:280px;height:8px;
-background:rgba(255,255,255,.18);
-border-radius:30px;
-overflow:hidden;
-margin:20px auto 0 auto;
-}
-.fill{
-height:100%;
-width:0%;
-background:linear-gradient(90deg,#fff,#ffdede,#fff);
-background-size:200% 100%;
-animation:shine 2s linear infinite;
-box-shadow:0 0 20px rgba(255,255,255,.5);
-}
-@keyframes shine{
-0%{background-position:200% 0}
-100%{background-position:-200% 0}
-}
+        .container {
+            width: min(1180px, 92%);
+            margin: auto;
+        }
 
-/* fade out */
-.fade-out{animation:out 1s forwards;}
-@keyframes out{to{opacity:0;transform:scale(1.1)}}
+        /* =========================
+           HEADER
+        ========================== */
 
-@keyframes fadeIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
-</style>
+        header {
+            padding: 35px 0 20px;
+        }
+
+        .logos {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
+        .logo-ani {
+            width: 135px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .logo-zima {
+            width: 180px;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .separator {
+            width: 1px;
+            height: 80px;
+            background: #cbd5e1;
+        }
+
+        /* =========================
+           CONTENIDO
+        ========================== */
+
+        main {
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            align-items: center;
+            gap: 50px;
+            padding: 40px 0 70px;
+        }
+
+        /* =========================
+           TEXTO
+        ========================== */
+
+        .content h1 {
+            font-size: clamp(42px, 5vw, 68px);
+            line-height: 1.05;
+            font-weight: 800;
+            color: var(--azul-zima);
+            margin-bottom: 20px;
+        }
+
+        .line {
+            width: 100px;
+            height: 5px;
+            background: var(--naranja-ani);
+            border-radius: 20px;
+            margin-bottom: 30px;
+        }
+
+        .content p {
+            font-size: 19px;
+            line-height: 1.7;
+            color: #52657d;
+            max-width: 590px;
+        }
+
+        /* =========================
+           TARJETA
+        ========================== */
+
+        .notice {
+            margin-top: 35px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            background: rgba(234, 243, 252, 0.9);
+            border: 1px solid #dceaf7;
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 560px;
+        }
+
+        .clock {
+            min-width: 65px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: var(--azul-zima);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .clock::before {
+            content: "";
+            width: 30px;
+            height: 30px;
+            border: 3px solid white;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .clock::after {
+            content: "";
+            position: absolute;
+            width: 3px;
+            height: 12px;
+            background: white;
+            top: 19px;
+            border-radius: 5px;
+            transform-origin: bottom;
+            transform: rotate(0deg);
+        }
+
+        .notice h2 {
+            color: var(--azul-zima);
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .notice p {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #53677f;
+        }
+
+        /* =========================
+           ILUSTRACIÓN
+        ========================== */
+
+        .illustration {
+            position: relative;
+            min-height: 450px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle-bg {
+            position: absolute;
+            width: 460px;
+            height: 460px;
+            border-radius: 50%;
+            background: linear-gradient(
+                135deg,
+                #eef7ff,
+                #dbeefe
+            );
+            z-index: 0;
+        }
+
+        .monitor {
+            position: relative;
+            z-index: 2;
+            width: 390px;
+            height: 270px;
+            background: white;
+            border: 14px solid #315e8e;
+            border-radius: 18px;
+            box-shadow:
+                0 25px 60px rgba(18, 59, 120, .18);
+        }
+
+        .screen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(
+                145deg,
+                #f8fcff,
+                #eef6fd
+            );
+        }
+
+        .gear {
+            font-size: 90px;
+            color: var(--azul-zima);
+            line-height: 1;
+            animation: rotate 8s linear infinite;
+        }
+
+        .maintenance-text {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            color: var(--azul-zima);
+        }
+
+        .stand {
+            position: absolute;
+            z-index: 1;
+            bottom: 35px;
+            width: 130px;
+            height: 65px;
+            background: #315e8e;
+            clip-path: polygon(
+                20% 0,
+                80% 0,
+                100% 100%,
+                0 100%
+            );
+        }
+
+        /* =========================
+           CONO
+        ========================== */
+
+        .cone {
+            position: absolute;
+            right: 5%;
+            bottom: 35px;
+            z-index: 4;
+            width: 75px;
+            height: 115px;
+        }
+
+        .cone-top {
+            width: 0;
+            height: 0;
+            border-left: 32px solid transparent;
+            border-right: 32px solid transparent;
+            border-bottom: 85px solid #f28b22;
+            margin: auto;
+        }
+
+        .cone-stripe {
+            position: absolute;
+            top: 45px;
+            left: 12px;
+            width: 51px;
+            height: 14px;
+            background: white;
+            transform: rotate(-8deg);
+        }
+
+        .cone-base {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 75px;
+            height: 20px;
+            border-radius: 7px;
+            background: #f28b22;
+        }
+
+        /* =========================
+           CASCO
+        ========================== */
+
+        .helmet {
+            position: absolute;
+            left: 5%;
+            bottom: 25px;
+            z-index: 4;
+            width: 125px;
+            height: 58px;
+            background: #ffc928;
+            border-radius: 70px 70px 25px 25px;
+            box-shadow: 0 8px 15px rgba(0,0,0,.12);
+        }
+
+        .helmet::after {
+            content: "";
+            position: absolute;
+            bottom: -7px;
+            left: -12px;
+            width: 150px;
+            height: 15px;
+            border-radius: 20px;
+            background: #f0b500;
+        }
+
+        /* =========================
+           BARRERA
+        ========================== */
+
+        .barrier {
+            position: absolute;
+            bottom: 38px;
+            left: 0;
+            width: 190px;
+            height: 55px;
+            background:
+                repeating-linear-gradient(
+                    -45deg,
+                    var(--azul-zima) 0,
+                    var(--azul-zima) 20px,
+                    #ffc928 20px,
+                    #ffc928 40px
+                );
+            border-radius: 7px;
+            z-index: 5;
+            box-shadow: 0 8px 20px rgba(0,0,0,.12);
+        }
+
+        /* =========================
+           FOOTER
+        ========================== */
+
+        footer {
+            padding: 25px 0 30px;
+            text-align: center;
+        }
+
+        .footer-line {
+            width: 80%;
+            height: 1px;
+            background: #cbd5e1;
+            margin: 0 auto 20px;
+        }
+
+        footer p {
+            color: #5c7089;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        footer strong {
+            color: var(--azul-zima);
+        }
+
+        /* =========================
+           BARRA ANI
+        ========================== */
+
+        .ani-bar {
+            display: flex;
+            width: 110px;
+            height: 7px;
+            margin: 22px auto 0;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .ani-bar span:nth-child(1) {
+            flex: 1;
+            background: var(--amarillo);
+        }
+
+        .ani-bar span:nth-child(2) {
+            flex: 1;
+            background: var(--azul-ani);
+        }
+
+        .ani-bar span:nth-child(3) {
+            flex: 1;
+            background: var(--rojo-ani);
+        }
+
+        /* =========================
+           ANIMACIONES
+        ========================== */
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* =========================
+           RESPONSIVE
+        ========================== */
+
+        @media (max-width: 900px) {
+
+            .hero {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .content p {
+                margin: auto;
+            }
+
+            .line {
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .notice {
+                margin-left: auto;
+                margin-right: auto;
+                text-align: left;
+            }
+
+            .illustration {
+                min-height: 400px;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            header {
+                padding-top: 25px;
+            }
+
+            .logos {
+                gap: 20px;
+            }
+
+            .logo-ani {
+                width: 95px;
+            }
+
+            .logo-zima {
+                width: 125px;
+            }
+
+            .separator {
+                height: 55px;
+            }
+
+            .hero {
+                padding-top: 20px;
+            }
+
+            .content h1 {
+                font-size: 42px;
+            }
+
+            .content p {
+                font-size: 17px;
+            }
+
+            .notice {
+                padding: 18px;
+            }
+
+            .illustration {
+                min-height: 320px;
+                transform: scale(.75);
+                margin: -30px 0;
+            }
+
+            footer {
+                padding-bottom: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="zima-ui-modern.css">
 </head>
 
 <body>
-<canvas id="particles"></canvas>
 
-<div class="loader" id="loader">
-<img src="img/logo.png" class="logo">
-<h1 id="texto"></h1>
-<div class="circle"></div>
-<p id="estado">Iniciando...</p>
-<div class="bar"><div class="fill" id="fill"></div></div>
+<div class="page">
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header>
+        <div class="container">
+
+            <div class="logos">
+
+                <!-- LOGO ANI -->
+                <img
+                    src="img/logo-ani.png"
+                    alt="ANI"
+                    class="logo-ani"
+                >
+
+                <div class="separator"></div>
+
+                <!-- LOGO ZIMA -->
+                <img
+                    src="img/logo-zima.png"
+                    alt="ZIMA Seguridad Ltda."
+                    class="logo-zima"
+                >
+
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- =========================
+         CONTENIDO
+    ========================== -->
+
+    <main>
+
+        <div class="container">
+
+            <section class="hero">
+
+                <!-- TEXTO -->
+
+                <div class="content">
+
+                    <h1>
+                        ¡Estamos en
+                        mantenimiento!
+                    </h1>
+
+                    <div class="line"></div>
+
+                    <p>
+                        Estamos realizando mejoras en la página
+                        de <strong>Planillas de Transportadora ZIMA</strong>
+                        para brindarte una experiencia más rápida,
+                        segura y eficiente.
+                    </p>
+
+
+                    <div class="notice">
+
+                        <div class="clock"></div>
+
+                        <div>
+                            <h2>
+                                Volveremos pronto
+                            </h2>
+
+                            <p>
+                                Agradecemos tu comprensión.
+                                Intenta nuevamente más tarde.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ILUSTRACIÓN -->
+
+                <div class="illustration">
+
+                    <div class="circle-bg"></div>
+
+                    <div class="monitor">
+
+                        <div class="screen">
+
+                            <div class="gear">
+                                ⚙
+                            </div>
+
+                            <div class="maintenance-text">
+                                MANTENIMIENTO
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="stand"></div>
+
+                    <div class="barrier"></div>
+
+                    <div class="helmet"></div>
+
+                    <div class="cone">
+
+                        <div class="cone-top"></div>
+
+                        <div class="cone-stripe"></div>
+
+                        <div class="cone-base"></div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </div>
+
+    </main>
+
+
+    <!-- =========================
+         FOOTER
+    ========================== -->
+
+    <footer>
+
+        <div class="container">
+
+            <div class="footer-line"></div>
+
+            <p>
+                Si necesitas ayuda, comunícate con nuestro
+                equipo de soporte.
+            </p>
+
+            <p>
+                <strong>
+                    Gracias por confiar en nosotros.
+                </strong>
+            </p>
+
+            <!-- COLORES ANI -->
+
+            <div class="ani-bar">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+
+        </div>
+
+    </footer>
+
 </div>
 
-<audio id="startupSound" src="audio/soundreality-hold-on-beat-408795.mp3" autoplay></audio>
-
-
-<script>
-/* ================= TEXTO TYPEWRITER ================= */
-const mensajes=[
-"Iniciando plataforma",
-"Cargando módulos del sistema",
-"Conectando base de datos",
-"Verificando cupos disponibles",
-"Optimizando experiencia",
-"Todo listo"
-];
-
-let i=0,j=0;
-const texto=document.getElementById("texto");
-const estado=document.getElementById("estado");
-const fill=document.getElementById("fill");
-const sound=document.getElementById("startupSound");
-
-function escribir(){
-if(i<mensajes.length){
-    if(j<mensajes[i].length){
-        texto.innerHTML+=mensajes[i][j];
-        j++;
-        setTimeout(escribir,30);
-    }else{
-        estado.innerText="Paso "+(i+1)+" de "+mensajes.length;
-        i++; j=0;
-        texto.innerHTML="";
-        setTimeout(escribir,600);
-    }
-}else finalizar();
-}
-escribir();
-
-/* ================= PROGRESO REAL ================= */
-let progreso=0;
-const intervalo=setInterval(()=>{
-progreso+=100/(mensajes.length*12);
-fill.style.width=progreso+"%";
-},70);
-
-/* ================= FINAL CINEMATIC ================= */
-function finalizar(){
-clearInterval(intervalo);
-setTimeout(()=>{
-// reproducir sonido
-if(sound) sound.play().catch(()=>{});
-// fade out
-document.getElementById("loader").classList.add("fade-out");
-document.body.style.transition="opacity .8s ease";
-document.body.style.opacity="0";
-// transición final épica
-setTimeout(()=>location.href="home.html",800);
-},500);
-}
-
-/* ================= PARTICULAS 3D CON LINEAS ================= */
-const canvas=document.getElementById("particles");
-const ctx=canvas.getContext("2d");
-
-function resize(){canvas.width=innerWidth; canvas.height=innerHeight;}
-resize();
-addEventListener("resize",resize);
-
-let p=[];
-for(let k=0;k<100;k++){
-p.push({
-x:Math.random()*canvas.width,
-y:Math.random()*canvas.height,
-z:Math.random()*1.5+0.5,
-vx:(Math.random()-.5)*0.5,
-vy:(Math.random()-.5)*0.5
-});
-}
-
-function draw(){
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-/* puntos 3D */
-p.forEach(pt=>{
-pt.x+=pt.vx; pt.y+=pt.vy;
-if(pt.x<0||pt.x>canvas.width)pt.vx*=-1;
-if(pt.y<0||pt.y>canvas.height)pt.vy*=-1;
-ctx.beginPath();
-ctx.arc(pt.x,pt.y,pt.z*2,0,Math.PI*2);
-ctx.fillStyle="rgba(255,255,255,"+pt.z/2+")";
-ctx.fill();
-});
-
-/* lineas conectadas */
-for(let a=0;a<p.length;a++){
-for(let b=a+1;b<p.length;b++){
-let dx=p[a].x-p[b].x, dy=p[a].y-p[b].y;
-let d=Math.sqrt(dx*dx+dy*dy);
-if(d<140){
-ctx.strokeStyle="rgba(255,255,255,"+(1-d/140)*0.25+")";
-ctx.lineWidth=.7;
-ctx.beginPath();
-ctx.moveTo(p[a].x,p[a].y);
-ctx.lineTo(p[b].x,p[b].y);
-ctx.stroke();
-}
-}
-}
-requestAnimationFrame(draw);
-}
-draw();
-</script>
 </body>
 </html>
