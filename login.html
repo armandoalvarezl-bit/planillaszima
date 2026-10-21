@@ -464,36 +464,21 @@
   </style>
   <style id="fondo-especial-equipo-zima">
     html.mes-equipo-zima body {
-      background: #edf4fa url('img/fondo-gracias-equipo-zima-octubre-2026.png') left center / cover no-repeat fixed !important;
-      justify-content: flex-end;
-      padding: 28px clamp(28px, 4vw, 84px);
+      background: #edf4fa url('img/fondo-celebracion-zima-octubre-2026.png') center / contain no-repeat fixed !important;
+      justify-content: center;
+      align-items: center !important;
+      padding: 24px 20px;
     }
     .mes-equipo-zima .login-wrapper {
-      margin-left: auto;
       position: relative;
+      z-index: 1;
+      margin: 0 auto;
     }
-    .mes-equipo-zima .login-card {
-      background: rgba(255,255,255,.97) !important;
-      border: 1px solid rgba(255,255,255,.9) !important;
-      border-radius: 18px !important;
-      box-shadow: 0 20px 60px rgba(12,43,74,.22) !important;
-    }
-    .mes-equipo-zima .login-wrapper .footer {
-      background: rgba(255,255,255,.94);
-      border: 1px solid rgba(255,255,255,.8);
-      border-radius: 14px;
-      padding: 12px 16px;
-    }
-    @media (max-width: 1099px) {
+    @media (max-width: 600px) {
       html.mes-equipo-zima body {
-        background-position: center top !important;
-        background-size: 100% auto !important;
-        background-attachment: scroll !important;
-        align-items: flex-start !important;
-        justify-content: center;
-        padding: calc(49.25vw + 20px) 18px 24px;
+        background-size: cover !important;
+        padding: 24px 16px;
       }
-      .mes-equipo-zima .login-wrapper { margin: 0 auto; }
     }
   </style>
 </head>
