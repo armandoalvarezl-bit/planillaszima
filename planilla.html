@@ -976,7 +976,7 @@ body.planilla-page .print-preview-backdrop{
        </button>
        <button class="btn btn-primary" id="saveBtn" type="button" onclick="guardar()">
         <i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i>
-        Guardar en l&iacute;nea
+        Guardar
        </button>
        <button class="btn btn-danger" id="annulBtn" type="button" onclick="anularPlanilla()" style="display:none">
         <i class="bi bi-x-octagon" aria-hidden="true"></i>
@@ -986,13 +986,13 @@ body.planilla-page .print-preview-backdrop{
        <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
        Restaurar
       </button>
-       <button class="btn btn-dark" id="printBtn" type="button" onclick="imprimir()">
-        <i class="bi bi-file-earmark-pdf-fill" aria-hidden="true"></i>
-        Vista previa / PDF
+       <button class="btn btn-dark" id="printBtn" type="button" onclick="imprimir()" style="display:none">
+        <i class="bi bi-printer" aria-hidden="true"></i>
+        Volver a imprimir
        </button>
       </div>
      </div>
-     <div class="no-print" id="msg">
+     <div class="no-print" id="msg" role="status" aria-live="polite">
      </div>
      <div class="planilla" id="doc">
       <div class="row">
@@ -1189,7 +1189,7 @@ body.planilla-page .print-preview-backdrop{
           <div class="preview-sub">Revise el documento antes de imprimir o guardar como PDF.</div>
         </div>
         <div class="preview-actions">
-          <button type="button" class="btn btn-dark" id="previewPrintBtn" onclick="imprimirDesdeVistaPrevia()">
+          <button type="button" class="btn btn-dark" id="previewPrintBtn" onclick="imprimir()">
             <i class="bi bi-printer-fill" aria-hidden="true"></i>
             Imprimir / Guardar PDF
           </button>
@@ -1203,6 +1203,19 @@ body.planilla-page .print-preview-backdrop{
     </div>
   </div>
 
+  <style>
+    .planilla-progress{display:flex;align-items:center;gap:16px;padding:18px 20px;margin:0 0 16px;border:1px solid #d5e5eb;border-radius:12px;background:#f1f7fa;color:#124b60;box-shadow:0 4px 16px rgba(18,75,96,.05)}
+    .planilla-progress strong{display:block;font-size:14px;margin-bottom:4px}
+    .planilla-progress small{display:block;color:#557080;line-height:1.5}
+    .planilla-progress-spinner{width:28px;height:28px;flex:0 0 auto;border:3px solid #cddfe7;border-top-color:#00617a;border-radius:50%;animation:planilla-spin .8s linear infinite}
+    .planilla-progress-steps{display:flex;gap:18px;margin-top:10px;font-size:11px;flex-wrap:wrap}
+    .planilla-progress-steps span{color:#687d88}
+    .planilla-progress-steps .active{color:#00566b;font-weight:700}
+    .planilla-progress-steps .done{color:#177452}
+    @keyframes planilla-spin{to{transform:rotate(360deg)}}
+    @media(prefers-reduced-motion:reduce){.planilla-progress-spinner{animation:none}}
+    @media print{.planilla-progress{display:none!important}}
+  </style>
   <script src="zima-ui.js"></script>
   <script>
    const API_URL='https://script.google.com/macros/s/AKfycbwj8i64JBskfWGUVpoG5lV51mGaH2WHmCPka2J861g1oNW6TdnWyg9IFtJ4_JY0t6yehA/exec';
@@ -1418,10 +1431,9 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       const restoreBtn=$('restoreBtn');
       const editando=Boolean(id);
       if(saveBtn){
-        saveBtn.innerHTML=editando
-          ? '<i class="bi bi-cloud-check-fill" aria-hidden="true"></i> Actualizar en l\u00ednea'
-          : '<i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i> Guardar en l\u00ednea';
+        saveBtn.innerHTML='<i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i> Guardar';
       }
+      if($('printBtn'))$('printBtn').style.display=editando?'inline-flex':'none';
       if(annulBtn){
         annulBtn.style.display=(editando && puedeGestionarPlanillas() && estadoActual!=='ANULADA')?'inline-flex':'none';
       }
@@ -1565,6 +1577,9 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     async function cargar(){
       actualizarAccionesAdmin();
       if(!id){actualizar();return}
+      $('doc').inert=true;
+      $('saveBtn').disabled=true;
+      mostrarProgresoPlanilla('cargando');
       try{
         const r=await apiGet('get',{id});
         if(!r.ok)throw Error(r.error);
@@ -1579,25 +1594,45 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         bloquearCamposFijos();
         actualizar();
         actualizarAccionesAdmin();
+        msg.replaceChildren();
         if(openPreviewOnLoad) setTimeout(abrirVistaPrevia,250);
       }catch(e){
         msg.innerHTML='<div class="notice error">'+esc(e.message)+'</div>';
+      }finally{
+        $('doc').inert=false;
+        $('saveBtn').disabled=false;
+        msg.setAttribute('aria-busy','false');
       }
     }
 
+    function mostrarProgresoPlanilla(etapa){
+      const cargando=etapa==='cargando';
+      const imprimiendo=etapa==='imprimiendo';
+      const titulo=cargando?'Cargando planilla…':imprimiendo?'Planilla guardada. Preparando impresión…':'Guardando planilla…';
+      const detalle=cargando?'Consultando los datos guardados.':imprimiendo?'Se abrirá el diálogo de impresión del navegador.':'Espere la confirmación del servidor antes de salir.';
+      const pasos=!cargando && (!id || imprimiendo);
+      msg.setAttribute('aria-busy','true');
+      msg.innerHTML='<div class="planilla-progress"><span class="planilla-progress-spinner" aria-hidden="true"></span><div><strong>'+titulo+'</strong><small>'+detalle+'</small>'+(pasos?'<div class="planilla-progress-steps" aria-hidden="true"><span class="'+(imprimiendo?'done':'active')+'">'+(imprimiendo?'✓ ':'1. ')+'Guardar</span><span class="'+(imprimiendo?'active':'')+'">2. Imprimir</span></div>':'')+'</div></div>';
+    }
+
     async function guardar(){
-      if(window.__zimaSavingPlanilla)return;
+      if(window.__zimaSavingPlanilla || window.__zimaPrintingPlanilla)return;
       actualizar();
       const d=datos();
       if(!d.peaje||!d.fecha||d.total<=0){
         ZimaUI.notice(msg,'Complete Peaje, Fecha y Total entregado.','error');
         return;
       }
+      let guardada=false;
+      const acciones=Array.from(document.querySelectorAll('.toolbar button'));
+      const estados=acciones.map(boton=>boton.disabled);
       try{
         const editando=Boolean(id);
         window.__zimaSavingPlanilla=true;
+        acciones.forEach(boton=>boton.disabled=true);
+        $('doc').inert=true;
         ZimaUI.busy('saveBtn',true,editando?'Actualizando...':'Guardando...');
-        ZimaUI.notice(msg,editando?'Actualizando la planilla...':'Guardando la planilla...');
+        mostrarProgresoPlanilla('guardando');
         if(embeddedEdit && editando && window.parent && window.parent !== window){
           window.parent.postMessage({
             source:'zima-planilla',
@@ -1607,10 +1642,20 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           }, '*');
         }
         const r=await apiPost({action:id?'update':'save',id,...d,estado:editando?(estadoActual||'APROBADO'):'APROBADO'});
-        if(!r.ok)throw Error(r.error);
+        if(!r || !r.ok)throw Error(r && r.error || 'No se pudo confirmar el guardado.');
+        if(!r.row || !r.row.id)throw Error('El servidor no devolvió la identificación de la planilla guardada.');
+        guardada=true;
         id=r.row.id;
+        Object.keys(r.row).forEach(k=>{
+          const campo=$(k);
+          if(campo && 'value' in campo)campo.value=['total','tula','billetes'].includes(k)?formatCOP(parseMoney(r.row[k])):(r.row[k]??'');
+        });
         estadoActual=normalizarEstado(r.row.estado)||estadoActual||'APROBADO';
-        actualizarAccionesAdmin();
+        if(!editando){
+          mostrarProgresoPlanilla('imprimiendo');
+          ZimaUI.busy('saveBtn',true,'Preparando impresión...');
+          await imprimirDesdeVistaPrevia();
+        }
         msg.innerHTML='<div class="notice success">'+(editando?'Planilla actualizada':'Planilla guardada')+' correctamente. C\u00f3digo: <b>'+esc(r.row.codigo)+'</b>.'+(editando?textoNotificacion(r):'')+'</div>';
         if(embeddedEdit && window.parent && window.parent !== window){
           window.parent.postMessage({
@@ -1629,10 +1674,14 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
             message:e.message || 'No fue posible actualizar la planilla.'
           }, '*');
         }
-        ZimaUI.notice(msg,e.message,'error');
+        ZimaUI.notice(msg,guardada?'La planilla quedó guardada. No se pudo abrir la impresión: '+e.message+' Use «Volver a imprimir»; no necesita guardarla otra vez.':e.message,'error');
       }finally{
         window.__zimaSavingPlanilla=false;
         ZimaUI.busy('saveBtn',false);
+        $('doc').inert=false;
+        msg.setAttribute('aria-busy','false');
+        acciones.forEach((boton,indice)=>boton.disabled=estados[indice]);
+        actualizarAccionesAdmin();
       }
     }
 
@@ -1711,6 +1760,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       actualizar();
       const clone=$('doc').cloneNode(true);
       clone.removeAttribute('id');
+      clone.removeAttribute('inert');
       copiarValoresAlClon(clone);
       return clone;
     }
@@ -1738,13 +1788,14 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       ZimaUI.closeModal('printPreview');
     }
 
-    function imprimirDesdeVistaPrevia(){
-      if(window.__zimaPrintingPlanilla)return;
+    async function imprimirDesdeVistaPrevia(){
+      if(window.__zimaPrintingPlanilla)throw new Error('Ya se está preparando una impresión.');
+      let frame;
       try{
         window.__zimaPrintingPlanilla=true;
-        ZimaUI.busy('previewPrintBtn',true,'Preparando PDF...');
+        ZimaUI.busy('previewPrintBtn',true,'Preparando impresión...');
         const clone=construirDocumentoImpresion();
-        const frame=document.createElement('iframe');
+        frame=document.createElement('iframe');
         frame.setAttribute('aria-hidden','true');
         frame.style.position='fixed';
         frame.style.width='1px';
@@ -1774,9 +1825,12 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         title.textContent='Planilla ZIMA 360 - Impresión';
         printDocument.head.appendChild(title);
 
-        document.querySelectorAll('link[rel="stylesheet"]').forEach(link=>{
-          printDocument.head.appendChild(link.cloneNode(true));
-        });
+        const estilos=Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(link=>new Promise((resolve,reject)=>{
+          const copia=link.cloneNode(true);
+          copia.onload=resolve;
+          copia.onerror=()=>reject(new Error('No se pudieron cargar los estilos de impresión.'));
+          printDocument.head.appendChild(copia);
+        }));
 
         document.querySelectorAll('style').forEach(style=>{
           printDocument.head.appendChild(style.cloneNode(true));
@@ -1799,37 +1853,48 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         const cleanup=()=>{
           setTimeout(()=>{
             try{ frame.remove(); }catch(_){}
-            window.__zimaPrintingPlanilla=false;
-            ZimaUI.busy('previewPrintBtn',false);
           },1000);
         };
 
-        // El iframe ya contiene el documento completo; no dependemos de onload
-        // porque algunos navegadores no disparan ese evento al escribir
-        // directamente en contentDocument.
-        setTimeout(()=>{
-          try{
-            frame.contentWindow.focus();
-            frame.contentWindow.print();
-            cleanup();
-          }catch(printError){
-            console.error(printError);
-            cleanup();
-            const m=$('msg');
-            if(m)m.innerHTML='<div class="notice error">No se pudo abrir la ventana de impresión. Verifica que el navegador permita imprimir desde esta página.</div>';
-          }
-        },700);
+        // Esperar estilos, fuentes y logos antes de abrir el diálogo.
+        const imagenes=Array.from(printDocument.images).map(imagen=>{
+          if(imagen.decode)return imagen.decode();
+          return new Promise((resolve,reject)=>{
+            if(imagen.complete)return imagen.naturalWidth?resolve():reject(new Error('No se pudo cargar un logo.'));
+            imagen.onload=resolve;
+            imagen.onerror=()=>reject(new Error('No se pudo cargar un logo.'));
+          });
+        });
+        let temporizador;
+        try{
+          await Promise.race([
+            Promise.all([...estilos,...imagenes]).then(()=>printDocument.fonts?printDocument.fonts.ready:undefined),
+            new Promise((_,reject)=>{temporizador=setTimeout(()=>reject(new Error('Se agotó el tiempo al preparar el documento.')),15000);})
+          ]);
+        }finally{clearTimeout(temporizador);}
+        await new Promise(resolve=>setTimeout(resolve,100));
+        frame.contentWindow.addEventListener('afterprint',cleanup,{once:true});
+        frame.contentWindow.focus();
+        frame.contentWindow.print();
+        // Algunos navegadores no emiten afterprint para iframes.
+        setTimeout(()=>{try{frame.remove();}catch(_){}},120000);
       }catch(e){
+        if(frame)frame.remove();
+        throw e;
+      }finally{
         window.__zimaPrintingPlanilla=false;
         ZimaUI.busy('previewPrintBtn',false);
-        const m=$('msg');
-        if(m)m.innerHTML='<div class="notice error">No se pudo iniciar la impresión: '+esc(e.message)+'</div>';
-        console.error(e);
       }
     }
 
-    function imprimir(){
-      abrirVistaPrevia();
+    async function imprimir(){
+      if(!id || window.__zimaSavingPlanilla || window.__zimaPrintingPlanilla)return;
+      try{
+        ZimaUI.busy('printBtn',true,'Preparando impresión...');
+        await imprimirDesdeVistaPrevia();
+      }catch(e){
+        ZimaUI.notice(msg,'No se pudo abrir la impresión: '+e.message,'error');
+      }finally{ZimaUI.busy('printBtn',false);}
     }
 
     document.addEventListener('keydown',e=>{
