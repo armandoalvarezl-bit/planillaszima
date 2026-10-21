@@ -1364,6 +1364,36 @@ body:not(:has(.login-wrapper)) .preview-sub {
   display: none !important;
 }
 
+body:not(:has(.login-wrapper)) .zima-logout-button {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border: 1px solid #dfe5ec !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  color: #334155 !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+}
+
+body:not(:has(.login-wrapper)) .zima-logout-button:hover {
+  background: #fff7d6 !important;
+  border-color: #ead47a !important;
+  color: #8b6a00 !important;
+}
+
+body:not(:has(.login-wrapper)) .zima-logout-button svg,
+body:not(:has(.login-wrapper)) .zima-logout-button i {
+  width: 17px !important;
+  height: 17px !important;
+  font-size: 17px !important;
+  line-height: 1 !important;
+}
+
 @media (max-width: 480px) {
   .login-card {
     padding: 30px 22px 26px !important;

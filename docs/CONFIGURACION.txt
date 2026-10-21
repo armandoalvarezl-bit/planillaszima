@@ -1,0 +1,30 @@
+ZIMA 360 — CONFIGURACIÓN
+========================
+
+1. Google Sheets
+   - Crea una hoja de cálculo para ZIMA 360.
+   - Copia su ID (la parte entre /d/ y /edit de la URL).
+   - Abre Apps Script y pega backend/Code.gs.
+   - Reemplaza SPREADSHEET_ID por el ID real.
+   - Ejecuta la función inicializar() una vez para crear la hoja Planillas.
+
+2. Publicar como Web App
+   - Implementar > Nueva implementación > Aplicación web.
+   - Ejecutar como: tú.
+   - Acceso: según la política de acceso de tu organización.
+   - Copia la URL /exec.
+
+3. Sistema local
+   - Abre  con Live Server.
+   - La primera vez, guarda la URL de la Web App en localStorage con la clave:
+     ZIMA_API_URL
+   - También puede modificarse directamente en el código donde aparece:
+     PEGA_AQUI_TU_URL_DE_APPS_SCRIPT
+
+4. Sistema en Apps Script
+   - El backend incluye doGet() para servir las páginas.
+   - El backend incluye doPost() para recibir guardados/eliminaciones desde fetch.
+
+5. Datos
+   - Todos los registros se guardan en Google Sheets.
+   - El historial y dashboard consultan la misma base en línea.
