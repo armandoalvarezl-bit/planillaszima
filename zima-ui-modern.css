@@ -1102,8 +1102,9 @@ body:has(.login-wrapper) {
 body:has(.login-wrapper) {
   align-items: center !important;
   background:
-    linear-gradient(180deg, rgba(0, 55, 71, .96), rgba(0, 43, 57, .96)),
-    #003747 !important;
+    radial-gradient(ellipse at top left, rgba(184, 208, 233, .42), transparent 55%),
+    radial-gradient(ellipse at bottom right, rgba(250, 227, 167, .24), transparent 50%),
+    #f3f6fa !important;
 }
 
 .login-wrapper {
@@ -1187,7 +1188,7 @@ body:has(.login-wrapper) {
 }
 
 .login-wrapper .footer {
-  color: rgba(255, 255, 255, .82) !important;
+  color: #607286 !important;
 }
 
 .login-success-modal {

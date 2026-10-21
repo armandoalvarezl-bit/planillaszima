@@ -53,7 +53,8 @@ const ZIMA = {
     'EMAIL',
     'TELEFONO',
     'CARGO',
-    'FOTO'
+    'FOTO',
+    'FECHA_CAMBIO_CONTRASENA'
   ],
 
   SOPORTE_HEADERS: [
@@ -742,7 +743,7 @@ function obtenerUsuariosDesdeHoja_(sh) {
   }
 
   const cantidadColumnas =
-    ZIMA.USUARIOS_HEADERS.length;
+    Math.max(sh.getLastColumn(), ZIMA.USUARIOS_HEADERS.length);
 
   const datos =
     sh
@@ -810,7 +811,7 @@ function autenticarUsuario(
     password =
       String(
         password || ''
-      ).trim();
+      );
 
     if (
       !usuario ||
@@ -836,13 +837,14 @@ function autenticarUsuario(
       };
     }
 
+    const columnaCambio = obtenerColumnaCambioContrasena_(sh);
     const datos =
       sh
         .getRange(
           2,
           1,
           lastRow - 1,
-          ZIMA.USUARIOS_HEADERS.length
+          Math.max(sh.getLastColumn(), ZIMA.USUARIOS_HEADERS.length)
         )
         .getValues();
 
@@ -953,6 +955,19 @@ function autenticarUsuario(
               usuarioBD +
               '" se encuentra INACTIVO.'
           };
+        }
+
+        const politica = estadoContrasena_({
+          FECHA_CREACION: fila[7],
+          FECHA_CAMBIO_CONTRASENA: fila[columnaCambio - 1]
+        });
+        if (politica.requiereCambioContrasena) {
+          return Object.assign({
+            ok: false,
+            codigo: 'CAMBIO_CONTRASENA_REQUERIDO',
+            usuario: usuarioBD,
+            mensaje: 'Debe cambiar su contraseña: su vigencia es de tres meses.'
+          }, politica);
         }
 
         sh
@@ -1231,6 +1246,23 @@ function obtenerContextoUsuario_(data) {
     };
   }
 
+  const usuarioActual = buscarUsuario_(sesion.usuario);
+  if (!usuarioActual || String(usuarioActual.ESTADO).trim().toUpperCase() !== 'ACTIVO') {
+    return { ok: false, error: 'Usuario inactivo o no disponible.' };
+  }
+  if (estadoContrasena_(usuarioActual).requiereCambioContrasena) {
+    return {
+      ok: false,
+      codigo: 'CAMBIO_CONTRASENA_REQUERIDO',
+      requiereCambioContrasena: true,
+      error: 'Debe cambiar su contraseña. Inicie sesión nuevamente.'
+    };
+  }
+  const ultimoCambio = new Date(usuarioActual.FECHA_CAMBIO_CONTRASENA).getTime();
+  if (ultimoCambio && (!sesion.loginAt || new Date(sesion.loginAt).getTime() < ultimoCambio)) {
+    return { ok: false, error: 'La contraseña cambió. Inicie sesión nuevamente.' };
+  }
+
   return {
     ok: true,
     sesion: sesion
@@ -1437,6 +1469,7 @@ function crearUsuario(datos) {
     fotoUsuario
 
   ]);
+  sh.getRange(sh.getLastRow(), obtenerColumnaCambioContrasena_(sh)).setValue(new Date());
 
   return {
     ok: true,
@@ -1623,6 +1656,7 @@ function actualizarUsuario(datos) {
           .setValue(
             hashContrasena_(nuevaContrasena)
           );
+        sh.getRange(row, col('FECHA_CAMBIO_CONTRASENA')).setValue(new Date());
       }
 
       const perfilActualizado = {
@@ -2055,6 +2089,69 @@ function obtenerPerfilUsuario_(params) {
 }
 
 
+// La columna puede estar después de otras columnas añadidas a USUARIOS.
+function obtenerColumnaCambioContrasena_(sh) {
+  const encabezados = sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+  const indice = encabezados.map(function(valor) {
+    return String(valor || '').trim();
+  }).indexOf('FECHA_CAMBIO_CONTRASENA');
+  if (indice < 0) throw new Error('No se encontró la fecha de cambio de contraseña.');
+  return indice + 1;
+}
+
+// Tres meses calendario desde el último cambio, sin reiniciar al iniciar sesión.
+function estadoContrasena_(usuario, ahora) {
+  const valor = usuario.FECHA_CAMBIO_CONTRASENA || usuario.FECHA_CREACION;
+  const fecha = valor ? new Date(valor) : new Date(NaN);
+  const hoy = ahora || new Date();
+  if (isNaN(fecha.getTime()) || fecha > hoy) {
+    return { requiereCambioContrasena: true, venceContrasena: '' };
+  }
+  const vencimiento = new Date(fecha.getTime());
+  const dia = vencimiento.getUTCDate();
+  vencimiento.setUTCDate(1);
+  vencimiento.setUTCMonth(vencimiento.getUTCMonth() + 3);
+  const ultimoDia = new Date(Date.UTC(vencimiento.getUTCFullYear(), vencimiento.getUTCMonth() + 1, 0)).getUTCDate();
+  vencimiento.setUTCDate(Math.min(dia, ultimoDia));
+  return {
+    requiereCambioContrasena: hoy >= vencimiento,
+    venceContrasena: vencimiento.toISOString()
+  };
+}
+
+// Renueva la contraseña sin conceder una sesión con credenciales vencidas.
+function renovarContrasena_(datos) {
+  const usuario = String(datos.usuario || '').trim().toLowerCase();
+  const actual = String(datos.passwordActual || '');
+  const nueva = String(datos.nuevaContrasena || '');
+  if (!usuario || !actual) throw new Error('Ingrese usuario y contraseña actual.');
+  if (nueva.trim().length < 6) throw new Error('La nueva contraseña debe tener al menos 6 caracteres.');
+  if (nueva !== String(datos.confirmarContrasena || '')) throw new Error('Las contraseñas no coinciden.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(20000);
+  try {
+    const sh = prepararHojaUsuarios_(getSpreadsheet_());
+    const filas = sh.getDataRange().getValues();
+    const columna = obtenerColumnaCambioContrasena_(sh);
+    for (let i = 1; i < filas.length; i++) {
+      if (String(filas[i][1] || '').trim().toLowerCase() !== usuario) continue;
+      if (String(filas[i][6]).trim().toUpperCase() !== 'ACTIVO' || !verificarContrasena_(actual, String(filas[i][2] || ''))) {
+        throw new Error('Usuario o contraseña actual incorrectos.');
+      }
+      if (verificarContrasena_(nueva, String(filas[i][2] || ''))) {
+        throw new Error('La nueva contraseña debe ser diferente de la actual.');
+      }
+      sh.getRange(i + 1, 3).setValue(hashContrasena_(nueva));
+      sh.getRange(i + 1, columna).setValue(new Date());
+      SpreadsheetApp.flush();
+      return { ok: true, mensaje: 'Contraseña guardada correctamente. Inicie sesión con la nueva contraseña.' };
+    }
+    throw new Error('Usuario o contraseña actual incorrectos.');
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function cambiarContrasenaUsuario(
   usuario,
   nuevaContrasena
@@ -2089,6 +2186,8 @@ function cambiarContrasenaUsuario(
     ) {
       sh.getRange(i + 1, 3)
         .setValue(hashContrasena_(nuevaContrasena));
+      sh.getRange(i + 1, obtenerColumnaCambioContrasena_(sh))
+        .setValue(new Date());
 
       return {
         ok: true,
@@ -2686,6 +2785,10 @@ function doPost(e) {
       )
         .trim()
         .toLowerCase();
+
+    if (action === 'renovarcontrasena') {
+      return jsonOutput_(renovarContrasena_(payload));
+    }
 
     if (
       action === 'login'

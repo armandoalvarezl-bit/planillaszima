@@ -1201,7 +1201,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     /* Web App ACTUAL de ZIMA 360.
        Se fuerza esta URL para evitar que el navegador reutilice una URL antigua guardada. */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxrA58PXId5baP3sOXKJ2U71erwjfTC4SbRmNQ7p63KoSKLa--P3yFM1eWP1-GVf_XV7g/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwj8i64JBskfWGUVpoG5lV51mGaH2WHmCPka2J861g1oNW6TdnWyg9IFtJ4_JY0t6yehA/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
 
     /* =========================================================
@@ -1377,6 +1377,14 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       });
     }
 
+    function comprobarVigenciaContrasena(data){
+      if(data && data.requiereCambioContrasena===true){
+        window.location.href='login.html';
+        throw new Error('Debe renovar su contraseña para continuar.');
+      }
+      return data;
+    }
+
     async function apiGet(action,params={}){
       const payload={action:String(action||'config'),...params};
 
@@ -1390,6 +1398,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       if(window.google && google.script && google.script.run){
         try{
           const data=await onlineRun('apiGet',payload);
+          comprobarVigenciaContrasena(data);
           if(data && typeof data==='object') return data;
           throw new Error('Respuesta vacía del servidor.');
         }catch(serverError){
@@ -1410,6 +1419,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
             let data;
             try{ data=JSON.parse(text); }
             catch(e){ throw new Error('La Web App no devolvió JSON válido.'); }
+            comprobarVigenciaContrasena(data);
             if(!data || typeof data!=='object') throw new Error('Respuesta inválida.');
             if(data.ok===false) throw new Error(data.error || data.mensaje || 'El servidor rechazó la consulta.');
             return data;
@@ -1438,6 +1448,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       let data;
       try{ data=JSON.parse(text); }
       catch(e){ throw new Error('La Web App no devolvió JSON válido.'); }
+      comprobarVigenciaContrasena(data);
       if(!data || typeof data!=='object') throw new Error('Respuesta inválida de la Web App.');
       if(data.ok===false) throw new Error(data.error || data.mensaje || 'El servidor rechazó la consulta.');
       return data;

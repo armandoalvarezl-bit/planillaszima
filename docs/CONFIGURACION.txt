@@ -4,9 +4,10 @@ ZIMA 360 — CONFIGURACIÓN
 1. Google Sheets
    - Crea una hoja de cálculo para ZIMA 360.
    - Copia su ID (la parte entre /d/ y /edit de la URL).
-   - Abre Apps Script y pega backend/Code.gs.
-   - Reemplaza SPREADSHEET_ID por el ID real.
-   - Ejecuta la función inicializar() una vez para crear la hoja Planillas.
+   - Para el sistema actual con login, usa code.gs de la raíz del proyecto.
+   - backend/Code.gs es una versión antigua sin autenticación; no lo uses para el login.
+   - Configura ZIMA_SPREADSHEET_ID con el ID real en las propiedades de Apps Script.
+   - Para renovar contraseñas, consulta docs/CAMBIO-CONTRASENA.md.
 
 2. Publicar como Web App
    - Implementar > Nueva implementación > Aplicación web.
