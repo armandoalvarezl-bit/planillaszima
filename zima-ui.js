@@ -506,6 +506,8 @@
     style.textContent = [
       '#zimaSupportLauncher .support-fab{position:fixed;right:24px;bottom:24px;z-index:1050;width:54px;height:54px;border:1px solid #ffffff50;border-radius:50%;background:#0f6552;color:white;display:grid;place-items:center;box-shadow:0 6px 22px #103e3733;cursor:pointer;font-size:23px}',
       '#zimaSupportLauncher .support-fab:hover{background:#104c40}',
+      '#zimaSupportLauncher .support-fab svg{display:block;width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}',
+      'body:has(.login-wrapper) #zimaSupportLauncher .support-fab{bottom:24px}',
       '#zimaSupportLauncher .support-fab[hidden]{display:none}',
       '#zimaSupportLauncher button:focus-visible{outline:3px solid #81cbb1;outline-offset:4px}',
       '#zimaSupportModal{position:fixed;inset:0;z-index:2100;background:#0b201b80;backdrop-filter:blur(5px);padding:24px;display:flex;align-items:center;justify-content:center}',
@@ -522,7 +524,7 @@
     const wrapper = document.createElement('div');
     wrapper.id = 'zimaSupportLauncher';
     wrapper.className = 'no-print';
-    wrapper.innerHTML = '<button class="support-fab" type="button" aria-label="Abrir soporte ZimaTicket" title="Soporte · ZimaTicket" aria-haspopup="dialog" aria-controls="zimaSupportModal" aria-expanded="false"><i class="bi bi-tools" aria-hidden="true"></i></button>' +
+    wrapper.innerHTML = '<button class="support-fab" type="button" aria-label="Abrir soporte ZimaTicket" title="Soporte · ZimaTicket" aria-haspopup="dialog" aria-controls="zimaSupportModal" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2M4 12H3v6h4v-6H4Zm16 0h1v6h-4v-6h3Zm0 6v1a2 2 0 0 1-2 2h-4"/><path d="M10 21h4"/></svg></button>' +
       '<div id="zimaSupportModal" hidden><section class="support-dialog" role="dialog" aria-modal="true" aria-labelledby="zimaSupportTitle"><div class="support-dialog-head"><h2 id="zimaSupportTitle">ZimaTicket · Centro de soporte</h2><button class="support-close" type="button" aria-label="Cerrar soporte">&times;</button></div><iframe id="zimaSupportFrame" title="Portal de soporte ZimaTicket"></iframe></section></div>';
     document.body.appendChild(wrapper);
     const modal = document.getElementById('zimaSupportModal');
@@ -533,6 +535,7 @@
     let previousOverflow = '';
     let backgrounds = [];
     function openSupport() {
+      document.dispatchEvent(new Event('zima-support-opened'));
       if (/\/soporte\.html$/i.test(location.pathname)) {
         const subject = document.getElementById('subject');
         if (subject) subject.focus();
@@ -578,12 +581,167 @@
       if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
       event.preventDefault(); openSupport();
     });
+    installAdminTicketNotifications(launcher, openSupport);
+  }
+
+  function installAdminTicketNotifications(launcher, openSupport) {
+    const session = getSupportSession();
+    if (!session.token || !/^(ADMIN|ADMINISTRADOR)$/.test(String(session.rol).trim().toUpperCase()) || /\/login\.html$/i.test(location.pathname)) return;
+    const endpoint = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
+    const key = 'ZIMA_ADMIN_TICKETS_REVIEWED:' + String(session.usuario).trim().toLowerCase();
+    let seen = new Set();
+    try {
+      const stored = JSON.parse(localStorage.getItem(key) || '[]');
+      if (Array.isArray(stored)) seen = new Set(stored);
+    } catch (_) {}
+    let attention = [];
+    const notified = new Set();
+    let soundContext;
+    let lastRing = 0;
+    async function ring() {
+      if (!attention.length || document.hidden || getSupportSession().token !== session.token) return;
+      if (Date.now() - lastRing < 15000) return;
+      const modal = document.getElementById('zimaSupportModal');
+      if (modal && !modal.hidden) return;
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) return;
+      try {
+        soundContext = soundContext || new Audio();
+        if (soundContext.state !== 'running') {
+          if (!navigator.userActivation || !navigator.userActivation.isActive) return;
+          await soundContext.resume();
+        }
+        if (soundContext.state !== 'running' || !attention.length) return;
+        lastRing = Date.now();
+        const start = soundContext.currentTime;
+        [740, 988].forEach((frequency, index) => {
+          const oscillator = soundContext.createOscillator();
+          const gain = soundContext.createGain();
+          const time = start + index * .15;
+          oscillator.frequency.value = frequency;
+          gain.gain.setValueAtTime(0, time);
+          gain.gain.linearRampToValueAtTime(.065, time + .015);
+          gain.gain.exponentialRampToValueAtTime(.001, time + .28);
+          oscillator.connect(gain); gain.connect(soundContext.destination);
+          oscillator.start(time); oscillator.stop(time + .3);
+          oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+        });
+      } catch (_) { /* El contador sigue disponible si el navegador bloquea el sonido. */ }
+    }
+    function acknowledge() {
+      attention.forEach(row => seen.add(String(row.id)));
+      attention = [];
+      alert.hidden = true;
+      try { localStorage.setItem(key, JSON.stringify(Array.from(seen).slice(-1000))); } catch (_) {}
+    }
+    const style = document.createElement('style');
+    style.textContent = '.zima-ticket-count{position:absolute;top:-5px;right:-5px;min-width:22px;height:22px;padding:0 5px;box-sizing:border-box;border:2px solid white;border-radius:20px;background:#b73336;color:white;font:700 11px/18px Arial,sans-serif}.zima-ticket-alert{position:fixed;right:24px;bottom:90px;width:min(350px,calc(100vw - 32px));box-sizing:border-box;z-index:1060;padding:20px;border:1px solid #cdded6;border-left:4px solid #0f6552;border-radius:14px;background:#fff;color:#183c32;box-shadow:0 12px 36px #103e3730;font:14px/1.5 "Segoe UI",Arial,sans-serif}.zima-ticket-alert[hidden],.zima-ticket-count[hidden]{display:none}.zima-ticket-alert strong{display:block;padding-right:22px;font-size:16px}.zima-ticket-alert p{margin:8px 0 14px}.zima-ticket-alert .ticket-review{border:0;border-radius:8px;background:#0f6552;color:white;padding:10px 16px;font:600 14px "Segoe UI",Arial,sans-serif;cursor:pointer}.zima-ticket-alert .ticket-dismiss{position:absolute;right:10px;top:8px;border:0;background:transparent;color:#45665b;font-size:24px;cursor:pointer}@media(max-width:700px){.zima-ticket-alert{right:16px;bottom:calc(148px + env(safe-area-inset-bottom,0px))}}@media print{.zima-ticket-alert{display:none!important}}';
+    document.head.appendChild(style);
+    const badge = document.createElement('span');
+    badge.className = 'zima-ticket-count';
+    badge.hidden = true;
+    badge.setAttribute('aria-hidden', 'true');
+    launcher.appendChild(badge);
+    const menuBadges = Array.from(document.querySelectorAll('a[href="soporte.html"]')).map(link => {
+      const count = document.createElement('span');
+      count.className = 'zima-ticket-menu-count';
+      count.hidden = true;
+      count.setAttribute('aria-hidden', 'true');
+      link.appendChild(count);
+      return {link, count};
+    });
+    const menuStyle = document.createElement('style');
+    menuStyle.textContent = 'a[href="soporte.html"] .zima-ticket-menu-count{display:inline-flex!important;align-items:center;justify-content:center;position:static!important;flex:0 0 auto!important;margin-left:auto!important;min-width:23px!important;width:auto!important;height:23px!important;padding:0 6px!important;border-radius:20px!important;background:#b73336!important;color:#fff!important;font:700 11px/1 Arial,sans-serif!important;letter-spacing:0!important}a[href="soporte.html"] .zima-ticket-menu-count[hidden]{display:none!important}';
+    document.head.appendChild(menuStyle);
+    function updateCounts(total) {
+      const text = total > 99 ? '99+' : String(total);
+      badge.textContent = text;
+      badge.hidden = total === 0;
+      menuBadges.forEach(({link, count}) => {
+        count.textContent = text;
+        count.hidden = total === 0;
+        link.setAttribute('aria-label', 'ZimaTicket' + (total ? ' · ' + total + ' tickets pendientes' : ''));
+      });
+    }
+    const alert = document.createElement('aside');
+    alert.className = 'zima-ticket-alert no-print';
+    alert.hidden = true;
+    alert.setAttribute('role', 'status');
+    alert.setAttribute('aria-live', 'polite');
+    alert.innerHTML = '<button type="button" class="ticket-dismiss" aria-label="Cerrar aviso de tickets">&times;</button><strong>Nuevo ZimaTicket</strong><p></p><button type="button" class="ticket-review">Revisar tickets</button>';
+    document.body.appendChild(alert);
+    alert.querySelector('.ticket-dismiss').addEventListener('click', () => { alert.hidden = true; });
+    alert.querySelector('.ticket-review').addEventListener('click', () => { acknowledge(); openSupport(); });
+    launcher.addEventListener('click', acknowledge);
+    document.addEventListener('zima-support-opened', acknowledge);
+    document.addEventListener('pointerdown', ring);
+    document.addEventListener('keydown', ring);
+    let loading = false;
+    let stopped = false;
+    function queryTickets() {
+      return new Promise((resolve, reject) => {
+        const callback = '__zima_admin_tickets_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+        const script = document.createElement('script');
+        const cleanup = () => { clearTimeout(timeout); delete window[callback]; script.remove(); };
+        const timeout = setTimeout(() => { cleanup(); reject(Error('timeout')); }, 20000);
+        window[callback] = result => { cleanup(); resolve(result); };
+        script.onerror = () => { cleanup(); reject(Error('connection')); };
+        script.src = endpoint + '?' + new URLSearchParams({action: 'tickets', token: session.token, callback: callback});
+        document.head.appendChild(script);
+      });
+    }
+    async function refresh() {
+      if (loading || stopped || document.hidden) return;
+      const current = getSupportSession();
+      if (current.token !== session.token || !/^(ADMIN|ADMINISTRADOR)$/.test(String(current.rol).trim().toUpperCase())) {
+        stopped = true; updateCounts(0); alert.hidden = true; return;
+      }
+      loading = true;
+      try {
+        const result = await queryTickets();
+        if (getSupportSession().token !== session.token) {
+          stopped = true; updateCounts(0); alert.hidden = true; return;
+        }
+        if (!result || !result.ok || result.admin !== true) return;
+        const pending = (result.rows || []).filter(row => row.estado === 'ABIERTO' || row.estado === 'EN_PROCESO');
+        updateCounts(pending.length);
+        launcher.setAttribute('aria-label', 'Abrir soporte ZimaTicket' + (pending.length ? ' · ' + pending.length + ' tickets pendientes' : ''));
+        const fresh = pending.filter(row => row.id && !seen.has(String(row.id)));
+        attention = fresh;
+        if (!pending.length) alert.hidden = true;
+        if (!fresh.length) return;
+        // Esperar a que el administrador cierre soporte para evitar avisos sobre el formulario.
+        const modal = document.getElementById('zimaSupportModal');
+        if ((modal && !modal.hidden) || /\/soporte\.html$/i.test(location.pathname)) { acknowledge(); return; }
+        if (fresh.every(row => notified.has(String(row.id)))) return;
+        alert.querySelector('strong').textContent = fresh.length === 1 ? 'Nuevo ZimaTicket' : fresh.length + ' nuevos ZimaTickets';
+        alert.querySelector('p').textContent = fresh.length === 1
+          ? String(fresh[0].nombre || fresh[0].usuario || 'Un usuario') + ': ' + String(fresh[0].titulo || 'Solicitud de soporte')
+          : 'Hay nuevas solicitudes de soporte esperando revisión del administrador.';
+        alert.hidden = false;
+        fresh.forEach(row => notified.add(String(row.id)));
+        void ring();
+      } catch (_) { /* Reintentar en la siguiente consulta sin interrumpir el trabajo. */ }
+      finally { loading = false; }
+    }
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    window.addEventListener('storage', event => {
+      if (event.key === key) {
+        try { JSON.parse(event.newValue || '[]').forEach(id => seen.add(id)); } catch (_) {}
+        attention = attention.filter(row => !seen.has(String(row.id)));
+        alert.hidden = true;
+      }
+    });
+    setInterval(refresh, 60000);
+    setInterval(ring, 15000);
+    void refresh();
   }
 
   function installHolidayTheme() {
     // 24 de octubre de 2026, 06:00 en Colombia (UTC-05:00).
     const startsAt = Date.parse('2026-10-24T06:00:00-05:00');
-    const previewUntil = Date.parse('2026-10-23T16:45:17-05:00');
+    const previewUntil = Date.parse('2026-10-23T17:14:21-05:00');
     let timer;
     let installed = false;
     function refresh() {
