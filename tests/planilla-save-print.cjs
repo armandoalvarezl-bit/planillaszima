@@ -17,6 +17,7 @@ function setup() {
   const actions = ['saveBtn', 'printBtn', 'cancelBtn'].map(el);
   const messages = [];
   const calls = [];
+  const dialogs = [];
   let printed = 0;
   let finish;
   let printError = false;
@@ -24,6 +25,7 @@ function setup() {
     window: {}, document: { querySelectorAll: () => actions },
     $: el, msg: el('msg'), embeddedEdit: false,
     actualizar() {}, actualizarAccionesAdmin() {},
+    syncRows: async () => [],
     datos: () => ({ peaje: 'ZIMA', fecha: '2026-10-21', total: 1000, codigo: 'BORRADOR' }),
     apiPost: data => { calls.push(data); return new Promise(resolve => { finish = resolve; }); },
     normalizarEstado: value => value,
@@ -36,17 +38,19 @@ function setup() {
       if (printError) throw new Error('Impresora no disponible');
     },
     ZimaUI: {
+      confirm: async options => { dialogs.push(options); return false; },
       busy: (id, busy) => { el(id).disabled = busy; },
       notice: (_, message, type) => messages.push({ message, type })
     }
   });
   vm.runInContext('let id=null; let estadoActual="APROBADO";\n' + source + printSource, context);
-  return { context, el, calls, messages, finish: value => finish(value), printed: () => printed, failPrint: () => { printError = true; } };
+  return { context, el, calls, dialogs, messages, finish: value => finish(value), printed: () => printed, failPrint: () => { printError = true; } };
 }
 const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APROBADO' } };
 (async () => {
   const success = setup();
   const saving = success.context.guardar();
+  await new Promise(setImmediate);
   assert.equal(success.calls.length, 1);
   assert.equal(success.printed(), 0);
   assert.equal(success.el('doc').inert, true);
@@ -58,6 +62,12 @@ const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APR
   assert.equal(success.printed(), 1);
   assert.equal(success.el('doc').inert, false);
   assert.equal(success.el('saveBtn').disabled, false);
+  assert.equal(success.el('msg').innerHTML, '');
+  assert.equal(success.dialogs.length, 1);
+  assert.equal(success.dialogs[0].tone, 'success');
+  assert.match(success.dialogs[0].message, /no necesita crear una nueva/);
+  assert.match(success.dialogs[0].detail, /GUARDADO-123/);
+  assert.equal(success.dialogs[0].confirmText, 'Ir al historial');
   // Reimprimir no debe volver a guardar ni crear otra planilla.
   success.context.imprimirDesdeVistaPrevia = async () => {};
   await success.context.imprimir();
@@ -66,15 +76,55 @@ const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APR
 
   const failure = setup();
   const failed = failure.context.guardar();
+  await new Promise(setImmediate);
   failure.finish({ ok: false, error: 'No se pudo guardar' });
   await failed;
   assert.equal(failure.printed(), 0);
   assert.equal(vm.runInContext('id', failure.context), null);
   assert.equal(failure.el('saveBtn').disabled, false);
 
+  const duplicate = setup();
+  const duplicateSaving = duplicate.context.guardar();
+  await new Promise(setImmediate);
+  duplicate.finish({ ok: false, code: 'CODIGO_DUPLICADO', error: 'Ya existe esta planilla.', existingId: 'original-123' });
+  await duplicateSaving;
+  assert.equal(duplicate.printed(), 0);
+  assert.equal(vm.runInContext('id', duplicate.context), null);
+  assert.match(duplicate.el('msg').innerHTML, /planilla.html\?id=original-123/);
+  assert.match(duplicate.el('msg').innerHTML, /para editar/);
+  assert.equal(duplicate.el('saveBtn').disabled, false);
+  assert.equal(duplicate.el('doc').inert, false);
+
+  const knownDuplicate = setup();
+  knownDuplicate.context.syncRows = async () => [{ id: 'original', codigo: ' borrador ' }];
+  await knownDuplicate.context.guardar();
+  assert.equal(knownDuplicate.calls.length, 0);
+  assert.equal(knownDuplicate.printed(), 0);
+  assert.match(knownDuplicate.el('msg').innerHTML, /Ya existe una planilla/);
+  assert.match(knownDuplicate.el('msg').innerHTML, /planilla.html\?id=original/);
+  assert.equal(knownDuplicate.el('doc').inert, false);
+  assert.equal(knownDuplicate.el('saveBtn').disabled, false);
+
+  const editing = setup();
+  vm.runInContext('id="original"', editing.context);
+  editing.context.syncRows = async () => [{ id: 'original', codigo: 'BORRADOR' }];
+  const updating = editing.context.guardar();
+  await new Promise(setImmediate);
+  assert.equal(editing.calls[0].action, 'update');
+  editing.finish(saved);
+  await updating;
+  assert.equal(editing.printed(), 0);
+
+  const unavailable = setup();
+  unavailable.context.syncRows = async () => { throw Error('No se pudieron consultar las planillas'); };
+  await unavailable.context.guardar();
+  assert.equal(unavailable.calls.length, 0);
+  assert.match(unavailable.messages.at(-1).message, /No se pudieron consultar/);
+
   const printerFailure = setup();
   printerFailure.failPrint();
   const pending = printerFailure.context.guardar();
+  await new Promise(setImmediate);
   printerFailure.finish(saved);
   await pending;
   assert.equal(printerFailure.calls.length, 1);

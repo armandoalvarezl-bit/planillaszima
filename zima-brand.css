@@ -1,0 +1,10 @@
+/* Identidad de país y versión, compartida por los menús de ZIMA 360. */
+.menu-edition{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;font-family:"Segoe UI",Arial,sans-serif;font-size:10px;font-weight:400;letter-spacing:0;text-transform:none}
+.menu-country{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;color:#a8b7bc}
+.menu-colombia-flag{display:inline-block;flex:0 0 20px;width:20px;height:14px;border-radius:3px;background:linear-gradient(to bottom,#f9d349 0%,#f9d349 50%,#174ea6 50%,#174ea6 75%,#ce3545 75%,#ce3545 100%);box-shadow:0 0 0 1px #ffffff18}
+.menu-version{flex-shrink:0;padding:4px 7px;border:1px solid #ffffff1a;border-radius:5px;background:#ffffff08;color:#a8b7bc;font-size:9px;font-weight:600;letter-spacing:.3px;font-variant-numeric:tabular-nums}
+.secure-line+.menu-edition{margin-top:12px}
+footer .menu-edition{margin-top:0}
+footer .menu-country{color:#687e7b}
+footer .menu-version{border-color:#dce6e2;background:#edf3f0;color:#4e7267}
+@media(max-width:540px){footer{flex-wrap:wrap;gap:14px}footer .menu-edition{flex-wrap:wrap}footer .menu-country{max-width:none;text-align:left}}

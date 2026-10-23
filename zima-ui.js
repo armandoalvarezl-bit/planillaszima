@@ -148,6 +148,26 @@
       '.zima-confirm-btn.danger{background:#b42318;border-color:#b42318;color:#fff}',
       '.zima-confirm-btn.danger:hover{background:#9f1f16}',
       '.zima-confirm-btn:focus{outline:3px solid rgba(0,59,73,.22);outline-offset:2px}',
+      '.zima-confirm-backdrop.success .zima-confirm-card{max-width:480px;border-radius:16px;border-color:#e2e8f0;box-shadow:0 24px 80px rgba(15,23,42,.2)}',
+      '.zima-confirm-backdrop.success .zima-confirm-card:before{background:#0f766e;height:4px}',
+      '.zima-confirm-backdrop.success .zima-confirm-head{padding:26px 26px 14px;align-items:center}',
+      '.zima-confirm-backdrop.success .zima-confirm-icon{background:#e6f6ef;border-color:#c9eadb;color:#137452;font-size:23px;width:48px;height:48px}',
+      '.zima-confirm-backdrop.success .zima-confirm-body{padding:0 26px 24px;font-size:14px;line-height:1.65}',
+      '.zima-confirm-backdrop.success .zima-confirm-detail{border:1px solid #dcebe6;border-radius:9px;background:#f4faf7;color:#164b3c;letter-spacing:.3px}',
+      '.zima-confirm-backdrop.success .zima-confirm-actions{padding:16px 26px 22px;background:#fff;border-color:#f1f5f9}',
+      '.zima-confirm-backdrop.success .zima-confirm-btn{border-radius:8px;min-height:42px}',
+      '.zima-confirm-backdrop.success .zima-confirm-btn.primary{background:#0f766e;border-color:#0f766e}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-card{width:min(510px,100%);border-radius:18px;border:1px solid #d5c69e;background:#fffefa;box-shadow:0 28px 90px #0a292950}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-card:before{height:5px;background:linear-gradient(90deg,#315e4c,#cfb16b,#8f5650,#cfb16b,#315e4c)}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-head{flex-direction:column;align-items:center;text-align:center;gap:18px;padding:32px 30px 17px}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-icon{width:66px;height:66px;background:#f5efdf;color:#ac8c45;border:1px solid #e4d7b4;font-size:35px;font-weight:400}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-title{font-family:Georgia,"Times New Roman",serif;font-size:30px;font-weight:400;color:#214b3f;line-height:1.2}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-body{padding:0 32px 27px;text-align:center;color:#66776f;font-size:14px;line-height:1.85}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-message{max-width:none}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-detail{margin-top:23px;border:0;border-top:1px solid #e9e2d0;background:transparent;padding-top:18px;color:#9a824b;font-size:11px;font-weight:500;letter-spacing:.5px}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-actions{background:#faf8f1;justify-content:center;padding:18px 28px 24px;border-color:#eee8d9}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-btn{border-radius:8px;font-weight:600;min-height:43px;font-size:12px}',
+      '.zima-confirm-backdrop.holiday .zima-confirm-btn.primary{background:#245744;border-color:#245744}',
       '@media(max-width:560px){.zima-confirm-actions{flex-direction:column-reverse}.zima-confirm-btn{width:100%}}'
     ].join('');
     document.head.appendChild(style);
@@ -160,6 +180,8 @@
     return new Promise(function (resolve) {
       const backdrop = document.createElement('div');
       backdrop.className = 'zima-confirm-backdrop open';
+      if (options.tone === 'success') backdrop.classList.add('success');
+      if (options.tone === 'holiday') backdrop.classList.add('holiday', 'no-print');
       backdrop.setAttribute('aria-hidden', 'false');
 
       const title = options.title || 'Confirmar acci\u00f3n';
@@ -172,7 +194,7 @@
       backdrop.innerHTML =
         '<div class="zima-confirm-card" role="dialog" aria-modal="true" aria-labelledby="zimaConfirmTitle">' +
           '<div class="zima-confirm-head">' +
-            '<div class="zima-confirm-icon" aria-hidden="true">!</div>' +
+            '<div class="zima-confirm-icon" aria-hidden="true">' + (options.tone === 'holiday' ? '&#10023;' : options.tone === 'success' ? '&#10003;' : '!') + '</div>' +
             '<div><h2 class="zima-confirm-title" id="zimaConfirmTitle">' + escapeHtml(title) + '</h2></div>' +
           '</div>' +
           '<div class="zima-confirm-body">' +
@@ -472,6 +494,148 @@
     });
   }
 
+  function installSupportLauncher() {
+    if (window.self !== window.top || document.getElementById('zimaSupportLauncher')) return;
+    if (!document.querySelector('link[href*="bootstrap-icons"]')) {
+      const icons = document.createElement('link');
+      icons.rel = 'stylesheet';
+      icons.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';
+      document.head.appendChild(icons);
+    }
+    const style = document.createElement('style');
+    style.textContent = [
+      '#zimaSupportLauncher .support-fab{position:fixed;right:24px;bottom:24px;z-index:1050;width:54px;height:54px;border:1px solid #ffffff50;border-radius:50%;background:#0f6552;color:white;display:grid;place-items:center;box-shadow:0 6px 22px #103e3733;cursor:pointer;font-size:23px}',
+      '#zimaSupportLauncher .support-fab:hover{background:#104c40}',
+      '#zimaSupportLauncher .support-fab[hidden]{display:none}',
+      '#zimaSupportLauncher button:focus-visible{outline:3px solid #81cbb1;outline-offset:4px}',
+      '#zimaSupportModal{position:fixed;inset:0;z-index:2100;background:#0b201b80;backdrop-filter:blur(5px);padding:24px;display:flex;align-items:center;justify-content:center}',
+      '#zimaSupportModal[hidden]{display:none}',
+      '#zimaSupportModal .support-dialog{width:min(1180px,100%);height:min(900px,94dvh);background:#f3f6f5;border-radius:18px;overflow:hidden;box-shadow:0 28px 90px #071d1c55;display:flex;flex-direction:column}',
+      '#zimaSupportModal .support-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px;background:white;border-bottom:1px solid #e0e8e2}',
+      '#zimaSupportModal h2{font:650 18px "Segoe UI",Arial,sans-serif;color:#153c31;margin:0}',
+      '#zimaSupportModal .support-close{display:grid;place-items:center;width:36px;height:36px;border-radius:8px;border:1px solid #dce7e0;color:#345b4b;background:white;font-size:24px;cursor:pointer}',
+      '#zimaSupportFrame{width:100%;flex:1;min-height:0;border:0;background:#f3f6f5}',
+      '@media(max-width:700px){#zimaSupportLauncher .support-fab{right:16px;bottom:calc(86px + env(safe-area-inset-bottom,0px));width:48px;height:48px}#zimaSupportModal{padding:8px}#zimaSupportModal .support-dialog{height:96dvh;border-radius:12px}}',
+      '@media print{#zimaSupportLauncher{display:none!important}}'
+    ].join('');
+    document.head.appendChild(style);
+    const wrapper = document.createElement('div');
+    wrapper.id = 'zimaSupportLauncher';
+    wrapper.className = 'no-print';
+    wrapper.innerHTML = '<button class="support-fab" type="button" aria-label="Abrir soporte ZimaTicket" title="Soporte · ZimaTicket" aria-haspopup="dialog" aria-controls="zimaSupportModal" aria-expanded="false"><i class="bi bi-tools" aria-hidden="true"></i></button>' +
+      '<div id="zimaSupportModal" hidden><section class="support-dialog" role="dialog" aria-modal="true" aria-labelledby="zimaSupportTitle"><div class="support-dialog-head"><h2 id="zimaSupportTitle">ZimaTicket · Centro de soporte</h2><button class="support-close" type="button" aria-label="Cerrar soporte">&times;</button></div><iframe id="zimaSupportFrame" title="Portal de soporte ZimaTicket"></iframe></section></div>';
+    document.body.appendChild(wrapper);
+    const modal = document.getElementById('zimaSupportModal');
+    const frame = document.getElementById('zimaSupportFrame');
+    const launcher = wrapper.querySelector('.support-fab');
+    const closeButton = wrapper.querySelector('.support-close');
+    let previousFocus;
+    let previousOverflow = '';
+    let backgrounds = [];
+    function openSupport() {
+      if (/\/soporte\.html$/i.test(location.pathname)) {
+        const subject = document.getElementById('subject');
+        if (subject) subject.focus();
+        return;
+      }
+      if (!modal.hidden) return;
+      previousFocus = document.activeElement;
+      previousOverflow = document.body.style.overflow;
+      backgrounds = Array.from(document.body.children).filter(el => el !== wrapper).map(el => [el, el.inert]);
+      backgrounds.forEach(([el]) => { el.inert = true; });
+      launcher.hidden = true;
+      modal.hidden = false;
+      launcher.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      if (!frame.getAttribute('src')) frame.src = 'soporte.html?embed=1';
+      closeButton.focus();
+    }
+    function closeSupport() {
+      if (modal.hidden) return;
+      modal.hidden = true;
+      launcher.hidden = false;
+      launcher.setAttribute('aria-expanded', 'false');
+      backgrounds.forEach(([el, inert]) => { el.inert = inert; });
+      backgrounds = [];
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus && previousFocus.isConnected) previousFocus.focus();
+      else launcher.focus();
+    }
+    launcher.addEventListener('click', openSupport);
+    closeButton.addEventListener('click', closeSupport);
+    modal.addEventListener('click', event => { if (event.target === modal) closeSupport(); });
+    document.addEventListener('keydown', event => {
+      if (modal.hidden) return;
+      if (event.key === 'Escape') { event.preventDefault(); event.stopImmediatePropagation(); closeSupport(); }
+      if (event.key === 'Tab' && event.shiftKey && document.activeElement === closeButton) { event.preventDefault(); frame.focus(); }
+      else if (event.key === 'Tab' && !event.shiftKey && document.activeElement === frame) { event.preventDefault(); closeButton.focus(); }
+    }, true);
+    window.addEventListener('message', event => {
+      if (event.source === frame.contentWindow && event.origin === location.origin && event.data && event.data.type === 'zima-support-close') closeSupport();
+    });
+    document.addEventListener('click', event => {
+      const link = event.target.closest && event.target.closest('a[href="soporte.html"]');
+      if (!link || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault(); openSupport();
+    });
+  }
+
+  function installHolidayTheme() {
+    // 24 de octubre de 2026, 06:00 en Colombia (UTC-05:00).
+    const startsAt = Date.parse('2026-10-24T06:00:00-05:00');
+    const previewUntil = Date.parse('2026-10-23T16:45:17-05:00');
+    let timer;
+    let installed = false;
+    function refresh() {
+      clearTimeout(timer);
+      const now = Date.now();
+      if (now < startsAt && now >= previewUntil) {
+        if (installed) {
+          document.querySelectorAll('#zimaHolidayStyle,.zima-holiday-trim,.zima-holiday-note').forEach(function (el) { el.remove(); });
+          document.body.classList.remove('zima-holiday');
+          installed = false;
+        }
+        timer = setTimeout(refresh, Math.min(startsAt - Date.now(), 60000));
+        return;
+      }
+      if (now < startsAt) timer = setTimeout(refresh, Math.min(previewUntil - now, 60000));
+      if (installed) return;
+      installed = true;
+      const style = document.createElement('style');
+      style.id = 'zimaHolidayStyle';
+      style.textContent = [
+        '.zima-holiday-trim{position:fixed;inset:0 0 auto;height:7px;z-index:2000;pointer-events:none;background:radial-gradient(circle at 12px 3px,#b99a4f 0 2px,transparent 2.5px),radial-gradient(circle at 36px 3px,#446b59 0 2px,transparent 2.5px),radial-gradient(circle at 60px 3px,#a45b57 0 2px,transparent 2.5px);background-size:72px 7px;opacity:.75}',
+        '.zima-holiday-note{display:flex;align-items:center;gap:7px;margin-top:12px;color:#bda773;font-family:"Segoe UI",Arial,sans-serif;font-size:10px;font-weight:400;letter-spacing:.3px;text-transform:none;line-height:1.5}',
+        '.zima-holiday-note svg{display:block;width:17px;height:21px;flex-shrink:0}',
+        'footer .zima-holiday-note,.footer .zima-holiday-note{color:#75846b}',
+        '.footer:has(.zima-holiday-note){flex-wrap:wrap;gap:10px}.footer>.zima-holiday-note{flex-basis:100%;justify-content:center;margin-top:0}',
+        'body.zima-holiday #zimaSupportLauncher .support-fab:after{content:"✦";position:absolute;right:-2px;top:-4px;color:#d4b76d;font-size:17px;text-shadow:0 1px 2px #143b35}',
+        '@media print{.zima-holiday-trim,.zima-holiday-note{display:none!important}}'
+      ].join('\n');
+      document.head.appendChild(style);
+      document.body.classList.add('zima-holiday');
+      // La vista de soporte incrustada conserva el adorno de su ventana principal.
+      if (window.self === window.top) {
+        const trim = document.createElement('div');
+        trim.className = 'zima-holiday-trim no-print';
+        trim.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(trim);
+      }
+      document.querySelectorAll('.sidebar-bottom,.side-foot,body > .shell > .footer,.made-in-colombia').forEach(function (target) {
+        // En el login, añadimos el saludo al contenedor, sin alterar la bandera.
+        const host = target.matches('.made-in-colombia') ? target.parentElement : target;
+        if (host.querySelector('.zima-holiday-note')) return;
+        const note = document.createElement('div');
+        note.className = 'zima-holiday-note no-print';
+        note.innerHTML = '<svg viewBox="0 0 20 26" fill="none" aria-hidden="true"><path d="m10 2 1 2 2 .3-1.5 1.5.4 2.2-1.9-1-1.9 1 .4-2.2L7 4.3 9 4Z" fill="#c3a258"/><path d="m10 8-5 6h3l-5 6h14l-5-6h3l-5-6Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 20v4" stroke="currentColor" stroke-width="1.3"/></svg><span>Una temporada para compartir</span>';
+        host.appendChild(note);
+      });
+    }
+    document.addEventListener('visibilitychange', refresh);
+    window.addEventListener('focus', refresh);
+    refresh();
+  }
+
   window.ZimaUI = {
     busy: busy,
     clearSession: clearSession,
@@ -484,15 +648,20 @@
     openModal: openModal,
     repairVisibleText: repairVisibleText,
     reportSupport: reportSupport,
-    sendSupportReport: sendSupportReport
+    sendSupportReport: sendSupportReport,
+    getSupportSession: getSupportSession
   };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
+      installSupportLauncher();
+      installHolidayTheme();
       repairVisibleText();
       watchTextRepairs();
     });
   } else {
+    installSupportLauncher();
+    installHolidayTheme();
     repairVisibleText();
     watchTextRepairs();
   }

@@ -884,6 +884,13 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 
 <style id="zima-logo-clean-final">
+@keyframes zimaLogoFloat{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-3px)}
+}
+@media(prefers-reduced-motion:no-preference){
+  .brand-symbol img{animation:zimaLogoFloat 5s ease-in-out infinite}
+}
 /* Logo ZIMA limpio: sin recuadro amarillo ni fondo artificial */
 .brand-symbol{
   width:54px!important;height:54px!important;
@@ -983,6 +990,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   .zima-welcome-office{font-size:11px;white-space:normal}
 }
 </style>
+<link rel="stylesheet" href="zima-brand.css">
 </head>
 <body>
   <div class="app-shell">
@@ -1014,13 +1022,14 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <a class="nav-item" href="planilla.html"><span class="nav-icon"><i data-lucide="file-plus-2"></i></span><span>Nueva planilla</span></a>
         <a class="nav-item" href="historial.html"><span class="nav-icon"><i data-lucide="history"></i></span><span>Historial</span></a>
         <a class="nav-item" href="informes.html"><span class="nav-icon"><i data-lucide="bar-chart-3"></i></span><span>Informes</span></a>
+        <a class="nav-item" href="soporte.html"><span class="nav-icon"><i data-lucide="life-buoy" aria-hidden="true"></i></span><span>ZimaTicket</span></a>
         <a class="nav-item admin-only" href="granadmin.html" style="display:none"><span class="nav-icon"><i data-lucide="shield"></i></span><span>Gran admin</span></a>
         
       </nav>
 
       <div class="sidebar-bottom">
         <div class="secure-line"><span class="secure-dot"></span> Conexión segura</div>
-        <div class="version">ZIMA 360 &middot; v1.0</div>
+        <div class="menu-edition"><span class="menu-country"><span class="menu-colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span><span class="menu-version">v2.0.0</span></div>
       </div>
     </aside>
 
@@ -1194,6 +1203,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
   </div>
 
   <script src="zima-ui.js"></script>
+  <script src="zima-updates.js"></script>
   <script>
     if (window.lucide && typeof lucide.createIcons === 'function') {
       lucide.createIcons({attrs:{"stroke-width":1.9}});
@@ -1201,7 +1211,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     /* Web App ACTUAL de ZIMA 360.
        Se fuerza esta URL para evitar que el navegador reutilice una URL antigua guardada. */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwj8i64JBskfWGUVpoG5lV51mGaH2WHmCPka2J861g1oNW6TdnWyg9IFtJ4_JY0t6yehA/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
 
     /* =========================================================
@@ -1835,6 +1845,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const total=rows.reduce((sum,item)=>sum+Number(item.total||0),0);
       setText('notificationStatus',status || (rows.length?'Actualizado':'Sin datos'));
       list.innerHTML=[
+        ...(window.ZimaUpdates?[{icon:'bell-ring',title:ZimaUpdates.release.title,text:ZimaUpdates.release.message}]:[]),
         {icon:'database',title:'Planillas sincronizadas',text:`${rows.length} registros disponibles para ${SESSION.office || 'este acceso'}.`},
         {icon:'send',title:'Estados por revisar',text:`${entregadas} entregadas, ${cerradas} cerradas y ${borradores} en borrador.`},
         {icon:'wallet',title:'Valor administrado',text:`Acumulado visible: ${money(total)} COP.`}
@@ -1842,6 +1853,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
         <div class="notification-icon"><i data-lucide="${item.icon}"></i></div>
         <div class="notification-copy"><strong>${esc(item.title)}</strong><span>${esc(item.text)}</span></div>
       </div>`).join('');
+      if(window.ZimaUpdates && (status==='Actualizado' || status==='Conectado')) ZimaUpdates.observe(rows);
       if(window.lucide && typeof lucide.createIcons === 'function'){
         lucide.createIcons({attrs:{"stroke-width":1.9}});
       }
@@ -1872,10 +1884,12 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     function cerrarBienvenidaIngreso(){
       const modal=document.getElementById('zimaWelcomeModal');
-      if(!modal) return;
+      if(!modal || !modal.classList.contains('open')) return;
+      window.clearTimeout(window.__zimaWelcomeTimer);
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden','true');
       document.body.style.overflow='';
+      if(window.ZimaUpdates && tieneSesion()) ZimaUpdates.announce(SESSION.user);
     }
 
     function mostrarBienvenidaIngreso(){
@@ -2147,6 +2161,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     setupPerfilModal();
     if(setupSession()){
       mostrarBienvenidaIngreso();
+      if(window.ZimaUpdates && !document.getElementById('zimaWelcomeModal').classList.contains('open')) ZimaUpdates.announce(SESSION.user);
       refrescarFotoPerfil();
       cargar();
     }

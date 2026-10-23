@@ -1,5 +1,35 @@
 <!doctype html>
 <html lang="es">
-<head><meta charset="utf-8"><meta http-equiv="refresh" content="0;url=dashboard.html"><title>ZIMA 360</title></head>
-<body><a href="dashboard.html">Ir al inicio</a></body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ZimaTicket · Centro de soporte</title>
+  <link rel="icon" href="img/logo.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="soporte.css">
+<link rel="stylesheet" href="zima-brand.css">
+</head>
+<body>
+  <header class="top"><a class="brand" href="dashboard.html"><img src="img/logo.png" alt="ZIMA 360"></a><nav aria-label="Navegación"><a href="dashboard.html">Inicio</a><a href="historial.html">Historial</a><a href="soporte.html" aria-current="page">Soporte</a></nav><span id="sessionName"></span></header>
+  <main>
+    <section class="hero"><div><span class="eyebrow"><span class="brand-dot" aria-hidden="true"></span> ZIMA 360 / CENTRO DE SOPORTE</span><h1>Todo empieza con una solución.</h1><p>Crea tu ZimaTicket y acompaña cada avance de tu solicitud en un solo lugar.</p></div><div class="hero-seal"><i class="bi bi-headset" aria-hidden="true"></i><span>Tu equipo de soporte<strong>Estamos para ayudarte</strong></span></div></section>
+    <div id="notice" role="status" aria-live="polite"></div>
+    <section class="stats" aria-label="Resumen de tickets"><div><i class="bi bi-inbox stat-icon" aria-hidden="true"></i><span>Abiertos<small>Pendientes de revisión</small></span><strong id="openCount">—</strong></div><div><i class="bi bi-arrow-repeat stat-icon" aria-hidden="true"></i><span>En proceso<small>En manos de soporte</small></span><strong id="progressCount">—</strong></div><div><i class="bi bi-check2-circle stat-icon" aria-hidden="true"></i><span>Resueltos<small>Solicitudes atendidas</small></span><strong id="resolvedCount">—</strong></div></section>
+    <div class="layout">
+      <section class="card compose"><div class="section-head"><span class="panel-icon" aria-hidden="true"><i class="bi bi-pencil-square"></i></span><span class="eyebrow">NUEVA SOLICITUD</span><h2>Cuéntanos qué necesitas</h2><p>Un poco de contexto nos ayuda a encontrar la solución.</p></div>
+        <form id="ticketForm">
+          <label for="subject">Asunto</label><input id="subject" required minlength="5" maxlength="120" placeholder="Ej. No puedo actualizar una planilla">
+          <div class="pair"><div><label for="category">Categoría</label><select id="category"><option value="PLANILLAS">Planillas</option><option value="ACCESO">Acceso y cuenta</option><option value="INFORMES">Informes</option><option value="OTRO">Otra consulta</option></select></div><div><label for="priority">Prioridad</label><select id="priority"><option value="NORMAL">Normal</option><option value="ALTA">Alta · impide operar</option></select></div></div>
+          <label for="email">Correo de contacto</label><input id="email" type="email" required maxlength="254" autocomplete="email" placeholder="tu@correo.com">
+          <label for="description">Descripción del caso</label><textarea id="description" required minlength="15" maxlength="6000" rows="6" placeholder="Incluye el código de planilla, el mensaje de error y los pasos para reproducirlo. No compartas contraseñas."></textarea>
+          <p class="helper"><i class="bi bi-shield-check" aria-hidden="true"></i> Tu usuario y peaje se incluyen automáticamente. Nunca compartas tu contraseña.</p>
+          <button class="primary" id="submitTicket" type="submit">Crear ZimaTicket <span aria-hidden="true">↗</span></button>
+        </form>
+      </section>
+      <section class="card cases"><div class="section-head list-head"><div><span class="eyebrow">CADA AVANCE, EN UN SOLO LUGAR</span><h2 id="listTitle">Mis tickets</h2><p>Consulta el estado y las respuestas de soporte.</p></div><button class="secondary" id="refresh" type="button"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Actualizar</button></div><div class="filter"><label for="status"><i class="bi bi-filter" aria-hidden="true"></i> Estado</label><select id="status"><option value="">Todos los estados</option><option value="ABIERTO">Abiertos</option><option value="EN_PROCESO">En proceso</option><option value="RESUELTO">Resueltos</option></select></div><div id="tickets" aria-live="polite"><p class="empty"><i class="bi bi-hourglass-split" aria-hidden="true"></i>Consultando tus tickets…</p></div></section>
+    </div>
+    <footer>ZIMA 360 · ZimaTicket <div class="menu-edition"><span class="menu-country"><span class="menu-colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span><span class="menu-version">v2.0.0</span></div></footer>
+  </main>
+  <script src="zima-ui.js"></script><script src="soporte.js"></script>
+</body>
 </html>

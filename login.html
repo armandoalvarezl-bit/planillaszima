@@ -72,6 +72,14 @@
       margin-bottom: 12px;
     }
 
+    @keyframes zimaLogoFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    @media (prefers-reduced-motion: no-preference) {
+      .logo-container .logo { animation: zimaLogoFloat 5s ease-in-out infinite; }
+    }
+
     .logo {
       width: 210px;
       max-width: 80%;
@@ -481,11 +489,45 @@
       }
     }
   </style>
+  <style id="login-navidad">
+    .holiday-login-intro{display:none}
+    html body.zima-holiday:has(.login-wrapper){background:radial-gradient(ellipse at 10% 10%,#b59b5730,transparent 42%),radial-gradient(ellipse at 95% 90%,#728c6730,transparent 45%),linear-gradient(145deg,#102f2d,#1b4940 55%,#133830) !important;background-size:cover!important}
+    body.zima-holiday .holiday-login-intro{display:block;text-align:center;margin:0 0 23px;color:#f5f1e5}
+    .holiday-login-intro .season-label{display:inline-flex;align-items:center;gap:9px;font-size:9px;font-weight:600;letter-spacing:2.4px;color:#d6bd80}
+    .holiday-login-intro .season-label svg{width:22px;height:22px}
+    .holiday-login-intro h1{font-family:Georgia,"Times New Roman",serif;font-size:29px;line-height:1.25;font-weight:400;letter-spacing:-.4px;margin:12px auto 9px;max-width:360px}
+    .holiday-login-intro p{font-size:11px;line-height:1.7;color:#c5d4c9;max-width:330px;margin:auto}
+    body.zima-holiday .login-card{border:1px solid #d8c69355;box-shadow:0 24px 64px #051c2b38;background:#fffefa;padding-top:29px;padding-bottom:25px}
+    body.zima-holiday .login-card:before{height:3px;background:linear-gradient(90deg,#567764,#ddc184,#a16e5c,#ddc184,#567764)}
+    body.zima-holiday .login-wrapper .footer{color:#b5c8be}
+    body.zima-holiday .login-wrapper .made-in-colombia{background:#ffffff09;border-color:#c3d5b526;color:#c5d2c8}
+    body.zima-holiday .login-wrapper .zima-holiday-note{color:#d6bd80}
+    body.zima-holiday .login-wrapper{width:100%;max-width:1080px!important;flex-shrink:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);column-gap:64px;row-gap:22px;align-items:center;margin:auto}
+    body.zima-holiday .holiday-login-intro{grid-column:1;grid-row:1 / span 2;text-align:left;margin:0;min-width:0}
+    body.zima-holiday .holiday-login-intro h1{font-size:42px;max-width:450px;margin:20px 0 18px;line-height:1.15}
+    body.zima-holiday .holiday-login-intro p{font-size:14px;max-width:390px;margin:0;line-height:1.9}
+    .holiday-login-art{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:3 / 2;object-fit:contain;margin-top:22px;border-radius:20px}
+    body.zima-holiday .login-card{grid-column:2;grid-row:1;width:100%;min-width:0;padding:32px!important;border-radius:18px!important;border-color:#d8c69355!important;box-shadow:0 24px 64px #051c2b38!important}
+    body.zima-holiday .login-card:before{height:3px!important;background:linear-gradient(90deg,#567764,#ddc184,#a16e5c,#ddc184,#567764)!important}
+    body.zima-holiday .holiday-login-intro h1,body.zima-holiday .holiday-login-intro p{word-break:normal;overflow-wrap:normal}
+    body.zima-holiday .login-wrapper>.footer{grid-column:2;grid-row:2;margin-top:0}
+    @media(max-width:950px){body.zima-holiday .login-wrapper{column-gap:32px;grid-template-columns:minmax(0,1fr) minmax(0,380px)}body.zima-holiday .holiday-login-intro h1{font-size:34px}.holiday-login-intro .season-label{letter-spacing:1.4px}}
+    @media(max-width:780px){html body.zima-holiday:has(.login-wrapper){padding:30px 20px!important;align-items:flex-start!important}body.zima-holiday .login-wrapper{max-width:430px!important;display:flex;flex-direction:column;gap:22px;margin:0 auto}body.zima-holiday .holiday-login-intro{text-align:center;width:100%}body.zima-holiday .holiday-login-intro h1{font-size:29px;margin:14px auto;max-width:360px}body.zima-holiday .holiday-login-intro p{font-size:12px;margin:auto;max-width:350px}.holiday-login-art{width:100%;height:175px;aspect-ratio:auto;object-fit:contain;margin-top:14px}body.zima-holiday .login-wrapper>.footer{width:100%}body.zima-holiday .login-card{padding:28px 24px!important}}
+    @media(max-width:360px){html body.zima-holiday:has(.login-wrapper){padding:24px 14px!important}body.zima-holiday .holiday-login-intro h1{font-size:26px}body.zima-holiday .login-card{padding:26px 20px!important}}
+    @media print{.holiday-login-intro{display:none!important}}
+  </style>
 </head>
 
 <body>
 
   <div class="login-wrapper">
+
+    <section class="holiday-login-intro no-print" aria-label="Bienvenida navideña">
+      <span class="season-label"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m12 2 2.5 6.8L22 9l-5.8 4.8 2 7.2-6.2-4.2L5.8 21l2-7.2L2 9l7.5-.2L12 2Z" stroke="currentColor" stroke-width="1.1"/></svg>NAVIDAD EN ZIMA 360</span>
+      <h1>La magia está en lo que compartimos.</h1>
+      <p>Bienvenido a una temporada de unión, gratitud y nuevos motivos para seguir construyendo juntos.</p>
+      <img class="holiday-login-art" src="img/navidad-santa-renos.png" alt="Papá Noel en su trineo, acompañado por renos bajo un cielo de estrellas doradas" width="1536" height="1024" loading="lazy">
+    </section>
 
     <div class="login-card">
 
@@ -659,7 +701,7 @@
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbwj8i64JBskfWGUVpoG5lV51mGaH2WHmCPka2J861g1oNW6TdnWyg9IFtJ4_JY0t6yehA/exec";
+  "https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);

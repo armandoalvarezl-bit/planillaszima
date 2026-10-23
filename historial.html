@@ -444,6 +444,7 @@
     .pdf-close{width:36px;height:36px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;font-size:17px}
     .edit-modal{position:fixed;inset:0;z-index:1100;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(10,20,34,.62);backdrop-filter:blur(4px)}
     .edit-modal.open{display:flex}
+    .duplicate-code-badge{display:inline-block;margin-top:5px;padding:3px 7px;border-radius:5px;background:#fff1f2;color:#9f1239;font-size:11px;font-weight:700}
     .edit-dialog{width:min(1220px,100%);height:min(920px,95vh);display:flex;flex-direction:column;overflow:hidden;background:#fff;border-radius:14px;box-shadow:0 24px 80px rgba(0,0,0,.30)}
     .edit-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line);background:#fff}
     .edit-dialog-title{font-weight:850}
@@ -686,6 +687,7 @@
 </style>
 
   <link rel="stylesheet" href="zima-ui-modern.css">
+<link rel="stylesheet" href="zima-brand.css">
 </head>
 
 <body>
@@ -714,11 +716,12 @@
     <a class="nav-item" href="planilla.html"><span class="nav-icon"><i class="bi bi-file-earmark-plus"></i></span><span>Nueva planilla</span></a>
     <a class="nav-item active" href="historial.html"><span class="nav-icon"><i class="bi bi-clock-history"></i></span><span>Historial</span></a>
     <a class="nav-item" href="informes.html"><span class="nav-icon"><i class="bi bi-clipboard-data"></i></span><span>Informes</span></a>
+        <a class="nav-item" href="soporte.html"><span class="nav-icon"><i data-lucide="life-buoy" aria-hidden="true"></i></span><span>ZimaTicket</span></a>
   </nav>
 
   <div class="sidebar-bottom">
     <div class="secure-line"><span class="secure-dot"></span> Conexión segura</div>
-    <div class="version">ZIMA 360 &middot; v1.0</div>
+        <div class="menu-edition"><span class="menu-country"><span class="menu-colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span><span class="menu-version">v2.0.0</span></div>
   </div>
 </aside>
     <main class="main">
@@ -739,8 +742,9 @@
               alt="ANI"> Gesti&oacute;n institucional</div>
         </section>
         <div id="msg"></div>
+        <div id="duplicateNotice" role="status" aria-live="polite"></div>
         <div class="toolbar">
-          <div class="filters"><input id="buscar" class="field" type="search"
+          <div class="filters"><label>Mes <input id="mes" class="field" type="month" required aria-label="Mes del historial"></label><input id="buscar" class="field" type="search"
               placeholder="Buscar código, peaje, responsable..." autocomplete="off"><select id="estado" class="field">
               <option value="">Todos los estados</option>
               <option value="BORRADOR">Borrador</option>
@@ -831,7 +835,7 @@
   </div>
   <script src="zima-ui.js"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwj8i64JBskfWGUVpoG5lV51mGaH2WHmCPka2J861g1oNW6TdnWyg9IFtJ4_JY0t6yehA/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
     function onlineRun(fn, arg) { return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg)); }
     function leerSesionLocal(){ const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','usuarioSesion','usuario','ZIMA_USER']; for(const storage of [localStorage,sessionStorage]){ for(const k of keys){ try{ const raw=storage.getItem(k); if(!raw || raw==='ACTIVA') continue; if(raw.trim().startsWith('{')) return JSON.parse(raw); return {usuario:raw}; }catch(e){} } } return {}; }
@@ -890,8 +894,13 @@
     function cerrarEdicionDesdeFondo(e) { if (e.target && e.target.id === 'editModal') cerrarEdicion(); }
     window.addEventListener('message', async function(event){
       const data = event && event.data;
-      if (!data || data.source !== 'zima-planilla') return;
+      if (!data || data.source !== 'zima-planilla' || event.source !== $('editFrame').contentWindow) return;
       const saving = $('editSaving');
+      if(data.type === 'duplicate'){
+        if(saving) saving.hidden = true;
+        ZimaUI.notice('msg', data.message || 'Código duplicado. Edite la planilla existente.', 'error');
+        return;
+      }
       if (data.type === 'saving') {
         if (saving) {
           saving.hidden = false;
@@ -976,12 +985,57 @@
         (puedeGestionar && !anulada ? '<button class="action" title="Anular planilla" onclick="anular(\'' + id + '\')"><i class="bi bi-x-octagon"></i></button>' : '') +
       '</div>';
     }
-    let allRows = []; function render() { const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = allRows.filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong></td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
+    let allRows = []; function render() { const duplicados=mostrarDuplicadosHistorial(); const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = filasMesHistorial().filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong>${duplicados.has(String(x.codigo ?? '').trim().toUpperCase())?'<br><span class="duplicate-code-badge">Código duplicado</span>':''}</td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
+    function codigosDuplicados(){
+      const cantidades=new Map();
+      allRows.forEach(fila=>{
+        const codigo=String(fila.codigo ?? '').trim().toUpperCase();
+        if(codigo)cantidades.set(codigo,(cantidades.get(codigo)||0)+1);
+      });
+      return new Set([...cantidades].filter(([,cantidad])=>cantidad>1).map(([codigo])=>codigo));
+    }
+    function mesActualHistorial(){
+      const partes=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Bogota',year:'numeric',month:'2-digit'}).formatToParts(new Date());
+      return partes.find(p=>p.type==='year').value+'-'+partes.find(p=>p.type==='month').value;
+    }
+    function filasMesHistorial(){
+      const mes=$('mes').value || mesActualHistorial();
+      $('mes').value=mes;
+      return allRows.filter(fila=>String(fila.fecha || '').slice(0,7)===mes);
+    }
+    let ultimaAdvertenciaDuplicados='';
+    let modalDuplicadosAbierto=false;
+    function mostrarDuplicadosHistorial(){
+      const todos=codigosDuplicados();
+      const duplicados=new Set(filasMesHistorial().map(fila=>String(fila.codigo ?? '').trim().toUpperCase()).filter(codigo=>todos.has(codigo)));
+      const aviso=$('duplicateNotice');
+      if(aviso){
+        aviso.innerHTML=duplicados.size?'<div class="notice error"><strong>Advertencia: hay códigos duplicados en el historial.</strong> '+
+          [...duplicados].map(esc).join(', ')+'. Debe ajustar las planillas duplicadas o comunicarse con el administrador.</div>':'';
+      }
+      const firma=$('mes').value+':'+[...duplicados].sort().join('|');
+      if(!duplicados.size) ultimaAdvertenciaDuplicados='';
+      if(duplicados.size && firma!==ultimaAdvertenciaDuplicados && !modalDuplicadosAbierto){
+        ultimaAdvertenciaDuplicados=firma;
+        modalDuplicadosAbierto=true;
+        ZimaUI.confirm({
+          title:'Advertencia: planillas duplicadas',
+          message:'Hay códigos duplicados entre las planillas de este mes. Debe revisar y ajustar las planillas duplicadas o comunicarse con el administrador para corregirlas.',
+          detail:'Mes: '+$('mes').value+' · Códigos: '+[...duplicados].join(', '),
+          confirmText:'Revisar planillas',cancelText:'Entendido',danger:false
+        }).then(function(revisar){
+          modalDuplicadosAbierto=false;
+          if(revisar)$('buscar').focus();
+        });
+      }
+      return duplicados;
+    }
     let currentPreviewId = '';
     function ver(id) { if (!id) return; const decodedId=decodeURIComponent(id); const row = allRows.find(x => String(x.id) === decodedId); const modal = $('pdfModal'); const frame = $('pdfFrame'); const loading=$('pdfLoading'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); if(loading)loading.hidden=false; frame.onload=function(){ if(loading)loading.hidden=true; }; if(currentPreviewId!==decodedId){ frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; currentPreviewId=decodedId; } ZimaUI.openModal(modal); }
     function cerrarPdf() { const frame = $('pdfFrame'); ZimaUI.closeModal('pdfModal'); if (frame) frame.src = 'about:blank'; currentPreviewId=''; const loading=$('pdfLoading'); if(loading)loading.hidden=true; }
     function cerrarPdfDesdeFondo(e) { if (e.target && e.target.id === 'pdfModal') cerrarPdf(); }
     async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando...'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }
+    $('mes').value=mesActualHistorial(); $('mes').addEventListener('change',function(){ $('fecha').value=''; render(); });
     setupSession(); mostrarMenuAdmin(); refrescarPerfil().then(function(){mostrarMenuAdmin();render();}); $('buscar').addEventListener('input', render); $('estado').addEventListener('change', render); $('fecha').addEventListener('change', render); cargar();
   </script>
 </body>

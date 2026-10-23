@@ -2498,6 +2498,8 @@ function doGet(e) {
     }
 
     if (
+      action === 'crearticket' ||
+      action === 'actualizarticket' ||
       action === 'save' ||
       action === 'create' ||
       action === 'update' ||
@@ -3013,6 +3015,9 @@ function apiGet(params) {
 
   switch (action) {
 
+    case 'tickets':
+      return listarTickets_(params);
+
     case 'list':
 
       return listarPlanillas_(
@@ -3139,6 +3144,11 @@ function apiPost(data) {
 
   switch (action) {
 
+    case 'crearticket':
+      return crearTicket_(data);
+    case 'actualizarticket':
+      return actualizarTicket_(data);
+
     case 'save':
     case 'create':
 
@@ -3186,6 +3196,27 @@ function apiPost(data) {
 /* ============================================================
    PLANILLAS · CREAR
    ============================================================ */
+
+function validarCodigoUnico_(sh, planilla, sesion) {
+  const codigo = String(planilla.codigo || '').trim().toUpperCase();
+  const repetidas = readAllRows_(sh).filter(function(row) {
+    return String(row.codigo || '').trim().toUpperCase() === codigo &&
+      (!planilla.id || String(row.id) !== String(planilla.id));
+  });
+  if (!repetidas.length) return { ok: true };
+
+  const editable = repetidas.find(function(row) {
+    return row.id && puedeAccederPlanilla_(sesion, row);
+  });
+  return {
+    ok: false,
+    code: 'CODIGO_DUPLICADO',
+    error: editable
+      ? 'Ya existe una planilla con este código. Abra la planilla existente para editarla y ajustar sus datos.'
+      : 'Ya existe una planilla con este código. Solicite al administrador que revise la planilla existente.',
+    existingId: editable ? String(editable.id) : ''
+  };
+}
 
 function guardarPlanilla_(data) {
 
@@ -3282,6 +3313,9 @@ function guardarPlanilla_(data) {
         clean.fecha,
         sh
       );
+
+    const codigoUnico = validarCodigoUnico_(sh, clean, sesion);
+    if (!codigoUnico.ok) return codigoUnico;
 
     clean.estado =
       clean.estado ||
@@ -3508,6 +3542,9 @@ function actualizarPlanilla_(data) {
     if (!validacion.ok) {
       return validacion;
     }
+
+    const codigoUnico = validarCodigoUnico_(sh, merged, sesion);
+    if (!codigoUnico.ok) return codigoUnico;
 
     sh
       .getRange(
@@ -5259,6 +5296,103 @@ function registrarAuditoria_(
    SOPORTE EN LINEA
    ============================================================ */
 
+const TICKET_HEADERS = ['id','requestId','fecha','usuario','nombre','peaje','email','categoria','prioridad','titulo','mensaje','estado','respuesta','updatedAt'];
+
+function hojaTickets_() {
+  const ss = getSpreadsheet_();
+  let sh = ss.getSheetByName('ZIMATICKETS');
+  if (!sh) sh = ss.insertSheet('ZIMATICKETS');
+  if (!sh.getLastRow()) {
+    sh.appendRow(TICKET_HEADERS);
+    sh.setFrozenRows(1);
+    sh.getRange(1, 1, 1, TICKET_HEADERS.length).setFontWeight('bold');
+  }
+  return sh;
+}
+
+function leerTickets_(sh) {
+  if (sh.getLastRow() < 2) return [];
+  return sh.getRange(2,1,sh.getLastRow()-1,TICKET_HEADERS.length).getValues().map(function(row) {
+    const item = {};
+    TICKET_HEADERS.forEach(function(key,index) { item[key] = row[index] instanceof Date ? row[index].toISOString() : row[index]; });
+    return item;
+  });
+}
+
+function listarTickets_(datos) {
+  const ctx = obtenerContextoUsuario_(datos);
+  if (!ctx.ok) return ctx;
+  const admin = esUsuarioAdministrador_(ctx.sesion);
+  const sh = getSpreadsheet_().getSheetByName('ZIMATICKETS');
+  const rows = (sh ? leerTickets_(sh) : []).filter(function(row) {
+    return admin || String(row.usuario).trim().toLowerCase() === String(ctx.sesion.usuario).trim().toLowerCase();
+  }).reverse().map(function(row) { delete row.requestId; return row; });
+  return {ok:true,rows:rows,admin:admin};
+}
+
+function crearTicket_(datos) {
+  const ctx = obtenerContextoUsuario_(datos);
+  if (!ctx.ok) return ctx;
+  const titulo = String(datos.titulo || '').trim();
+  const mensaje = String(datos.mensaje || '').trim();
+  const email = String(datos.email || ctx.sesion.email || '').trim();
+  const categoria = String(datos.categoria || 'OTRO');
+  const prioridad = String(datos.prioridad || 'NORMAL');
+  const requestId = String(datos.requestId || '').trim();
+  if (titulo.length < 5 || titulo.length > 120) throw Error('El asunto debe tener entre 5 y 120 caracteres.');
+  if (mensaje.length < 15 || mensaje.length > 6000) throw Error('Describa su caso con entre 15 y 6000 caracteres.');
+  if (!emailValido_(email)) throw Error('Ingrese un correo de contacto válido.');
+  if (['ACCESO','PLANILLAS','INFORMES','OTRO'].indexOf(categoria) < 0 || ['NORMAL','ALTA'].indexOf(prioridad) < 0) throw Error('Categoría o prioridad no válida.');
+  if (!/^[a-zA-Z0-9-]{8,100}$/.test(requestId)) throw Error('Falta la identificación del envío. Recargue el portal.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  let ticket;
+  try {
+    const sh = hojaTickets_();
+    const anterior = leerTickets_(sh).find(function(row) { return row.requestId === requestId && String(row.usuario).toLowerCase() === String(ctx.sesion.usuario).toLowerCase(); });
+    if (anterior) return {ok:true,id:anterior.id,yaRegistrado:true};
+    ticket = {id:'ZT-'+Utilities.getUuid().toUpperCase(),requestId:requestId,fecha:new Date().toISOString(),usuario:ctx.sesion.usuario,nombre:ctx.sesion.nombre || '',peaje:ctx.sesion.peaje || '',email:email,categoria:categoria,prioridad:prioridad,titulo:titulo,mensaje:mensaje,estado:'ABIERTO',respuesta:'',updatedAt:new Date().toISOString()};
+    sh.appendRow(TICKET_HEADERS.map(function(key) {
+      const value = String(ticket[key] || '');
+      return /^[=+@-]/.test(value) ? "'"+value : value;
+    }));
+    SpreadsheetApp.flush();
+  } finally { lock.releaseLock(); }
+  try {
+    const destino = obtenerEmailNotificacion_(ctx.sesion);
+    if (!destino) throw Error('No hay correo de soporte configurado.');
+    MailApp.sendEmail({
+      to:destino,replyTo:email,subject:'[ZimaTicket] '+ticket.id+' · '+titulo,
+      body:['Nuevo ZimaTicket',ticket.id,'Usuario: '+ticket.usuario,'Peaje: '+ticket.peaje,'Contacto: '+email,'Categoría: '+categoria,'Prioridad: '+prioridad,'Asunto: '+titulo,'',mensaje].join('\n')
+    });
+    return {ok:true,id:ticket.id,correoEnviado:true};
+  } catch (e) {
+    console.error(errorMessage_(e));
+    return {ok:true,id:ticket.id,correoEnviado:false,mensaje:'El ticket quedó registrado. El correo no pudo enviarse; el administrador puede consultarlo en ZimaTicket.'};
+  }
+}
+
+function actualizarTicket_(datos) {
+  const ctx = obtenerContextoUsuario_(datos);
+  if (!ctx.ok) return ctx;
+  if (!esUsuarioAdministrador_(ctx.sesion)) return {ok:false,error:'Solo el administrador puede gestionar los tickets.'};
+  const estado = String(datos.estado || '');
+  const respuesta = String(datos.respuesta || '').trim();
+  if (['ABIERTO','EN_PROCESO','RESUELTO'].indexOf(estado) < 0 || respuesta.length > 6000) throw Error('Estado o respuesta no válida.');
+  if (estado === 'RESUELTO' && !respuesta) throw Error('Escriba la solución antes de resolver el ticket.');
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sh = hojaTickets_();
+    const rows = leerTickets_(sh);
+    const index = rows.findIndex(function(row) { return String(row.id) === String(datos.id); });
+    if (index < 0) throw Error('Ticket no encontrado.');
+    sh.getRange(index+2,12,1,3).setValues([[estado,/^[=+@-]/.test(respuesta)?"'"+respuesta:respuesta,new Date().toISOString()]]);
+    SpreadsheetApp.flush();
+    return {ok:true};
+  } finally { lock.releaseLock(); }
+}
+
 function recortarSoporte_(
   value,
   max
@@ -5818,6 +5952,7 @@ function construirHtmlPlanillaPdf_(
     '<style>' +
     '@page{size:letter;margin:22mm 16mm}' +
     'body{font-family:Arial,sans-serif;color:#172033;font-size:12px}' +
+    '.watermark{position:fixed;top:35%;left:5%;width:90%;transform:rotate(-28deg);text-align:center;font-size:48px;font-weight:bold;line-height:1.4;letter-spacing:3px;color:#104149;opacity:.08;overflow-wrap:anywhere;pointer-events:none}' +
     '.brand{border-bottom:4px solid #f4c20d;padding-bottom:12px;margin-bottom:18px}' +
     '.kicker{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:#6b7280;font-weight:bold}' +
     'h1{font-size:22px;margin:5px 0 4px;color:#111827}' +
@@ -5828,6 +5963,7 @@ function construirHtmlPlanillaPdf_(
     'th{width:32%;background:#f5f7fb;text-align:left;color:#374151}' +
     '.footer{margin-top:18px;color:#6b7280;font-size:10px;line-height:1.5}' +
     '</style></head><body>' +
+    '<div class="watermark" aria-hidden="true">' + htmlEscape_(row.codigo || '') + '<br>' + htmlEscape_(row.peaje || '') + '</div>' +
     '<div class="brand">' +
     '<div class="kicker">ZIMA 360 · Seguimiento de planillas</div>' +
     '<h1>Planilla ' +
