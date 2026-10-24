@@ -739,6 +739,8 @@
   }
 
   function installHolidayTheme() {
+    // Permite pausar el tema navideno en una pagina sin cambiar su acceso.
+    if (document.body.dataset.holidayTheme === 'off') return;
     // 24 de octubre de 2026, 06:00 en Colombia (UTC-05:00).
     const startsAt = Date.parse('2026-10-24T06:00:00-05:00');
     const previewUntil = Date.parse('2026-10-23T17:14:21-05:00');
