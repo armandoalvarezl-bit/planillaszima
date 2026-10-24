@@ -555,6 +555,18 @@
       body[data-holiday-theme="off"] .connection { margin-top: 12px; }
     }
   </style>
+  <style id="session-transition-design">
+    .login-success-modal { background: rgba(9,30,42,.5) !important; backdrop-filter: blur(6px); }
+    .login-success-box { width: min(400px,100%) !important; border-radius: 22px !important; border: 1px solid #e4ecef !important; box-shadow: 0 24px 80px #001b3033 !important; }
+    .login-success-head { display: flex; flex-direction: column; text-align: center; gap: 18px; padding: 32px 28px 22px; background: #fff; }
+    .login-success-icon { background: #e8f5f0 !important; color: #137963 !important; box-shadow: none; border: 1px solid #cfe9df; }
+    .login-success-title { font-size: 20px !important; font-weight: 700; }
+    .login-success-text { line-height: 1.7; overflow-wrap: anywhere; }
+    .session-loading-label { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 18px 20px; background: #f6f9fa; color: #526773; font-size: 12px; border-top: 1px solid #eaf0f2; }
+    .session-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #d5e4e8; border-top-color: #00687b; border-radius: 50%; animation: login-spin .8s linear infinite; }
+    .login-success-progress { display: none; }
+    @media (prefers-reduced-motion: reduce) { .session-spinner { animation: none; } }
+  </style>
 </head>
 
 <body data-holiday-theme="off">
@@ -707,17 +719,13 @@
       <div class="login-success-head">
         <div class="login-success-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></div>
         <div>
-          <div class="login-success-title">Acceso confirmado</div>
+          <div class="login-success-title">Todo listo para comenzar</div>
           <div class="login-success-text" id="loginSuccessText">
             Validando sesi&oacute;n...
           </div>
         </div>
       </div>
-      <div class="login-success-meta" aria-hidden="true">
-        <div class="login-success-step"><i class="bi bi-check2-circle"></i><strong>Credenciales</strong><small>Verificadas</small></div>
-        <div class="login-success-step"><i class="bi bi-person-check"></i><strong>Perfil</strong><small>Listo</small></div>
-        <div class="login-success-step"><i class="bi bi-arrow-repeat opening-panel"></i><strong>Panel</strong><small>Abriendo</small></div>
-      </div>
+      <div class="session-loading-label"><span class="session-spinner" aria-hidden="true"></span>Abriendo tu espacio de trabajo</div>
       <div class="login-success-progress">
         <span></span>
       </div>

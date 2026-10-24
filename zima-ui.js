@@ -157,6 +157,20 @@
       '.zima-confirm-backdrop.success .zima-confirm-actions{padding:16px 26px 22px;background:#fff;border-color:#f1f5f9}',
       '.zima-confirm-backdrop.success .zima-confirm-btn{border-radius:8px;min-height:42px}',
       '.zima-confirm-backdrop.success .zima-confirm-btn.primary{background:#0f766e;border-color:#0f766e}',
+      '.session-logout{background:rgba(9,30,42,.5);backdrop-filter:blur(6px)}',
+      '.session-logout .zima-confirm-card{width:min(400px,100%);border:1px solid #e4ecef;border-radius:22px;box-shadow:0 24px 80px #001b3033;max-height:calc(100dvh - 40px);overflow:auto}',
+      '.session-logout .zima-confirm-card:before{display:none}',
+      '.session-logout .zima-confirm-head{padding:30px 28px 16px;gap:16px;align-items:center}',
+      '.session-logout .zima-confirm-icon{font-size:0;background:#edf5f7;border:1px solid #d8e8ec;color:#00687b;width:46px;height:46px}',
+      '.session-logout .zima-confirm-icon:after{content:"\\2192";font-size:25px}',
+      '.session-logout .zima-confirm-title{font-size:20px;font-weight:700;color:#143b48}',
+      '.session-logout .zima-confirm-body{padding:0 28px 26px;color:#617581;line-height:1.7}',
+      '.session-logout .zima-confirm-actions{padding:18px 28px;background:#f6f9fa;gap:10px}',
+      '.session-logout .zima-confirm-btn{flex:1;border-radius:10px;min-height:44px;font-size:12px;font-weight:600}',
+      '.session-logout .zima-confirm-btn.primary{background:#00566b;border-color:#00566b}',
+      '.session-exit-spinner{width:28px;height:28px;flex-shrink:0;border:3px solid #d8e8ec;border-top-color:#00687b;border-radius:50%;animation:zima-session-spin .8s linear infinite}',
+      '@keyframes zima-session-spin{to{transform:rotate(360deg)}}',
+      '@media(prefers-reduced-motion:reduce){.session-exit-spinner{animation:none}}',
       '.zima-confirm-backdrop.holiday .zima-confirm-card{width:min(510px,100%);border-radius:18px;border:1px solid #d5c69e;background:#fffefa;box-shadow:0 28px 90px #0a292950}',
       '.zima-confirm-backdrop.holiday .zima-confirm-card:before{height:5px;background:linear-gradient(90deg,#315e4c,#cfb16b,#8f5650,#cfb16b,#315e4c)}',
       '.zima-confirm-backdrop.holiday .zima-confirm-head{flex-direction:column;align-items:center;text-align:center;gap:18px;padding:32px 30px 17px}',
@@ -181,6 +195,7 @@
       const backdrop = document.createElement('div');
       backdrop.className = 'zima-confirm-backdrop open';
       if (options.tone === 'success') backdrop.classList.add('success');
+      if (options.tone === 'logout') backdrop.classList.add('session-logout');
       if (options.tone === 'holiday') backdrop.classList.add('holiday', 'no-print');
       backdrop.setAttribute('aria-hidden', 'false');
 
@@ -207,15 +222,27 @@
           '</div>' +
         '</div>';
 
+      const previousFocus = document.activeElement;
+      const previousOverflow = document.body.style.overflow;
+      let settled = false;
       function cleanup(value) {
+        if (settled) return;
+        settled = true;
         document.removeEventListener('keydown', onKeydown);
-        document.body.style.overflow = '';
+        document.body.style.overflow = previousOverflow;
         backdrop.remove();
+        if (previousFocus && previousFocus.isConnected) previousFocus.focus();
         resolve(value);
       }
 
       function onKeydown(event) {
         if (event.key === 'Escape') cleanup(false);
+        if (event.key === 'Tab') {
+          const buttons = backdrop.querySelectorAll('button');
+          const first = buttons[0], last = buttons[buttons.length - 1];
+          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+        }
       }
 
       backdrop.addEventListener('click', function (event) {
@@ -229,7 +256,7 @@
       document.body.appendChild(backdrop);
       document.body.style.overflow = 'hidden';
 
-      const primary = backdrop.querySelector('[data-zima-confirm="ok"]');
+      const primary = backdrop.querySelector('[data-zima-confirm="cancel"]');
       if (primary) primary.focus();
     });
   }
@@ -282,12 +309,25 @@
       detail: options.detail || '',
       confirmText: options.confirmText || 'Cerrar sesi\u00f3n',
       cancelText: options.cancelText || 'Cancelar',
-      danger: true
+      danger: false,
+      tone: 'logout'
     }).then(function (ok) {
       if (!ok) return false;
 
+      const leaving = document.createElement('div');
+      leaving.className = 'zima-confirm-backdrop open session-logout';
+      leaving.innerHTML = '<div class="zima-confirm-card" role="status" aria-live="polite" aria-busy="true"><div class="zima-confirm-head"><div class="session-exit-spinner" aria-hidden="true"></div><h2 class="zima-confirm-title">Cerrando sesi&oacute;n</h2></div><div class="zima-confirm-body">Estamos finalizando tu sesi&oacute;n. En un momento volver&aacute;s al acceso.</div></div>';
+      document.body.appendChild(leaving);
+
       return Promise
-        .resolve(options.beforeClear ? options.beforeClear() : null)
+        .resolve().then(function () {
+          if (!options.beforeClear) return;
+          let timeout;
+          return Promise.race([
+            Promise.resolve().then(function () { return options.beforeClear(); }),
+            new Promise(function (resolve) { timeout = setTimeout(resolve, 5000); })
+          ]).finally(function () { clearTimeout(timeout); });
+        })
         .catch(function () {})
         .then(function () {
           clearSession(options.extraKeys);
