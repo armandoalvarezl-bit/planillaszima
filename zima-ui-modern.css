@@ -1096,6 +1096,20 @@ body:has(.login-wrapper) {
   }
 }
 
+/* Los iconos del panel desplegable heredan el color de cada enlace. */
+body:not(:has(.login-wrapper)) .sidebar .nav-item > .nav-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 700px) {
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open .nav-item .nav-icon,
+  body:not(:has(.login-wrapper)) .sidebar.mobile-open .nav-item .nav-icon i {
+    color: inherit !important;
+    display: inline-flex !important;
+  }
+}
+
 /* ==========================================================
    Ajuste final: login conservando logo y paneles mas uniformes
    ========================================================== */

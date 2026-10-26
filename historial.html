@@ -668,7 +668,7 @@
   .edit-dialog-subtitle{display:none}
 }
 @media(max-width:700px){
-  .sidebar{inset:0 auto 0 0!important;width:293px!important;height:100vh!important;padding:28px 16px 18px!important;flex-direction:column!important;transform:translateX(-105%);transition:transform .22s ease;box-shadow:18px 0 45px rgba(0,0,0,.22);z-index:1002}
+  .sidebar{inset:0 auto 0 0!important;width:293px!important;height:100vh!important;padding:28px 16px 18px!important;flex-direction:column!important;transform:translateX(-105%);transition:transform .22s ease;box-shadow:18px 0 45px rgba(0,0,0,.22);z-index:1002!important}
   .sidebar.mobile-open{transform:translateX(0)}
   .sidebar .brand-block,.sidebar .branch-card,.sidebar .sidebar-bottom{display:flex!important}
   .sidebar .brand-block{justify-content:flex-start!important;padding:0 6px 24px!important}
@@ -712,10 +712,10 @@
 
   <nav class="main-nav" aria-label="Navegaci&oacute;n principal">
     <div class="nav-title">MEN&Uacute; PRINCIPAL</div>
-    <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i class="bi bi-grid-3x3-gap"></i></span><span>Inicio</span></a>
-    <a class="nav-item" href="planilla.html"><span class="nav-icon"><i class="bi bi-file-earmark-plus"></i></span><span>Nueva planilla</span></a>
-    <a class="nav-item active" href="historial.html"><span class="nav-icon"><i class="bi bi-clock-history"></i></span><span>Historial</span></a>
-    <a class="nav-item" href="informes.html"><span class="nav-icon"><i class="bi bi-clipboard-data"></i></span><span>Informes</span></a>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span>Inicio</span></a>
+    <a class="nav-item" href="planilla.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M12 12v6M9 15h6"/></svg></span><span>Nueva planilla</span></a>
+    <a class="nav-item active" href="historial.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11a9 9 0 1 1 2.6 7M3 3v8h8M12 7v5l3 2"/></svg></span><span>Historial</span></a>
+    <a class="nav-item" href="informes.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 17v-3M12 17v-6M15 17v-4"/></svg></span><span>Informes</span></a>
         <a class="nav-item" href="soporte.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2M4 12H3v6h4v-6H4Zm16 0h1v6h-4v-6h3Zm0 6v1a2 2 0 0 1-2 2h-4M10 21h4"/></svg></span><span>ZimaTicket</span></a>
   </nav>
 
@@ -726,7 +726,7 @@
 </aside>
     <main class="main">
       <header class="top">
-        <button class="menu-toggle" id="menuToggle" type="button" title="Abrir menú" aria-label="Abrir menú" aria-expanded="false" onclick="alternarMenu()"><i class="bi bi-list"></i></button>
+        <button class="menu-toggle" id="menuToggle" type="button" title="Abrir menú" aria-label="Abrir menú" aria-expanded="false" onclick="alternarMenu()"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
         <div class="breadcrumb"><b>Historial</b> / Planillas registradas</div>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px"><div class="status"><i class="bi bi-circle-fill"></i> <span id="syncLabel">Conectado</span></div><div class="session-user"><div class="avatar" id="headerAvatar">ZU</div><div class="user-meta"><strong id="headerUser">Usuario ZIMA</strong><span id="headerPeaje">Administraci&oacute;n central</span></div><button class="logout-btn zima-logout-button" type="button" title="Cerrar sesi&oacute;n" aria-label="Cerrar sesi&oacute;n" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i></button></div></div>
       </header>
@@ -857,8 +857,9 @@
     function abrirModalSesion(){ const m=document.getElementById('sessionModal'); if(!m)return; const name=SESSION.name||SESSION.user||'Usuario ZIMA'; const peaje=SESSION.peaje||'Administracion central'; const av=document.getElementById('sessionAvatar'); pintarAvatar(av,SESSION.foto,name); document.getElementById('modalSessionUser').textContent=name; document.getElementById('modalSessionRole').textContent=SESSION.role||'USUARIO'; document.getElementById('modalSessionPeaje').textContent=peaje; m.classList.add('open'); }
     function cerrarModalSesion(){ const m=document.getElementById('sessionModal'); if(m)m.classList.remove('open'); }
     function cerrarModalSesionDesdeFondo(e){ if(e.target && e.target.id==='sessionModal') cerrarModalSesion(); }
-    function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'<i class="bi bi-x-lg"></i>':'<i class="bi bi-list"></i>';toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');} }
-    function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<i class="bi bi-list"></i>';toggle.setAttribute('aria-label','Abrir menú');} }
+    function iconoMenuHistorial(open){return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="'+(open?'m6 6 12 12M6 18 18 6':'M4 6h16M4 12h16M4 18h16')+'"/></svg>';}
+    function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=iconoMenuHistorial(open);toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');} }
+    function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML=iconoMenuHistorial(false);toggle.setAttribute('aria-label','Abrir menú');} }
     function cerrarSesion(){ return ZimaUI.confirmLogout({detail:(SESSION.name||SESSION.user||'Usuario ZIMA') + (SESSION.peaje ? ' - ' + SESSION.peaje : '')}); }
     document.addEventListener('click',e=>{if(e.target.closest('.nav-item'))cerrarMenu();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarEdicion();cerrarMenu();}});

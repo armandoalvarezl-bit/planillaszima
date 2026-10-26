@@ -1850,16 +1850,9 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const list=document.getElementById('notificationList');
       if(!list) return;
       const rows=Array.isArray(data)?data:[];
-      const entregadas=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='ENTREGADA').length;
-      const cerradas=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='CERRADA').length;
-      const borradores=rows.filter(x=>normalizarEstado(obtenerEstado(x))==='BORRADOR').length;
-      const total=rows.reduce((sum,item)=>sum+Number(item.total||0),0);
       setText('notificationStatus',status || (rows.length?'Actualizado':'Sin datos'));
       list.innerHTML=[
-        ...(window.ZimaUpdates?[{icon:'bell-ring',title:ZimaUpdates.release.title,text:ZimaUpdates.release.message}]:[]),
-        {icon:'database',title:'Planillas sincronizadas',text:`${rows.length} registros disponibles para ${SESSION.office || 'este acceso'}.`},
-        {icon:'send',title:'Estados por revisar',text:`${entregadas} entregadas, ${cerradas} cerradas y ${borradores} en borrador.`},
-        {icon:'wallet',title:'Valor administrado',text:`Acumulado visible: ${money(total)} COP.`}
+        ...(window.ZimaUpdates?[{icon:'bell-ring',title:ZimaUpdates.release.title,text:ZimaUpdates.release.message}]:[])
       ].map(item=>`<div class="notification-item" role="menuitem">
         <div class="notification-icon"><i data-lucide="${item.icon}"></i></div>
         <div class="notification-copy"><strong>${esc(item.title)}</strong><span>${esc(item.text)}</span></div>

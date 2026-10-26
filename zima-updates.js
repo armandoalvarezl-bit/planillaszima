@@ -2,9 +2,9 @@
   'use strict';
   // Cambiar id y mensaje al publicar una nueva actualización.
   const release = {
-    id: '2026-10-23.2',
-    title: 'Novedades de ZIMA 360',
-    message: 'Ya está disponible ZimaTicket en el menú: registre su caso y consulte las respuestas del administrador. También puede consultar las planillas por mes en el historial y editar la existente si necesita corregirla.'
+    id: '2026-10-26.1',
+    title: 'Tu operación continúa sin internet',
+    message: 'Al ingresar con internet, el sistema prepara y actualiza automáticamente una copia en este equipo, sin avisos constantes. Si se pierde la conexión, puedes consultar, crear, editar e imprimir planillas; los pendientes se envían al reconectar con la sesión activa. El tutorial explica cómo usarlo. Usa el mismo navegador y no borres sus datos mientras tengas pendientes.'
   };
   let audioContext;
   let pendingSound = false;
@@ -49,27 +49,6 @@
 
   async function announce(user) {
     if (!user || announcing) return;
-    if (document.body && document.body.classList.contains('zima-holiday')) {
-      const preview = Date.now() < Date.parse('2026-10-24T06:00:00-05:00');
-      const seasonKey = 'ZIMA_HOLIDAY_WELCOME:2026:' + (preview ? 'preview:' : '') + String(user).trim().toLowerCase();
-      let greeted = seenInMemory.has(seasonKey);
-      try { greeted = greeted || localStorage.getItem(seasonKey) === 'seen'; } catch (_) {}
-      if (!greeted) {
-        announcing = true;
-        try {
-          await ZimaUI.confirm({
-            tone: 'holiday', danger: false,
-            title: 'Bienvenido a esta Navidad',
-            message: 'En ZIMA 360, lo más valioso es lo que construimos juntos. Gracias por tu compromiso, por cada jornada compartida y por ser parte de este equipo. Que esta temporada traiga paz a tu hogar, alegría a tus días y nuevos motivos para seguir creciendo.',
-            detail: 'Con gratitud, el equipo ZIMA 360 · Navidad 2026',
-            confirmText: 'Sigamos construyendo juntos', cancelText: 'Cerrar'
-          });
-          seenInMemory.add(seasonKey);
-          try { localStorage.setItem(seasonKey, 'seen'); } catch (_) {}
-        } finally { announcing = false; }
-        return;
-      }
-    }
     const key = 'ZIMA_RELEASE_SEEN:' + String(user).trim().toLowerCase();
     let seen = seenInMemory.has(key);
     try { seen = seen || localStorage.getItem(key) === release.id; } catch (_) {}

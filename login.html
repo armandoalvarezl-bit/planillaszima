@@ -567,6 +567,36 @@
     .login-success-progress { display: none; }
     @media (prefers-reduced-motion: reduce) { .session-spinner { animation: none; } }
   </style>
+  <style id="login-layout-estable">
+    html { scrollbar-gutter: stable; }
+    body[data-holiday-theme="off"] { min-height:100svh; }
+    .login-feedback-slot { display:grid; align-items:center; min-height:62px; margin-top:12px; }
+    .login-feedback-slot > * { grid-area:1 / 1; min-width:0; }
+    .login-feedback-slot .request-feedback,.login-feedback-slot .status { margin:0; padding:10px 12px; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+    .login-feedback-slot .request-spinner { flex-shrink:0; }
+    .login-feedback-slot:has(.status.error,.status.success) .request-feedback { visibility:hidden; }
+    .login-wrapper .connection { margin-top:8px; }
+    .login-wrapper > .footer { padding-bottom:4px; }
+    .made-in-colombia { white-space:nowrap; }
+    @media(max-height:800px){
+      html body[data-holiday-theme="off"] { padding:12px 18px; align-items:flex-start!important; }
+      body[data-holiday-theme="off"] .login-wrapper { margin:auto; flex-shrink:0; }
+      body[data-holiday-theme="off"] .login-card { padding:20px 26px 16px!important; }
+      body[data-holiday-theme="off"] .logo { width:120px!important; }
+      body[data-holiday-theme="off"] .logo-container { margin-bottom:8px!important; }
+      body[data-holiday-theme="off"] .system-subtitle { margin-bottom:16px!important; }
+      body[data-holiday-theme="off"] .field { margin-bottom:12px; }
+      body[data-holiday-theme="off"] .footer { margin-top:10px; gap:7px; }
+      body[data-holiday-theme="off"] .made-in-colombia { padding:5px 12px; }
+    }
+    @media(max-height:640px){
+      body[data-holiday-theme="off"] .logo { width:88px!important; }
+      body[data-holiday-theme="off"] .login-card { padding:16px 22px 12px!important; }
+      body[data-holiday-theme="off"] .system-title { font-size:21px!important; }
+      body[data-holiday-theme="off"] .system-subtitle { margin-bottom:12px!important; }
+      body[data-holiday-theme="off"] .field label { margin-bottom:5px; }
+    }
+  </style>
 </head>
 
 <body data-holiday-theme="off">
@@ -687,6 +717,7 @@
         <button type="button" id="backToLogin" class="back-to-login"><i class="bi bi-arrow-left" aria-hidden="true"></i>Volver al inicio de sesi&oacute;n</button>
       </form>
 
+      <div class="login-feedback-slot">
       <div class="request-feedback" id="requestFeedback" role="status" aria-live="polite" hidden>
         <span class="request-spinner" aria-hidden="true"></span>
         <span id="requestFeedbackText"></span>
@@ -698,6 +729,7 @@
         role="status"
         aria-live="polite"
       ></div>
+      </div>
 
       <div class="connection">
         <i class="bi bi-shield-lock" aria-hidden="true"></i>
@@ -732,12 +764,6 @@
     </div>
   </div>
 
-  <div class="announcement-modal" id="announcementModal" aria-hidden="true">
-    <div class="announcement-dialog" role="dialog" aria-modal="true" aria-label="Anuncio ZIMA 360">
-      <button class="announcement-close" type="button" id="announcementClose" aria-label="Cerrar anuncio">&times;</button>
-      <img src="img/anuncio-renovacion-zima360.png" alt="ZIMA 360 nos renovamos. Nueva plataforma, mas intuitiva y facil de usar.">
-    </div>
-  </div>
 
 <script src="zima-offline.js"></script>
 <script src="zima-ui.js"></script>
@@ -999,11 +1025,7 @@ function programarAnuncioSistema(datos) {
   try {
     sessionStorage.setItem("ZIMA_SHOW_WELCOME", "1");
 
-    if (!esAdminLogin(datos)) {
-      sessionStorage.setItem("ZIMA_SHOW_ANNOUNCEMENT", "1");
-    } else {
-      sessionStorage.removeItem("ZIMA_SHOW_ANNOUNCEMENT");
-    }
+    sessionStorage.removeItem("ZIMA_SHOW_ANNOUNCEMENT");
   } catch (e) {}
 
 }

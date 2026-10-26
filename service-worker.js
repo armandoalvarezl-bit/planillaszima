@@ -1,5 +1,5 @@
-const CACHE_NAME = 'zima360-shell-offline-v6';
-const OPTIONAL_CACHE = 'zima360-assets-offline-v6';
+const CACHE_NAME = 'zima360-shell-offline-v9';
+const OPTIONAL_CACHE = 'zima360-assets-offline-v9';
 const APP_SHELL = [
   'login.html', 'dashboard.html', 'planilla.html', 'historial.html', 'informes.html',
   'granadmin.html', 'soporte.html', 'mantenimiento.html',
@@ -9,7 +9,7 @@ const APP_SHELL = [
   'zima.css', 'zima-brand.css', 'zima-ui-modern.css', 'ui-theme.css', 'dashboard.css', 'soporte.css',
   'responsive-fixes.css', 'style1.css', 'manifest.json', 'assets/vendor/lucide.min.js',
   'assets/logos/logo-ani.png', 'img/logo.png', 'img/logo-ani.png', 'img/logo-zima.png',
-  'img/navidad-santa-renos.png', 'img/anuncio-renovacion-zima360.png',
+  'img/navidad-santa-renos.png',
   'img/fondo-gracias-equipo-zima-octubre-2026.png', 'img/fondo-especial-zima-centro-octubre-2026.png',
   'img/fondo-celebracion-zima-octubre-2026.png'
 ];

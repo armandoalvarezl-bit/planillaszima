@@ -95,6 +95,29 @@ let browser, socket;
   await evaluate('ZimaUI?.clearSession?.()').catch(() => evaluate('ZimaOffline.lock()'));
   await call('Page.navigate', { url: origin + '/login.html' });
   await waitFor('!!(window.ZimaUI && window.ZimaOffline && document.getElementById("loginForm"))');
+  await call('Network.emulateNetworkConditions', { offline: false, latency: 0, downloadThroughput: -1, uploadThroughput: -1 });
+  const loginArtifacts = path.join(root, 'tests/artifacts'); fs.mkdirSync(loginArtifacts, { recursive: true });
+  for (const [width, height] of [[1366, 768], [1280, 720], [1024, 600], [390, 844], [320, 640]]) {
+    await call('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
+    const metrics = await evaluate(`(()=>{
+      limpiarMensaje(); mostrarCarga(loginButton,loginForm,false,'');
+      const footer=document.querySelector('.made-in-colombia');
+      const before=footer.getBoundingClientRect();
+      mostrarCarga(loginButton,loginForm,true,'Verificando sus credenciales. Espere un momento…');
+      const after=footer.getBoundingClientRect(),button=loginButton.getBoundingClientRect();
+      return {before:before.top,after:after.top,bottom:after.bottom,left:after.left,right:after.right,button:button.bottom,scroll:document.documentElement.scrollWidth};
+    })()`);
+    assert.ok(Math.abs(metrics.before - metrics.after) < 1, 'Login footer shifts on submit: ' + JSON.stringify({width,height,...metrics}));
+    assert.ok(metrics.bottom <= height && metrics.left >= 0 && metrics.right <= width && metrics.button <= height && metrics.scroll <= width, 'Login footer or button clipped: ' + JSON.stringify({width,height,...metrics}));
+    if (width === 1366 || width === 390) {
+      const shot=await call('Page.captureScreenshot',{format:'png'});
+      fs.writeFileSync(path.join(loginArtifacts,'login-loading-'+(width===1366?'desktop':'mobile')+'.png'),Buffer.from(shot.data,'base64'));
+    }
+    await evaluate('mostrarCarga(loginButton,loginForm,false,""); true');
+  }
+  await call('Emulation.setDeviceMetricsOverride', { width: 1440, height: 1000, deviceScaleFactor: 1, mobile: false });
+  await call('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
+  console.log('OK: login loading leaves footer and Colombia flag stationary and fully visible at desktop/mobile sizes');
   assert.equal(await evaluate(`ZimaOffline.login('operador','incorrecta',()=>{throw Error('Must not call network')}).then(()=>false,()=>true)`), true);
   await evaluate(`document.getElementById('usuario').value='operador'; document.getElementById('password').value='ClavePrueba'; document.getElementById('loginForm').requestSubmit(); true`);
   await waitFor(`location.pathname.endsWith('/dashboard.html') && !!window.ZimaUI`, 'Offline login did not reach dashboard');
@@ -118,7 +141,7 @@ let browser, socket;
     assert.equal(await evaluate('document.querySelector(".zima-offline-tutorial").dataset.step'), String(i));
     await evaluate('document.querySelector(".ot-next").click(); true');
   }
-  assert.equal(await evaluate('!!document.querySelector("dialog.zima-offline-tutorial")'), false);
+  await waitFor('!document.querySelector("dialog.zima-offline-tutorial")');
   assert.equal(await evaluate(`ZimaOfflineTutorial.showOnce('operador')`), false, 'Completed tutorial must not repeat');
   await evaluate(`ZimaOfflineTutorial.showOnce('otra-cuenta'); true`);
   assert.equal(await evaluate('!!document.querySelector("dialog.zima-offline-tutorial[open]")'), true, 'Another account gets its own introduction');
@@ -225,6 +248,31 @@ let browser, socket;
   assert.equal(renewed.ok, true, 'An evicted Apps Script session must renew automatically');
   assert.equal(renewed.rows.length, 2);
   console.log('OK: early Apps Script cache eviction renews the session without losing local access');
+  await call('Network.emulateNetworkConditions', { offline: true, latency: 0, downloadThroughput: 0, uploadThroughput: 0 });
+  await call('Page.navigate', { url: origin + '/historial.html' });
+  await waitFor('typeof alternarMenu === "function" && !!document.getElementById("menuToggle")');
+  for (const width of [390, 768]) {
+    await call('Emulation.setDeviceMetricsOverride', { width, height: 900, deviceScaleFactor: 1, mobile: false });
+    if (width < 701) {
+      assert.equal(await evaluate('!!document.querySelector("#menuToggle svg")'), true);
+      await evaluate('document.getElementById("menuToggle").click(); true');
+      await pause(250);
+    }
+    const menuIcons = await evaluate(`Array.from(document.querySelectorAll('.sidebar .nav-item')).map(link=>{const icon=link.querySelector('.nav-icon'),svg=icon.querySelector('svg'),r=svg.getBoundingClientRect();return {text:link.textContent.trim(),hasSvg:!!svg,display:getComputedStyle(icon).display,width:r.width,height:r.height,iconColor:getComputedStyle(svg).color,linkColor:getComputedStyle(link).color};})`);
+    assert.equal(menuIcons.length, 5);
+    for (const icon of menuIcons) {
+      assert.ok(icon.hasSvg && icon.display !== 'none' && icon.width > 0 && icon.height > 0, JSON.stringify({ width, icon }));
+      if (width < 701) assert.equal(icon.iconColor, icon.linkColor, 'Mobile menu icons must contrast with white menu background');
+    }
+    if (width < 701) {
+      assert.equal(await evaluate(`(()=>{const link=document.querySelector('.sidebar .nav-item'),r=link.getBoundingClientRect();return document.elementFromPoint(r.x+r.width/2,r.y+r.height/2)?.closest('.nav-item')===link;})()`), true, 'Menu links must remain above the backdrop and receive taps');
+      const shot=await call('Page.captureScreenshot',{format:'png'});
+      fs.writeFileSync(path.join(root,'tests/artifacts/history-menu-mobile.png'),Buffer.from(shot.data,'base64'));
+      await evaluate('cerrarMenu(); true');
+      assert.equal(await evaluate('!!document.querySelector("#menuToggle svg")'), true);
+    }
+  }
+  console.log('OK: Historial menu icons remain visible on mobile/tablet, with correct contrast and no internet');
 })().catch(error => { console.error(error); process.exitCode = 1; }).finally(() => {
   if (socket) socket.close(); if (browser) browser.kill(); server.closeAllConnections(); server.close();
 });
