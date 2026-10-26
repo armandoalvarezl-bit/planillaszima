@@ -739,6 +739,7 @@
     </div>
   </div>
 
+<script src="zima-offline.js"></script>
 <script src="zima-ui.js"></script>
 <script>
 
@@ -747,7 +748,7 @@
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec";
+  "https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);
@@ -1168,6 +1169,7 @@ function guardarSesion(datos) {
   );
 
   localStorage.setItem("ZIMA_SESION_ESTADO", "ACTIVA");
+  localStorage.setItem("ZIMA_LAST_ACTIVITY", String(Date.now()));
   localStorage.setItem("ZIMA360_USUARIO", usuarioSesion.usuario);
   localStorage.setItem("ZIMA360_NOMBRE", usuarioSesion.nombre);
   localStorage.setItem("ZIMA360_ROL", usuarioSesion.rol);
@@ -1251,6 +1253,11 @@ function loginJsonp(usuario, password) {
 
 
 async function autenticarRemoto(usuario, password) {
+  if (window.ZimaOffline) return ZimaOffline.login(usuario, password, () => autenticarSoloOnline(usuario, password));
+  return autenticarSoloOnline(usuario, password);
+}
+
+async function autenticarSoloOnline(usuario, password) {
 
   try {
 

@@ -290,7 +290,8 @@
   ];
 
   function clearSession(extraKeys) {
-    const keys = SESSION_KEYS.concat(extraKeys || []);
+    if (window.ZimaOffline) window.ZimaOffline.lock();
+    const keys = SESSION_KEYS.concat(['ZIMA_LAST_ACTIVITY', 'ZIMA_SESION_ESTADO', 'ZIMA_SHOW_WELCOME', 'ZIMA_SHOW_ANNOUNCEMENT'], extraKeys || []);
     [localStorage, sessionStorage].forEach(function (storage) {
       keys.forEach(function (key) {
         try {
@@ -298,6 +299,86 @@
         } catch (e) {}
       });
     });
+  }
+
+  function installIdleLogout() {
+    const page = window.location.pathname.split('/').pop().toLowerCase();
+    if (!/^(dashboard|planilla|historial|granadmin|informes|soporte)\.html$/.test(page)) return;
+
+    const idleMs = 15 * 60 * 1000;
+    const activityKey = 'ZIMA_LAST_ACTIVITY';
+    let lastActivity = Date.now();
+    let timer;
+    let leaving = false;
+    let lastServerActivity = 0;
+
+    function notifyServer() {
+      if (Date.now() - lastServerActivity < 30000) return;
+      const session = getSupportSession();
+      if (!session.token) return;
+      lastServerActivity = Date.now();
+      const payload = { action: 'sessionactivity', token: session.token };
+      if (window.google && window.google.script && window.google.script.run) {
+        window.google.script.run.withFailureHandler(function () { lastServerActivity = 0; }).apiPost(payload);
+        return;
+      }
+      const url = localStorage.getItem('ZIMA_API_URL');
+      if (!url) return;
+      fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
+        .catch(function () { lastServerActivity = 0; });
+    }
+
+    function readActivity() {
+      try {
+        const stored = Number(localStorage.getItem(activityKey));
+        if (Number.isFinite(stored) && stored > 0) lastActivity = stored;
+      } catch (_) {}
+      return lastActivity;
+    }
+
+    function exit() {
+      if (leaving) return;
+      leaving = true;
+      clearTimeout(timer);
+      clearSession();
+      window.location.replace('login.html?motivo=inactividad');
+    }
+
+    function check() {
+      if (leaving) return;
+      clearTimeout(timer);
+      const remaining = idleMs - (Date.now() - readActivity());
+      if (remaining <= 0) return exit();
+      timer = setTimeout(check, remaining);
+    }
+
+    function activity() {
+      // Check before renewing: waking a suspended tab must not revive an expired session.
+      if (leaving) return;
+      const previous = readActivity();
+      if (Date.now() - previous >= idleMs) return exit();
+      notifyServer();
+      if (Date.now() - previous < 1000) return;
+      lastActivity = Date.now();
+      try { localStorage.setItem(activityKey, String(lastActivity)); } catch (_) {}
+      check();
+    }
+
+    try {
+      if (!localStorage.getItem(activityKey)) localStorage.setItem(activityKey, String(lastActivity));
+    } catch (_) {}
+    ['pointerdown', 'pointermove', 'keydown', 'scroll', 'touchstart', 'input'].forEach(function (event) {
+      document.addEventListener(event, activity, { capture: true, passive: true });
+    });
+    window.addEventListener('storage', function (event) {
+      if (event.key !== activityKey && event.key !== null) return;
+      if (!localStorage.getItem(activityKey)) return exit();
+      check();
+    });
+    window.addEventListener('focus', check);
+    window.addEventListener('pageshow', check);
+    document.addEventListener('visibilitychange', check);
+    check();
   }
 
   function confirmLogout(options) {
@@ -627,7 +708,7 @@
   function installAdminTicketNotifications(launcher, openSupport) {
     const session = getSupportSession();
     if (!session.token || !/^(ADMIN|ADMINISTRADOR)$/.test(String(session.rol).trim().toUpperCase()) || /\/login\.html$/i.test(location.pathname)) return;
-    const endpoint = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
+    const endpoint = 'https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec';
     const key = 'ZIMA_ADMIN_TICKETS_REVIEWED:' + String(session.usuario).trim().toLowerCase();
     let seen = new Set();
     try {
@@ -779,8 +860,13 @@
   }
 
   function installHolidayTheme() {
-    // Permite pausar el tema navideno en una pagina sin cambiar su acceso.
-    if (document.body.dataset.holidayTheme === 'off') return;
+    // Tema navideno pausado en toda la aplicacion hasta reactivarlo manualmente.
+    const holidayThemeEnabled = false;
+    if (!holidayThemeEnabled || document.body.dataset.holidayTheme === 'off') {
+      document.querySelectorAll('#zimaHolidayStyle,.zima-holiday-trim,.zima-holiday-note').forEach(function (el) { el.remove(); });
+      document.body.classList.remove('zima-holiday');
+      return;
+    }
     // 24 de octubre de 2026, 06:00 en Colombia (UTC-05:00).
     const startsAt = Date.parse('2026-10-24T06:00:00-05:00');
     const previewUntil = Date.parse('2026-10-23T17:14:21-05:00');
@@ -851,6 +937,8 @@
     sendSupportReport: sendSupportReport,
     getSupportSession: getSupportSession
   };
+
+  installIdleLogout();
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {

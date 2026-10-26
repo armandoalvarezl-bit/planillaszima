@@ -11,6 +11,7 @@ const ZIMA = {
 
   SESSION_PREFIX: 'ZIMA_SESSION_',
   SESSION_SECONDS: 21600, // 6 horas
+  IDLE_SECONDS: 900, // 15 minutos sin actividad del usuario
 
   HEADERS: [
     'id',
@@ -1129,6 +1130,7 @@ function autenticarUsuario(
    ============================================================ */
 
 function crearSesion_(usuarioSesion) {
+  usuarioSesion = Object.assign({}, usuarioSesion, { lastActivity: Date.now() });
 
   const token =
     Utilities.getUuid() +
@@ -1175,7 +1177,13 @@ function obtenerSesion_(token) {
 
   try {
 
-    return JSON.parse(raw);
+    const sesion = JSON.parse(raw);
+    const lastActivity = Number(sesion.lastActivity) || new Date(sesion.loginAt).getTime();
+    if (!lastActivity || Date.now() - lastActivity >= ZIMA.IDLE_SECONDS * 1000) {
+      cache.remove(ZIMA.SESSION_PREFIX + token);
+      return null;
+    }
+    return sesion;
 
   } catch (e) {
 
@@ -1208,6 +1216,20 @@ function cerrarSesion_(token) {
     mensaje:
       'Sesión cerrada correctamente.'
   };
+}
+
+// Solo los eventos de interacción llaman esta acción; las consultas no renuevan la sesión.
+function registrarActividadSesion_(datos) {
+  const contexto = obtenerContextoUsuario_(datos);
+  if (!contexto.ok) return contexto;
+  const token = String(datos.token || datos.sessionToken || datos.sesion || '').trim();
+  contexto.sesion.lastActivity = Date.now();
+  CacheService.getScriptCache().put(
+    ZIMA.SESSION_PREFIX + token,
+    JSON.stringify(contexto.sesion),
+    ZIMA.SESSION_SECONDS
+  );
+  return { ok: true };
 }
 
 
@@ -2454,6 +2476,10 @@ function doGet(e) {
       params.callback ||
       '';
 
+    if (['offlinegrant', 'offlineresume', 'offlinemutate'].indexOf(action) !== -1) {
+      return jsonOutput_({ ok: false, error: 'Esta acción requiere POST.' }, callback);
+    }
+
     if (
       action === 'login'
     ) {
@@ -2774,6 +2800,25 @@ function doGet(e) {
    ============================================================ */
 
 function doPost(e) {
+  let payload;
+  try { payload = parsePost_(e); } catch (_) { return procesarPostZima_(e); }
+  if (payload.offlineFrame && ['offlinegrant', 'offlineresume', 'offlinemutate', 'crearticket'].indexOf(String(payload.action)) !== -1) {
+    const origin = String(payload.replyOrigin || '');
+    if (!/^https?:\/\/[^\s/]+$/.test(origin) || !/^[a-zA-Z0-9-]{16,80}$/.test(String(payload.offlineFrame))) {
+      return jsonOutput_({ ok: false, error: 'Respuesta de sincronización no válida.' });
+    }
+    let result;
+    try {
+      result = payload.action === 'crearticket' ? crearTicket_(payload) : procesarOffline_(payload.action, payload);
+    } catch (error) { result = { ok: false, error: errorMessage_(error) }; }
+    const message = JSON.stringify({ source: 'zima-offline-reply', nonce: payload.offlineFrame, result: result }).replace(/</g, '\\u003c');
+    return HtmlService.createHtmlOutput('<!doctype html><script>window.top.postMessage(' + message + ',' + JSON.stringify(origin).replace(/</g, '\\u003c') + ');</script>')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+  return procesarPostZima_(e);
+}
+
+function procesarPostZima_(e) {
 
   try {
 
@@ -2788,8 +2833,14 @@ function doPost(e) {
         .trim()
         .toLowerCase();
 
+    if (['offlinegrant', 'offlineresume', 'offlinemutate'].indexOf(action) !== -1) {
+      return jsonOutput_(procesarOffline_(action, payload));
+    }
     if (action === 'renovarcontrasena') {
       return jsonOutput_(renovarContrasena_(payload));
+    }
+    if (action === 'sessionactivity') {
+      return jsonOutput_(registrarActividadSesion_(payload));
     }
 
     if (
@@ -3143,6 +3194,14 @@ function apiPost(data) {
       .toLowerCase();
 
   switch (action) {
+
+    case 'sessionactivity':
+      return registrarActividadSesion_(data);
+
+    case 'offlinegrant':
+    case 'offlineresume':
+    case 'offlinemutate':
+      return procesarOffline_(action, data);
 
     case 'crearticket':
       return crearTicket_(data);
@@ -6439,6 +6498,8 @@ function parsePost_(e) {
     e.parameter ||
     {};
 
+  if (params.zimaOfflinePayload) return JSON.parse(params.zimaOfflinePayload);
+
   const result = {};
 
   Object.keys(
@@ -6534,6 +6595,197 @@ function errorMessage_(
 /* ============================================================
    CONFIGURAR SISTEMA
    ============================================================ */
+
+// Ejecutar desde el editor de Apps Script con la cuenta responsable del sistema.
+// No se expone como acción de la aplicación web y no elimina copias anteriores.
+function crearRespaldoAutomatico() {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const ss = getSpreadsheet_();
+    const folderId = props.getProperty('ZIMA_BACKUP_FOLDER_ID');
+    if (!folderId) throw new Error('Primero ejecute configurarRespaldosAutomaticos().');
+    const folder = DriveApp.getFolderById(folderId);
+    const stamp = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd_HH-mm-ss');
+    const copy = DriveApp.getFileById(ss.getId()).makeCopy('ZIMA360_respaldo_' + stamp, folder);
+    props.setProperty('ZIMA_BACKUP_LAST_AT', new Date().toISOString());
+    props.setProperty('ZIMA_BACKUP_LAST_FILE_ID', copy.getId());
+    return { ok: true, fileId: copy.getId(), folderId: folderId };
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function configurarRespaldosAutomaticos() {
+  const props = PropertiesService.getScriptProperties();
+  let folderId = props.getProperty('ZIMA_BACKUP_FOLDER_ID');
+  if (!folderId) {
+    folderId = DriveApp.createFolder('ZIMA 360 - Respaldos').getId();
+    props.setProperty('ZIMA_BACKUP_FOLDER_ID', folderId);
+  }
+  const respaldo = crearRespaldoAutomatico();
+  const existing = ScriptApp.getProjectTriggers().some(function (trigger) {
+    return trigger.getHandlerFunction() === 'crearRespaldoAutomatico';
+  });
+  if (!existing) {
+    ScriptApp.newTrigger('crearRespaldoAutomatico').timeBased()
+      .everyDays(1).atHour(2).inTimezone('America/Bogota').create();
+  }
+  return respaldo;
+}
+
+/* Modo desconectado: autorización revocable por usuario y dispositivo.
+ * Los cambios financieros siempre vuelven a pasar por permisos y validaciones.
+ */
+function procesarOffline_(action, datos) {
+  if (action === 'offlinegrant') return emitirPermisoOffline_(datos);
+  if (action === 'offlineresume') return reanudarOffline_(datos);
+  return sincronizarPlanillaOffline_(datos);
+}
+
+function clavePermisoOffline_(usuario, dispositivo) {
+  return 'ZIMA_OFFLINE_' + hashContrasena_(String(usuario).trim().toLowerCase() + '|' + dispositivo);
+}
+
+function emitirPermisoOffline_(datos) {
+  const ctx = obtenerContextoUsuario_(datos);
+  if (!ctx.ok) return ctx;
+  const device = String(datos.device || '');
+  if (!/^[a-zA-Z0-9-]{16,80}$/.test(device)) return { ok: false, error: 'Dispositivo no válido.' };
+  const usuario = buscarUsuario_(ctx.sesion.usuario);
+  const politica = estadoContrasena_(usuario);
+  const expiresAt = Math.min(Date.now() + 7 * 86400000, new Date(politica.venceContrasena).getTime());
+  const secret = Utilities.getUuid() + Utilities.getUuid();
+  const props = PropertiesService.getScriptProperties();
+  // Limpiar permisos vencidos para no acumular propiedades de dispositivos antiguos.
+  const all = props.getProperties();
+  Object.keys(all).filter(function (key) { return key.indexOf('ZIMA_OFFLINE_') === 0; }).forEach(function (key) {
+    try { if (JSON.parse(all[key]).expiresAt <= Date.now()) props.deleteProperty(key); } catch (_) {}
+  });
+  props.setProperty(clavePermisoOffline_(ctx.sesion.usuario, device), JSON.stringify({
+    secretHash: hashContrasena_(secret), expiresAt: expiresAt,
+    passwordHash: hashContrasena_(usuario.CONTRASENA), rol: usuario.ROL, peaje: usuario.PEAJE
+  }));
+  return { ok: true, secret: secret, expiresAt: expiresAt, usuario: ctx.sesion.usuario, device: device };
+}
+
+function reanudarOffline_(datos) {
+  const usuario = buscarUsuario_(String(datos.usuario || '').trim());
+  const props = PropertiesService.getScriptProperties();
+  const key = clavePermisoOffline_(datos.usuario || '', datos.device || '');
+  let grant;
+  try { grant = JSON.parse(props.getProperty(key) || 'null'); } catch (_) {}
+  if (!usuario || !grant || grant.expiresAt <= Date.now() ||
+      grant.secretHash !== hashContrasena_(datos.secret || '') ||
+      grant.passwordHash !== hashContrasena_(usuario.CONTRASENA) ||
+      String(usuario.ESTADO).toUpperCase() !== 'ACTIVO' ||
+      usuario.ROL !== grant.rol || usuario.PEAJE !== grant.peaje ||
+      estadoContrasena_(usuario).requiereCambioContrasena) {
+    return { ok: false, code: 'OFFLINE_AUTH_REQUIRED', error: 'Ingrese de nuevo con internet para validar su cuenta. Los cambios pendientes se conservan.' };
+  }
+  const perfil = { usuario: usuario.USUARIO, nombre: usuario.NOMBRE, rol: usuario.ROL, peaje: usuario.PEAJE,
+    estado: usuario.ESTADO, email: usuario.EMAIL || '', telefono: usuario.TELEFONO || '', cargo: usuario.CARGO || '',
+    foto: obtenerFotoUsuarioPersistente_(usuario.USUARIO, usuario.FOTO || ''), loginAt: new Date().toISOString() };
+  return Object.assign({ ok: true, token: crearSesion_(perfil) }, perfil);
+}
+
+function versionPlanillaOffline_(row) {
+  return row ? String(dateValue_(row.updatedAt || row.createdAt)) : '';
+}
+
+function sincronizarPlanillaOffline_(datos) {
+  const ctx = obtenerContextoUsuario_(datos);
+  if (!ctx.ok) return ctx;
+  const actual = buscarUsuario_(ctx.sesion.usuario);
+  if (actual.ROL !== ctx.sesion.rol || actual.PEAJE !== ctx.sesion.peaje) {
+    return { ok: false, code: 'OFFLINE_AUTH_REQUIRED', error: 'Su cuenta cambió. Ingrese otra vez con internet antes de sincronizar.' };
+  }
+  if (['ADMIN', 'ADMINISTRADOR', 'PEAJE'].indexOf(String(actual.ROL).toUpperCase()) < 0) {
+    return { ok: false, error: 'Su rol no permite modificar planillas.' };
+  }
+  let operation;
+  try { operation = typeof datos.operation === 'string' ? JSON.parse(datos.operation) : datos.operation; } catch (_) {}
+  if (!operation || !/^[a-zA-Z0-9-]{16,80}$/.test(operation.operationId || '') ||
+      ['save', 'update', 'delete'].indexOf(operation.action) < 0) {
+    return { ok: false, error: 'Operación desconectada no válida.' };
+  }
+  const serialized = JSON.stringify(operation);
+  if (serialized.length > 40000) return { ok: false, error: 'La planilla supera el tamaño permitido para sincronización.' };
+  const hash = hashContrasena_(serialized);
+  const lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  let result, notify = false;
+  try {
+    const ss = getSpreadsheet_();
+    let log = ss.getSheetByName('OFFLINE_OPERACIONES');
+    if (!log) {
+      log = ss.insertSheet('OFFLINE_OPERACIONES');
+      log.appendRow(['operationId', 'usuario', 'hash', 'estado', 'resultado', 'fecha']);
+    }
+    const ids = log.getLastRow() > 1 ? log.getRange(2, 1, log.getLastRow() - 1, 1).getValues() : [];
+    let index = ids.findIndex(function (row) { return row[0] === operation.operationId; });
+    if (index >= 0) index += 1;
+    let desired;
+    if (index >= 0) {
+      const receipt = log.getRange(index + 1, 1, 1, 6).getValues()[0];
+      if (String(receipt[1]).toLowerCase() !== String(ctx.sesion.usuario).toLowerCase() || receipt[2] !== hash) {
+        return { ok: false, code: 'OFFLINE_CONFLICT', error: 'La identificación de esta operación ya fue utilizada con otros datos.' };
+      }
+      desired = JSON.parse(receipt[4]);
+      if (receipt[3] === 'DONE') return { ok: true, row: desired, replayed: true };
+    }
+    const sh = getPlanillasSheet_();
+    const input = operation.data || {};
+    const found = input.id ? findRowById_(sh, input.id) : null;
+    const current = found ? rowToObject_(sh, found.rowNumber) : null;
+    if (current && !puedeAccederPlanilla_(ctx.sesion, current)) return { ok: false, error: 'No tiene permiso sobre esta planilla.' };
+    // Si hubo corte después de escribir y antes de confirmar, reconocer la escritura exacta.
+    const alreadyApplied = desired && current && JSON.stringify(objectToRow_(current)) === JSON.stringify(objectToRow_(desired));
+    if (!alreadyApplied) {
+      if (operation.action === 'save' && current || operation.action !== 'save' && (!current || versionPlanillaOffline_(current) !== String(operation.baseVersion || ''))) {
+        return { ok: false, code: 'OFFLINE_CONFLICT', error: 'La planilla cambió en otro equipo. Revise los cambios antes de sincronizar.', current: current ? serializarRegistro_(current) : null };
+      }
+      if (!desired) {
+        if (operation.action === 'save' && !/^OFF-[a-f0-9-]{36}$/i.test(String(input.id || ''))) return { ok: false, error: 'Identificación local no válida.' };
+        const clean = normalizarDatos_(input);
+        if (operation.action === 'save' && operation.autoCode === true) clean.codigo = '';
+        if (!esUsuarioGlobal_(ctx.sesion)) clean.peaje = operation.action === 'save' ? ctx.sesion.peaje : current.peaje;
+        const now = new Date();
+        desired = operation.action === 'delete'
+          ? Object.assign({}, current, { estado: 'ANULADA', updatedAt: now, usuario: ctx.sesion.usuario })
+          : Object.assign({}, current || {}, clean, {
+              id: input.id, codigo: clean.codigo || (current && current.codigo) || generarCodigo_(clean.fecha, sh),
+              estado: clean.estado || 'APROBADO', createdAt: current ? current.createdAt : now, updatedAt: now, usuario: ctx.sesion.usuario
+            });
+        const valid = validarPlanilla_(desired);
+        if (!valid.ok) return valid;
+        const unique = validarCodigoUnico_(sh, desired, ctx.sesion);
+        if (!unique.ok) return unique;
+        desired = serializarRegistro_(desired);
+        if (JSON.stringify(desired).length > 45000) return { ok: false, error: 'Planilla demasiado grande para sincronización.' };
+        log.appendRow([operation.operationId, ctx.sesion.usuario, hash, 'PENDING', JSON.stringify(desired), now]);
+        index = log.getLastRow() - 1;
+        SpreadsheetApp.flush();
+      }
+      // Una ejecución anterior pudo detenerse después de reservar el resultado.
+      // Volver a verificar el código porque otro escritor pudo usarlo mientras tanto.
+      const unique = validarCodigoUnico_(sh, desired, ctx.sesion);
+      if (!unique.ok) return unique;
+      const values = objectToRow_(desired);
+      if (found) sh.getRange(found.rowNumber, 1, 1, ZIMA.HEADERS.length).setValues([values]);
+      else sh.appendRow(values);
+      SpreadsheetApp.flush();
+    }
+    log.getRange(index + 1, 4).setValue('DONE');
+    SpreadsheetApp.flush();
+    result = { ok: true, row: desired };
+    notify = !alreadyApplied;
+    try { registrarAuditoria_('OFFLINE_' + operation.action.toUpperCase(), desired, 'Sincronización ' + operation.operationId); } catch (e) { console.error(errorMessage_(e)); }
+  } finally { lock.releaseLock(); }
+  if (notify) result.notificacion = notificarCambioPlanilla_('SINCRONIZACION', result.row, ctx.sesion, 'Planilla sincronizada desde modo sin conexión.');
+  return result;
+}
 
 function configurarSistemaUsuarios() {
 

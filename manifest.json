@@ -1,45 +1,11 @@
 {
-  "name": "UJECA Congreso 2026",
-  "short_name": "UJECA 2026",
-  "description": "App movil del Congreso Trascendentales 2026.",
-  "start_url": "index.html",
+  "name": "ZIMA 360 · Planillas",
+  "short_name": "ZIMA 360",
+  "description": "Gestión de planillas con trabajo sin conexión y sincronización de pendientes.",
+  "start_url": "login.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#f6f1ee",
-  "theme_color": "#4b0003",
-  "icons": [
-    {
-      "src": "img/logo.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "img/logo.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Inscripcion",
-      "short_name": "Registro",
-      "url": "form.html",
-      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Consultar deuda",
-      "short_name": "Deuda",
-      "url": "consulta-deuda.html",
-      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Pagos",
-      "short_name": "Pagos",
-      "url": "pasarelapago.html",
-      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
-    }
-  ]
+  "background_color": "#ffffff",
+  "theme_color": "#143b48",
+  "icons": [{ "src": "img/logo-zima.png", "sizes": "any", "type": "image/png", "purpose": "any" }]
 }

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
 
 <head>
@@ -833,16 +833,18 @@
       <div class="session-actions"><button class="session-btn" type="button" onclick="cerrarModalSesion()">Cancelar</button><button class="session-btn logout" type="button" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Cerrar sesi&oacute;n</button></div>
     </div>
   </div>
+  <script src="zima-offline.js"></script>
   <script src="zima-ui.js"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
     function onlineRun(fn, arg) { return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg)); }
     function leerSesionLocal(){ const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','usuarioSesion','usuario','ZIMA_USER']; for(const storage of [localStorage,sessionStorage]){ for(const k of keys){ try{ const raw=storage.getItem(k); if(!raw || raw==='ACTIVA') continue; if(raw.trim().startsWith('{')) return JSON.parse(raw); return {usuario:raw}; }catch(e){} } } return {}; }
     function zimaSessionParams(){ const s=leerSesionLocal(); const token=s.token||s.sessionToken||localStorage.getItem('ZIMA_SESSION_TOKEN')||localStorage.getItem('ZIMA360_SESSION_TOKEN')||localStorage.getItem('ZIMA_TOKEN')||sessionStorage.getItem('ZIMA_SESSION_TOKEN')||''; return {usuario:s.usuario||s.username||s.user||'',rol:s.rol||s.role||'',peaje:s.peaje||s.office||'',token:token,sessionToken:token}; }
     function zimaJsonp(params={}){ return new Promise((resolve,reject)=>{ const cb='__zima_historial_'+Date.now()+'_'+Math.random().toString(36).slice(2); const script=document.createElement('script'); const q=new URLSearchParams({...params,callback:cb}); const timer=setTimeout(()=>{cleanup();reject(new Error('Tiempo agotado al conectar con el Web App.'));},20000); function cleanup(){clearTimeout(timer);try{delete window[cb];}catch(e){window[cb]=undefined;}script.remove();} window[cb]=data=>{cleanup();resolve(data);}; script.onerror=()=>{cleanup();reject(new Error('No fue posible acceder al Web App.'));}; script.src=API_URL+'?'+q.toString(); document.head.appendChild(script); }); }
     async function zimaFetchGet(params={}){ const r=await fetch(API_URL+'?'+new URLSearchParams(params),{method:'GET',redirect:'follow',cache:'no-store',headers:{'Accept':'application/json'}}); if(!r.ok)throw Error('HTTP '+r.status); const text=await r.text(); return JSON.parse(text); }
-    async function apiGet(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiGet', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); try { return await zimaFetchGet(payload); } catch(fetchError) { return zimaJsonp(payload); } }
+    async function apiGet(action,params={}) { if(window.ZimaOffline)return ZimaOffline.request(action,params,false,()=>remoteApiGet(action,params)); return remoteApiGet(action,params); }
+    async function remoteApiGet(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiGet', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); try { return await zimaFetchGet(payload); } catch(fetchError) { return zimaJsonp(payload); } }
     const SESSION = (() => { let data = null; try { data = JSON.parse(localStorage.getItem('ZIMA360_SESION') || localStorage.getItem('ZIMA_SESION') || sessionStorage.getItem('ZIMA360_SESION') || sessionStorage.getItem('ZIMA_SESION') || 'null'); } catch(e) {} return { user:data?.usuario || data?.user || 'Usuario ZIMA', name:data?.nombre || data?.name || data?.usuario || 'Usuario ZIMA', role:data?.rol || data?.role || 'USUARIO', peaje:data?.peaje || data?.office || 'Administraci\u00f3n central', foto:data?.foto || data?.FOTO || data?.photo || '' }; })();
     function iniciales(name){ return String(name||'ZU').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'ZU'; }
     function pintarAvatar(el,foto,nombre){ if(!el)return; const src=String(foto||'').trim(); const esFuenteImagen=/^(data:image\/|https?:\/\/|blob:)/i.test(src); if(src&&esFuenteImagen){ el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'">'; const image=el.querySelector('img'); if(image)image.addEventListener('error',function(){ el.textContent=iniciales(nombre); },{once:true}); }else{ el.textContent=iniciales(nombre); } }
@@ -862,7 +864,8 @@
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarEdicion();cerrarMenu();}});
     function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function normalizarEstado(v) { const e = String(v || '').trim().toUpperCase(); return e === 'ENTREGADO' ? 'ENTREGADA' : e } function statusClass(v) { const e = normalizarEstado(v); return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA', 'ANULADA'].includes(e) ? e : 'BORRADOR' }
     function textoNotificacion(r){ if(!r||!r.notificacion)return ''; if(r.notificacion.enviado)return ' Correo enviado a: '+esc(r.notificacion.destinatarios||'')+'.'; return ' No se envió correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.'; }
-    async function apiPost(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
+    async function apiPost(action,params={}) { if(window.ZimaOffline)return ZimaOffline.request(action,params,true,()=>remoteApiPost(action,params)); return remoteApiPost(action,params); }
+    async function remoteApiPost(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
     let currentEditId = '';
     function editar(id) {
       if (!id) return;

@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const path = require('node:path');
-const source = fs.readFileSync(path.join(__dirname, '../zima-ui.js'), 'utf8');
+let source = fs.readFileSync(path.join(__dirname, '../zima-ui.js'), 'utf8');
 const start = source.indexOf('  function installHolidayTheme()');
 const end = source.indexOf('  window.ZimaUI =', start);
 const boundary = Date.parse('2026-10-24T06:00:00-05:00');
@@ -18,11 +18,20 @@ win.self = win.top = win;
 const doc = {
   createElement: () => ({setAttribute() {}, remove() { removed++; }}),
   head: {appendChild(el) { added.push(el); }},
-  body: {classList: {add(value) { classes.push(value); }, remove(value) { classes.splice(classes.indexOf(value), 1); }}, appendChild(el) { added.push(el); }},
+  body: {dataset: {}, classList: {add(value) { classes.push(value); }, remove(value) { classes.splice(classes.indexOf(value), 1); }}, appendChild(el) { added.push(el); }},
   querySelectorAll: selector => selector.startsWith('#zimaHolidayStyle') ? added : [],
   addEventListener(type, fn) { events[type] = fn; }
 };
+// La configuración actual deja el tema pausado; comprobar que no instala adornos ni temporizadores.
 vm.runInNewContext(source.slice(start, end) + '\ninstallHolidayTheme();', {
+  window: win, document: doc, setTimeout() { throw Error('Un tema pausado no debe programarse.'); }
+});
+assert.equal(added.length, 0);
+assert.equal(classes.length, 0);
+console.log('OK: tema pausado sin adornos ni temporizadores.');
+// Mantener las comprobaciones del calendario para una futura reactivación explícita.
+const enabledSource = source.slice(start, end).replace('const holidayThemeEnabled = false;', 'const holidayThemeEnabled = true;');
+vm.runInNewContext(enabledSource + '\ninstallHolidayTheme();', {
   window: win, document: doc,
   Date: {parse: Date.parse, now: () => now},
   setTimeout(fn, ms) { timer = fn; delay = ms; }, clearTimeout() {}
@@ -42,7 +51,7 @@ added.length = 0;
 classes.length = 0;
 const preview = /const previewUntil = Date.parse\('([^']+)'\)/.exec(source)[1];
 now = Date.parse(preview) - 1;
-vm.runInNewContext(source.slice(start, end) + '\ninstallHolidayTheme();', {
+vm.runInNewContext(enabledSource + '\ninstallHolidayTheme();', {
   window: win, document: doc,
   Date: {parse: Date.parse, now: () => now},
   setTimeout(fn, ms) { timer = fn; delay = ms; }, clearTimeout() {}
