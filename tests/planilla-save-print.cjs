@@ -14,7 +14,8 @@ function setup() {
     if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', disabled: false, inert: false, setAttribute() {} });
     return elements.get(id);
   };
-  const actions = ['saveBtn', 'printBtn', 'cancelBtn'].map(el);
+  const actions = ['saveBtn', 'printBtn', 'cancelBtn', 'newBtn'].map(el);
+  const navigation = [];
   const messages = [];
   const calls = [];
   const dialogs = [];
@@ -23,6 +24,7 @@ function setup() {
   let printError = false;
   const context = vm.createContext({
     window: {}, document: { querySelectorAll: () => actions },
+    go: page => navigation.push(page),
     $: el, msg: el('msg'), embeddedEdit: false,
     actualizar() {}, actualizarAccionesAdmin() {},
     syncRows: async () => [],
@@ -44,17 +46,21 @@ function setup() {
     }
   });
   vm.runInContext('let id=null; let estadoActual="APROBADO";\n' + source + printSource, context);
-  return { context, el, calls, dialogs, messages, finish: value => finish(value), printed: () => printed, failPrint: () => { printError = true; } };
+  return { context, el, calls, dialogs, messages, navigation, finish: value => finish(value), printed: () => printed, failPrint: () => { printError = true; } };
 }
 const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APROBADO' } };
 (async () => {
   const success = setup();
+  success.context.nuevaPlanilla();
+  assert.equal(success.navigation.length, 0);
   const saving = success.context.guardar();
   await new Promise(setImmediate);
   assert.equal(success.calls.length, 1);
   assert.equal(success.printed(), 0);
   assert.equal(success.el('doc').inert, true);
   assert.equal(success.el('saveBtn').disabled, true);
+  success.context.nuevaPlanilla();
+  assert.equal(success.navigation.length, 0);
   await success.context.guardar();
   assert.equal(success.calls.length, 1);
   success.finish(saved);
@@ -71,6 +77,10 @@ const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APR
   // Reimprimir no debe volver a guardar ni crear otra planilla.
   success.context.imprimirDesdeVistaPrevia = async () => {};
   await success.context.imprimir();
+  assert.equal(success.calls.length, 1);
+  assert.equal(vm.runInContext('id', success.context), '123');
+  success.context.nuevaPlanilla();
+  assert.deepEqual(success.navigation, ['planilla.html']);
   assert.equal(success.calls.length, 1);
   assert.equal(vm.runInContext('id', success.context), '123');
 

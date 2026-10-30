@@ -981,6 +981,10 @@ body.planilla-page .print-preview-backdrop{
         <i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i>
         Guardar
        </button>
+       <button class="btn" id="newBtn" type="button" onclick="nuevaPlanilla()" style="display:none">
+        <i class="bi bi-file-earmark-plus" aria-hidden="true"></i>
+        Limpiar y crear nueva
+       </button>
        <button class="btn btn-danger" id="annulBtn" type="button" onclick="anularPlanilla()" style="display:none">
         <i class="bi bi-x-octagon" aria-hidden="true"></i>
         Anular
@@ -1437,6 +1441,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         saveBtn.innerHTML='<i class="bi bi-cloud-arrow-up-fill" aria-hidden="true"></i> Guardar';
       }
       if($('printBtn'))$('printBtn').style.display=editando?'inline-flex':'none';
+      if($('newBtn'))$('newBtn').style.display=(editando && !embeddedEdit)?'inline-flex':'none';
       if(annulBtn){
         annulBtn.style.display=(editando && puedeGestionarPlanillas() && estadoActual!=='ANULADA')?'inline-flex':'none';
       }
@@ -1637,6 +1642,11 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       }
     }
 
+    function nuevaPlanilla(){
+      if(!id || embeddedEdit || window.__zimaSavingPlanilla || window.__zimaPrintingPlanilla)return;
+      go('planilla.html');
+    }
+
     async function guardar(){
       if(window.__zimaSavingPlanilla || window.__zimaPrintingPlanilla)return;
       actualizar();
@@ -1702,7 +1712,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           const irAlHistorial=await ZimaUI.confirm({
             tone:'success',danger:false,
             title:editando?'Cambios guardados':'Planilla guardada',
-            message:'Puede consultar su planilla en el historial. Si necesita corregir algo, edite la planilla existente y ajuste sus datos; no necesita crear una nueva.',
+            message:'Puede consultar su planilla en el historial. Para registrar otra, cierre este aviso y use «Limpiar y crear nueva». Si necesita corregir esta planilla, edite sus datos; no necesita crear una nueva.',
             detail:'Código de planilla: '+String(r.row.codigo || ''),
             confirmText:'Ir al historial',cancelText:'Continuar aquí'
           });
