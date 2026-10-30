@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
-  <script src="assets/vendor/lucide.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="stylesheet" href="zima-ui-modern.css">
   <style>
     :root{--side:293px;--navy:#101827;--gold:#f7c600;--bg:#f5f7fa;--ink:#172235;--muted:#6d7b8d;--line:#e4e8ee;--white:#fff;--green:#15803d;--red:#b42318}
@@ -376,10 +376,9 @@
     </div>
   </div>
 
-  <script src="zima-offline.js"></script>
   <script src="zima-ui.js"></script>
   <script>
-    const API_URL='https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec';
+    const API_URL='https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
     try{localStorage.setItem('ZIMA_API_URL',API_URL);}catch(e){}
     const $=id=>document.getElementById(id);
     let allRows=[];
@@ -461,10 +460,6 @@
     }
 
     async function apiGet(action,params={}){
-      if(window.ZimaOffline)return ZimaOffline.request(action,params,false,()=>remoteApiGet(action,params));
-      return remoteApiGet(action,params);
-    }
-    async function remoteApiGet(action,params={}){
       const payload={action,...zimaSessionParams(),...params};
       if(window.google&&google.script&&google.script.run)return onlineRun('apiGet',payload);
       try{
@@ -477,10 +472,6 @@
     }
 
     async function apiPost(action,params={}){
-      if(window.ZimaOffline)return ZimaOffline.request(action,params,true,()=>remoteApiPost(action,params));
-      return remoteApiPost(action,params);
-    }
-    async function remoteApiPost(action,params={}){
       const payload={action,...zimaSessionParams(),...params};
       if(window.google&&google.script&&google.script.run)return onlineRun('apiPost',payload);
       try{

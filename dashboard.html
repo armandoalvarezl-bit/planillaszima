@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <script src="assets/vendor/lucide.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
 <style>
 
 /* Identidad institucional ZIMA 360 + ANI */
@@ -1202,11 +1202,8 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     </div>
   </div>
 
-  <script src="zima-offline.js"></script>
   <script src="zima-ui.js"></script>
   <script src="zima-updates.js"></script>
-  <link rel="stylesheet" href="zima-offline-tutorial.css">
-  <script src="zima-offline-tutorial.js"></script>
   <script>
     if (window.lucide && typeof lucide.createIcons === 'function') {
       lucide.createIcons({attrs:{"stroke-width":1.9}});
@@ -1214,7 +1211,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     /* Web App ACTUAL de ZIMA 360.
        Se fuerza esta URL para evitar que el navegador reutilice una URL antigua guardada. */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
 
     /* =========================================================
@@ -1399,10 +1396,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     }
 
     async function apiGet(action,params={}){
-      if(window.ZimaOffline)return ZimaOffline.request(action,params,false,()=>remoteApiGet(action,params));
-      return remoteApiGet(action,params);
-    }
-    async function remoteApiGet(action,params={}){
       const payload={action:String(action||'config'),...params};
 
       /*
@@ -1472,10 +1465,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     }
 
     async function apiPost(action,params={}){
-      if(window.ZimaOffline)return ZimaOffline.request(action,params,true,()=>remoteApiPost(action,params));
-      return remoteApiPost(action,params);
-    }
-    async function remoteApiPost(action,params={}){
       const payload={action:String(action||'save'),...params};
 
       if(window.google && google.script && google.script.run){
@@ -1850,7 +1839,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       const list=document.getElementById('notificationList');
       if(!list) return;
       const rows=Array.isArray(data)?data:[];
-      setText('notificationStatus',status || (rows.length?'Actualizado':'Sin datos'));
+      setText('notificationStatus', 'Novedades');
       list.innerHTML=[
         ...(window.ZimaUpdates?[{icon:'bell-ring',title:ZimaUpdates.release.title,text:ZimaUpdates.release.message}]:[])
       ].map(item=>`<div class="notification-item" role="menuitem">
@@ -1886,12 +1875,6 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       renderNotifications([], 'Listo');
     }
 
-    async function mostrarGuiaIngreso(){
-      if(!tieneSesion())return;
-      if(window.ZimaOfflineTutorial)await ZimaOfflineTutorial.showOnce(SESSION.user);
-      if(window.ZimaUpdates)await ZimaUpdates.announce(SESSION.user);
-    }
-
     function cerrarBienvenidaIngreso(){
       const modal=document.getElementById('zimaWelcomeModal');
       if(!modal || !modal.classList.contains('open')) return;
@@ -1899,7 +1882,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden','true');
       document.body.style.overflow='';
-      if(tieneSesion()) mostrarGuiaIngreso();
+      if(window.ZimaUpdates && tieneSesion()) ZimaUpdates.announce(SESSION.user);
     }
 
     function mostrarBienvenidaIngreso(){
@@ -2171,7 +2154,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     setupPerfilModal();
     if(setupSession()){
       mostrarBienvenidaIngreso();
-      if(!document.getElementById('zimaWelcomeModal').classList.contains('open')) mostrarGuiaIngreso();
+      if(window.ZimaUpdates && !document.getElementById('zimaWelcomeModal').classList.contains('open')) ZimaUpdates.announce(SESSION.user);
       refrescarFotoPerfil();
       cargar();
     }

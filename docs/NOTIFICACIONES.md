@@ -1,7 +1,5 @@
 # Avisos de actualización y sonido
 
-El aviso vigente del 26 de octubre de 2026 explica el modo sin internet, la preparación automática y la sincronización de pendientes. Reemplaza el anuncio anterior de ZimaTicket; se retiraron el saludo navideño de las notificaciones y la imagen antigua de renovación del login. La campana muestra las novedades; los resúmenes de cantidad de planillas, estados y valor administrado permanecen en el dashboard y no se incluyen como notificaciones.
-
 Publicar `dashboard.html` y `zima-updates.js` junto con los demás archivos.
 El panel muestra las novedades a todos los roles al entrar, después de la
 bienvenida. También pueden consultarse desde la campana.

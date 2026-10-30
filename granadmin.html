@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="img/logo.png">
   <title>ZIMA 360 - Gran Administrador</title>
-  <script src="assets/vendor/lucide.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     :root{--navy:#101827;--top:#003747;--gold:#f7c600;--line:#e4e8ee;--bg:#f5f7fa;--ink:#172235;--muted:#6d7b8d;--green:#15803d;--red:#b42318;--white:#fff}
     *{box-sizing:border-box}
@@ -362,10 +362,9 @@
     </main>
   </div>
 
-  <script src="zima-offline.js"></script>
   <script src="zima-ui.js"></script>
   <script>
-    const API_URL='https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec';
+    const API_URL='https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
     let USUARIOS=[];
     let PEAJES=[];
 
@@ -541,10 +540,6 @@
       });
     }
     async function apiGet(action,params={}){
-      if(window.ZimaOffline)return ZimaOffline.request(action,params,false,()=>remoteApiGet(action,params));
-      return remoteApiGet(action,params);
-    }
-    async function remoteApiGet(action,params={}){
       const payload=sessionPayload({action,...params});
       if(window.google&&google.script&&google.script.run) return onlineRun('apiGet',payload);
       const query=new URLSearchParams(payload);
@@ -621,10 +616,6 @@
       });
     }
     async function apiPost(action,params={}){
-      if(window.ZimaOffline)return ZimaOffline.request(action,params,true,()=>remoteApiPost(action,params));
-      return remoteApiPost(action,params);
-    }
-    async function remoteApiPost(action,params={}){
       const payload=sessionPayload({action,...params});
       if(window.google&&google.script&&google.script.run){
         if(action==='crearusuario') return onlineRun('crearUsuario',payload);

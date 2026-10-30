@@ -2,9 +2,9 @@
   'use strict';
   // Cambiar id y mensaje al publicar una nueva actualización.
   const release = {
-    id: '2026-10-26.1',
-    title: 'Tu operación continúa sin internet',
-    message: 'Al ingresar con internet, el sistema prepara y actualiza automáticamente una copia en este equipo, sin avisos constantes. Si se pierde la conexión, puedes consultar, crear, editar e imprimir planillas; los pendientes se envían al reconectar con la sesión activa. El tutorial explica cómo usarlo. Usa el mismo navegador y no borres sus datos mientras tengas pendientes.'
+    id: '2026-10-29.1',
+    title: 'Novedades de ZIMA 360',
+    message: 'Renovamos la carga al iniciar sesión con una animación en los colores de ZIMA. En pantallas pequeñas, el menú se abre desde el botón de tres líneas y muestra los nombres de cada opción. Retiramos la decoración navideña para volver al diseño habitual.'
   };
   let audioContext;
   let pendingSound = false;

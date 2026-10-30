@@ -52,19 +52,23 @@ function setup(holiday = false, now = Date.parse('2026-10-24T06:00:00-05:00')) {
   assert.equal(first.tones(),2);
   first.api.observe([{...rows[0],updatedAt:'hoy'}]);
   assert.equal(first.tones(),4);
-  const preview = setup(true, Date.parse('2026-10-23T16:40:00-05:00'));
-  await preview.api.announce('navidad');
-  assert.equal(preview.dialogs[0].title, preview.api.release.title, 'The current release replaces old seasonal announcements');
-  const holiday = setup(true);
-  await holiday.api.announce('navidad');
-  assert.equal(holiday.dialogs.length, 0, 'No repeat or old Christmas welcome');
-  await holiday.api.announce('navidad');
-  assert.equal(holiday.dialogs.filter(d=>d.tone==='holiday').length, 0);
-  const returnVisit = setup(true);
-  await returnVisit.api.announce('navidad');
-  assert.equal(returnVisit.dialogs.filter(d=>d.tone==='holiday').length, 0);
-  assert.match(first.api.release.message, /sin avisos constantes/);
-  assert.doesNotMatch(first.api.release.message, /Ya está disponible ZimaTicket/);
+  const previousTheme = setup(true);
+  await previousTheme.api.announce('usuario-tema-anterior');
+  assert.equal(previousTheme.dialogs.length, 1);
+  assert.equal(previousTheme.dialogs[0].title, previousTheme.api.release.title);
+  assert.equal(previousTheme.dialogs[0].tone, undefined, 'Solo muestra novedades generales aunque quede una clase antigua');
+  await previousTheme.api.announce('usuario-tema-anterior');
+  assert.equal(previousTheme.dialogs.length, 1);
+  const dashboard=fs.readFileSync(path.join(root,'dashboard.html'),'utf8');
+  const render=dashboard.slice(dashboard.indexOf('    function renderNotifications('),dashboard.indexOf('    function setupNotifications('));
+  const list={innerHTML:''};
+  vm.runInNewContext(render+"\nrenderNotifications([{total:100,estado:'CERRADA'}], 'Actualizado');",{
+    document:{getElementById:()=>list},window:{ZimaUpdates:first.api},ZimaUpdates:first.api,
+    setText(){},esc:value=>String(value)
+  });
+  assert(list.innerHTML.includes(first.api.release.message));
+  assert(!/Planillas sincronizadas|Estados por revisar|Valor administrado|Ya está disponible ZimaTicket/.test(list.innerHTML));
+  assert.equal((list.innerHTML.match(/role="menuitem"/g)||[]).length,1,'Solo presenta los cambios recientes');
   for(const [,script] of fs.readFileSync(path.join(root,'dashboard.html'),'utf8').matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) new vm.Script(script);
   console.log('OK: avisos por usuario y versión, sonido tras interacción y nuevos cambios sin repetir al sincronizar.');
 })().catch(error=>{console.error(error);process.exitCode=1;});

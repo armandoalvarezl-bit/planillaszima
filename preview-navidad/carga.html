@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZIMA 360 · Prueba de carga</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Arial, sans-serif; background: #fcfcf8; }
+    iframe { display: block; width: 100%; height: calc(100dvh - 100px); border: 0; }
+    nav { min-height: 100px; padding: 12px; text-align: center; border-top: 1px solid #e4e8e6; }
+    p { margin: 0 0 10px; font-size: 12px; color: #637078; }
+    button, a { display: inline-block; font: 13px Arial; padding: 9px 14px; margin: 2px; border-radius: 20px; border: 1px solid #003747; color: #003747; background: transparent; cursor: pointer; text-decoration: none; }
+    button:first-of-type { background: #003747; color: white; }
+  </style>
+</head>
+<body>
+  <iframe src="../login.html" title="Vista previa de la carga de ZIMA" id="preview"></iframe>
+  <nav>
+    <p>Prueba visual local · No consulta el servidor ni inicia sesión.</p>
+    <button type="button" onclick="mostrar(false)">Ver carga</button>
+    <button type="button" onclick="mostrar(true)">Ver bienvenida</button>
+    <a href="../login.html">Volver al login</a>
+  </nav>
+  <script>
+    const preview = document.getElementById('preview');
+    function mostrar(confirmado) {
+      const w = preview.contentWindow;
+      w.mostrarCarga(w.document.getElementById('loginButton'), w.document.getElementById('loginForm'), true);
+      if (confirmado) w.mostrarAccesoCorrecto({nombre: 'Equipo ZIMA'});
+    }
+    preview.addEventListener('load', () => mostrar(false));
+  </script>
+</body>
+</html>

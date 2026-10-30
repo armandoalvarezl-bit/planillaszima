@@ -8,3 +8,79 @@ footer .menu-edition{margin-top:0}
 footer .menu-country{color:#687e7b}
 footer .menu-version{border-color:#dce6e2;background:#edf3f0;color:#4e7267}
 @media(max-width:540px){footer{flex-wrap:wrap;gap:14px}footer .menu-edition{flex-wrap:wrap}footer .menu-country{max-width:none;text-align:left}}
+
+
+/* Shared collapsible navigation for compact screens. */
+.zima-menu-toggle, .zima-menu-close, .zima-nav-backdrop { display: none; }
+@media (max-width: 1180px) {
+  body.zima-responsive-nav .sidebar {
+    position: fixed !important; inset: 0 auto 0 0 !important;
+    width: min(293px, calc(100vw - 40px)) !important;
+    height: 100dvh !important; padding: 20px 16px !important;
+    display: flex !important; flex-direction: column !important;
+    background: #fff !important; color: #172d36 !important;
+    border: 0 !important; z-index: 1002 !important;
+    overflow-y: auto; overscroll-behavior: contain;
+    transform: translateX(-105%) !important; visibility: hidden;
+    transition: transform .2s ease, visibility .2s;
+  }
+  body.zima-responsive-nav.zima-nav-open { overflow: hidden; }
+  body.zima-responsive-nav.zima-nav-open .sidebar {
+    transform: translateX(0) !important; visibility: visible;
+    box-shadow: 12px 0 36px #102a3433;
+  }
+  body.zima-responsive-nav .main,
+  body.zima-responsive-nav .main-content {
+    margin-left: 0 !important; width: 100% !important; padding-bottom: 0 !important;
+  }
+  body.zima-responsive-nav .sidebar .main-nav,
+  body.zima-responsive-nav .sidebar .nav {
+    display: flex !important; flex-direction: column !important;
+    width: 100% !important; height: auto !important; gap: 4px !important;
+  }
+  body.zima-responsive-nav .sidebar .nav-item,
+  body.zima-responsive-nav .sidebar .nav a {
+    flex: 0 0 auto !important; flex-direction: row !important;
+    justify-content: flex-start !important; align-items: center;
+    min-height: 48px !important; padding: 12px 14px !important;
+    gap: 12px !important; color: #253b43 !important;
+    background: transparent !important; border: 0 !important;
+    text-align: left; border-radius: 8px !important;
+  }
+  body.zima-responsive-nav .sidebar .nav-item.active,
+  body.zima-responsive-nav .sidebar .nav a.active {
+    background: #edf4f3 !important; box-shadow: inset 3px 0 #f7c600 !important;
+  }
+  body.zima-responsive-nav .sidebar .nav-item > span,
+  body.zima-responsive-nav .sidebar .nav a > span {
+    display: block !important; font-size: 13px !important; line-height: 1.4;
+  }
+  body.zima-responsive-nav .sidebar .nav-icon,
+  body.zima-responsive-nav .sidebar .nav a i {
+    color: inherit !important; flex: 0 0 22px !important;
+    width: 22px !important; height: 22px !important;
+  }
+  body.zima-responsive-nav .zima-menu-toggle,
+  body.zima-responsive-nav .zima-menu-close {
+    display: inline-flex !important; align-items: center; justify-content: center;
+    flex: 0 0 42px; width: 42px; height: 42px; padding: 9px;
+    border: 1px solid #cbd8dc; border-radius: 8px;
+    color: #003747 !important; background: #fff !important; cursor: pointer;
+  }
+  .zima-menu-toggle svg, .zima-menu-close svg { width: 22px; height: 22px; }
+  body.zima-responsive-nav .zima-menu-close { align-self: flex-end; margin-bottom: 12px; }
+  body.zima-responsive-nav .zima-menu-toggle { margin-right: 10px; }
+  body.zima-responsive-nav .zima-nav-backdrop {
+    display: block; position: fixed; inset: 0; border: 0; padding: 0;
+    background: #102a3470; z-index: 1001; cursor: pointer;
+  }
+  body.zima-responsive-nav .zima-nav-backdrop[hidden],
+  body.zima-responsive-nav .menu-backdrop { display: none !important; }
+  .zima-menu-toggle:focus-visible, .zima-menu-close:focus-visible { outline: 3px solid #f7c600; outline-offset: 3px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.zima-responsive-nav .sidebar { transition: none !important; }
+}
+@media print {
+  .zima-menu-toggle, .zima-menu-close, .zima-nav-backdrop { display: none !important; }
+}

@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 
 <head>
@@ -668,7 +668,7 @@
   .edit-dialog-subtitle{display:none}
 }
 @media(max-width:700px){
-  .sidebar{inset:0 auto 0 0!important;width:293px!important;height:100vh!important;padding:28px 16px 18px!important;flex-direction:column!important;transform:translateX(-105%);transition:transform .22s ease;box-shadow:18px 0 45px rgba(0,0,0,.22);z-index:1002!important}
+  .sidebar{inset:0 auto 0 0!important;width:293px!important;height:100vh!important;padding:28px 16px 18px!important;flex-direction:column!important;transform:translateX(-105%);transition:transform .22s ease;box-shadow:18px 0 45px rgba(0,0,0,.22);z-index:1002}
   .sidebar.mobile-open{transform:translateX(0)}
   .sidebar .brand-block,.sidebar .branch-card,.sidebar .sidebar-bottom{display:flex!important}
   .sidebar .brand-block{justify-content:flex-start!important;padding:0 6px 24px!important}
@@ -712,10 +712,10 @@
 
   <nav class="main-nav" aria-label="Navegaci&oacute;n principal">
     <div class="nav-title">MEN&Uacute; PRINCIPAL</div>
-    <a class="nav-item" href="dashboard.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span>Inicio</span></a>
-    <a class="nav-item" href="planilla.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M12 12v6M9 15h6"/></svg></span><span>Nueva planilla</span></a>
-    <a class="nav-item active" href="historial.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11a9 9 0 1 1 2.6 7M3 3v8h8M12 7v5l3 2"/></svg></span><span>Historial</span></a>
-    <a class="nav-item" href="informes.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="18" rx="2"/><rect x="9" y="2" width="6" height="4" rx="1"/><path d="M9 17v-3M12 17v-6M15 17v-4"/></svg></span><span>Informes</span></a>
+    <a class="nav-item" href="dashboard.html"><span class="nav-icon"><i class="bi bi-grid-3x3-gap"></i></span><span>Inicio</span></a>
+    <a class="nav-item" href="planilla.html"><span class="nav-icon"><i class="bi bi-file-earmark-plus"></i></span><span>Nueva planilla</span></a>
+    <a class="nav-item active" href="historial.html"><span class="nav-icon"><i class="bi bi-clock-history"></i></span><span>Historial</span></a>
+    <a class="nav-item" href="informes.html"><span class="nav-icon"><i class="bi bi-clipboard-data"></i></span><span>Informes</span></a>
         <a class="nav-item" href="soporte.html"><span class="nav-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2M4 12H3v6h4v-6H4Zm16 0h1v6h-4v-6h3Zm0 6v1a2 2 0 0 1-2 2h-4M10 21h4"/></svg></span><span>ZimaTicket</span></a>
   </nav>
 
@@ -726,7 +726,7 @@
 </aside>
     <main class="main">
       <header class="top">
-        <button class="menu-toggle" id="menuToggle" type="button" title="Abrir menú" aria-label="Abrir menú" aria-expanded="false" onclick="alternarMenu()"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+        <button class="menu-toggle" id="menuToggle" type="button" title="Abrir menú" aria-label="Abrir menú" aria-expanded="false" onclick="alternarMenu()"><i class="bi bi-list"></i></button>
         <div class="breadcrumb"><b>Historial</b> / Planillas registradas</div>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px"><div class="status"><i class="bi bi-circle-fill"></i> <span id="syncLabel">Conectado</span></div><div class="session-user"><div class="avatar" id="headerAvatar">ZU</div><div class="user-meta"><strong id="headerUser">Usuario ZIMA</strong><span id="headerPeaje">Administraci&oacute;n central</span></div><button class="logout-btn zima-logout-button" type="button" title="Cerrar sesi&oacute;n" aria-label="Cerrar sesi&oacute;n" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i></button></div></div>
       </header>
@@ -833,18 +833,16 @@
       <div class="session-actions"><button class="session-btn" type="button" onclick="cerrarModalSesion()">Cancelar</button><button class="session-btn logout" type="button" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Cerrar sesi&oacute;n</button></div>
     </div>
   </div>
-  <script src="zima-offline.js"></script>
   <script src="zima-ui.js"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
     function onlineRun(fn, arg) { return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg)); }
     function leerSesionLocal(){ const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','usuarioSesion','usuario','ZIMA_USER']; for(const storage of [localStorage,sessionStorage]){ for(const k of keys){ try{ const raw=storage.getItem(k); if(!raw || raw==='ACTIVA') continue; if(raw.trim().startsWith('{')) return JSON.parse(raw); return {usuario:raw}; }catch(e){} } } return {}; }
     function zimaSessionParams(){ const s=leerSesionLocal(); const token=s.token||s.sessionToken||localStorage.getItem('ZIMA_SESSION_TOKEN')||localStorage.getItem('ZIMA360_SESSION_TOKEN')||localStorage.getItem('ZIMA_TOKEN')||sessionStorage.getItem('ZIMA_SESSION_TOKEN')||''; return {usuario:s.usuario||s.username||s.user||'',rol:s.rol||s.role||'',peaje:s.peaje||s.office||'',token:token,sessionToken:token}; }
     function zimaJsonp(params={}){ return new Promise((resolve,reject)=>{ const cb='__zima_historial_'+Date.now()+'_'+Math.random().toString(36).slice(2); const script=document.createElement('script'); const q=new URLSearchParams({...params,callback:cb}); const timer=setTimeout(()=>{cleanup();reject(new Error('Tiempo agotado al conectar con el Web App.'));},20000); function cleanup(){clearTimeout(timer);try{delete window[cb];}catch(e){window[cb]=undefined;}script.remove();} window[cb]=data=>{cleanup();resolve(data);}; script.onerror=()=>{cleanup();reject(new Error('No fue posible acceder al Web App.'));}; script.src=API_URL+'?'+q.toString(); document.head.appendChild(script); }); }
     async function zimaFetchGet(params={}){ const r=await fetch(API_URL+'?'+new URLSearchParams(params),{method:'GET',redirect:'follow',cache:'no-store',headers:{'Accept':'application/json'}}); if(!r.ok)throw Error('HTTP '+r.status); const text=await r.text(); return JSON.parse(text); }
-    async function apiGet(action,params={}) { if(window.ZimaOffline)return ZimaOffline.request(action,params,false,()=>remoteApiGet(action,params)); return remoteApiGet(action,params); }
-    async function remoteApiGet(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiGet', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); try { return await zimaFetchGet(payload); } catch(fetchError) { return zimaJsonp(payload); } }
+    async function apiGet(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiGet', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); try { return await zimaFetchGet(payload); } catch(fetchError) { return zimaJsonp(payload); } }
     const SESSION = (() => { let data = null; try { data = JSON.parse(localStorage.getItem('ZIMA360_SESION') || localStorage.getItem('ZIMA_SESION') || sessionStorage.getItem('ZIMA360_SESION') || sessionStorage.getItem('ZIMA_SESION') || 'null'); } catch(e) {} return { user:data?.usuario || data?.user || 'Usuario ZIMA', name:data?.nombre || data?.name || data?.usuario || 'Usuario ZIMA', role:data?.rol || data?.role || 'USUARIO', peaje:data?.peaje || data?.office || 'Administraci\u00f3n central', foto:data?.foto || data?.FOTO || data?.photo || '' }; })();
     function iniciales(name){ return String(name||'ZU').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'ZU'; }
     function pintarAvatar(el,foto,nombre){ if(!el)return; const src=String(foto||'').trim(); const esFuenteImagen=/^(data:image\/|https?:\/\/|blob:)/i.test(src); if(src&&esFuenteImagen){ el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'">'; const image=el.querySelector('img'); if(image)image.addEventListener('error',function(){ el.textContent=iniciales(nombre); },{once:true}); }else{ el.textContent=iniciales(nombre); } }
@@ -857,16 +855,14 @@
     function abrirModalSesion(){ const m=document.getElementById('sessionModal'); if(!m)return; const name=SESSION.name||SESSION.user||'Usuario ZIMA'; const peaje=SESSION.peaje||'Administracion central'; const av=document.getElementById('sessionAvatar'); pintarAvatar(av,SESSION.foto,name); document.getElementById('modalSessionUser').textContent=name; document.getElementById('modalSessionRole').textContent=SESSION.role||'USUARIO'; document.getElementById('modalSessionPeaje').textContent=peaje; m.classList.add('open'); }
     function cerrarModalSesion(){ const m=document.getElementById('sessionModal'); if(m)m.classList.remove('open'); }
     function cerrarModalSesionDesdeFondo(e){ if(e.target && e.target.id==='sessionModal') cerrarModalSesion(); }
-    function iconoMenuHistorial(open){return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="'+(open?'m6 6 12 12M6 18 18 6':'M4 6h16M4 12h16M4 18h16')+'"/></svg>';}
-    function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=iconoMenuHistorial(open);toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');} }
-    function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML=iconoMenuHistorial(false);toggle.setAttribute('aria-label','Abrir menú');} }
+    function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'<i class="bi bi-x-lg"></i>':'<i class="bi bi-list"></i>';toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');} }
+    function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<i class="bi bi-list"></i>';toggle.setAttribute('aria-label','Abrir menú');} }
     function cerrarSesion(){ return ZimaUI.confirmLogout({detail:(SESSION.name||SESSION.user||'Usuario ZIMA') + (SESSION.peaje ? ' - ' + SESSION.peaje : '')}); }
     document.addEventListener('click',e=>{if(e.target.closest('.nav-item'))cerrarMenu();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarEdicion();cerrarMenu();}});
     function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function normalizarEstado(v) { const e = String(v || '').trim().toUpperCase(); return e === 'ENTREGADO' ? 'ENTREGADA' : e } function statusClass(v) { const e = normalizarEstado(v); return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA', 'ANULADA'].includes(e) ? e : 'BORRADOR' }
     function textoNotificacion(r){ if(!r||!r.notificacion)return ''; if(r.notificacion.enviado)return ' Correo enviado a: '+esc(r.notificacion.destinatarios||'')+'.'; return ' No se envió correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.'; }
-    async function apiPost(action,params={}) { if(window.ZimaOffline)return ZimaOffline.request(action,params,true,()=>remoteApiPost(action,params)); return remoteApiPost(action,params); }
-    async function remoteApiPost(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
+    async function apiPost(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
     let currentEditId = '';
     function editar(id) {
       if (!id) return;

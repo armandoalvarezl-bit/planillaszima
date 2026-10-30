@@ -157,31 +157,27 @@
       '.zima-confirm-backdrop.success .zima-confirm-actions{padding:16px 26px 22px;background:#fff;border-color:#f1f5f9}',
       '.zima-confirm-backdrop.success .zima-confirm-btn{border-radius:8px;min-height:42px}',
       '.zima-confirm-backdrop.success .zima-confirm-btn.primary{background:#0f766e;border-color:#0f766e}',
-      '.session-logout{background:rgba(9,30,42,.5);backdrop-filter:blur(6px)}',
-      '.session-logout .zima-confirm-card{width:min(400px,100%);border:1px solid #e4ecef;border-radius:22px;box-shadow:0 24px 80px #001b3033;max-height:calc(100dvh - 40px);overflow:auto}',
-      '.session-logout .zima-confirm-card:before{display:none}',
-      '.session-logout .zima-confirm-head{padding:30px 28px 16px;gap:16px;align-items:center}',
-      '.session-logout .zima-confirm-icon{font-size:0;background:#edf5f7;border:1px solid #d8e8ec;color:#00687b;width:46px;height:46px}',
-      '.session-logout .zima-confirm-icon:after{content:"\\2192";font-size:25px}',
-      '.session-logout .zima-confirm-title{font-size:20px;font-weight:700;color:#143b48}',
-      '.session-logout .zima-confirm-body{padding:0 28px 26px;color:#617581;line-height:1.7}',
-      '.session-logout .zima-confirm-actions{padding:18px 28px;background:#f6f9fa;gap:10px}',
-      '.session-logout .zima-confirm-btn{flex:1;border-radius:10px;min-height:44px;font-size:12px;font-weight:600}',
-      '.session-logout .zima-confirm-btn.primary{background:#00566b;border-color:#00566b}',
-      '.session-exit-spinner{width:28px;height:28px;flex-shrink:0;border:3px solid #d8e8ec;border-top-color:#00687b;border-radius:50%;animation:zima-session-spin .8s linear infinite}',
-      '@keyframes zima-session-spin{to{transform:rotate(360deg)}}',
-      '@media(prefers-reduced-motion:reduce){.session-exit-spinner{animation:none}}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-card{width:min(510px,100%);border-radius:18px;border:1px solid #d5c69e;background:#fffefa;box-shadow:0 28px 90px #0a292950}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-card:before{height:5px;background:linear-gradient(90deg,#315e4c,#cfb16b,#8f5650,#cfb16b,#315e4c)}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-head{flex-direction:column;align-items:center;text-align:center;gap:18px;padding:32px 30px 17px}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-icon{width:66px;height:66px;background:#f5efdf;color:#ac8c45;border:1px solid #e4d7b4;font-size:35px;font-weight:400}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-title{font-family:Georgia,"Times New Roman",serif;font-size:30px;font-weight:400;color:#214b3f;line-height:1.2}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-body{padding:0 32px 27px;text-align:center;color:#66776f;font-size:14px;line-height:1.85}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-message{max-width:none}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-detail{margin-top:23px;border:0;border-top:1px solid #e9e2d0;background:transparent;padding-top:18px;color:#9a824b;font-size:11px;font-weight:500;letter-spacing:.5px}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-actions{background:#faf8f1;justify-content:center;padding:18px 28px 24px;border-color:#eee8d9}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-btn{border-radius:8px;font-weight:600;min-height:43px;font-size:12px}',
-      '.zima-confirm-backdrop.holiday .zima-confirm-btn.primary{background:#245744;border-color:#245744}',
+      '.zima-confirm-backdrop.logout{background:rgba(3,20,29,.76);backdrop-filter:blur(12px)}',
+      '.logout .zima-confirm-card{position:relative;width:min(480px,100%);border:1px solid #ffffff25;border-radius:26px;background:radial-gradient(ellipse at 50% 0,#125867 0,transparent 65%),#062d3a;color:#fff;box-shadow:0 32px 100px #00151bc9;animation:zima-logout-enter .35s ease-out both}',
+      '.logout .zima-confirm-card:before{height:3px;background:linear-gradient(90deg,transparent,#f7c600,transparent)}',
+      '.logout .zima-confirm-head{flex-direction:column;align-items:center;gap:26px;padding:42px 28px 14px;text-align:center}',
+      '.logout .zima-confirm-icon{position:relative;width:92px;height:92px;border-radius:28px;border:1px solid #f7c60060;background:linear-gradient(145deg,#f7c60026,#f7c60008);color:#f7c600;box-shadow:0 0 0 10px #ffffff03,0 0 60px #f7c60012}',
+      '.logout .zima-confirm-icon svg{width:42px;height:42px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}',
+      '.logout .zima-confirm-icon .logout-arrow{animation:zima-logout-arrow 2.4s ease-in-out infinite}',
+      '.zima-logout-eyebrow{margin:0 0 10px;color:#f7c600;font-size:10px;font-weight:750;letter-spacing:2.5px}',
+      '.logout .zima-confirm-title{color:#fff;font-size:30px;font-weight:700;line-height:1.2;letter-spacing:-.8px}',
+      '.logout .zima-confirm-body{padding:0 32px 28px;text-align:center;color:#bcd1d8;font-size:14px;line-height:1.7}',
+      '.logout .zima-confirm-message{max-width:360px;margin:auto}',
+      '.logout .zima-confirm-detail{margin-top:22px;padding:12px 16px;border:1px solid #ffffff14;border-radius:12px;background:#ffffff06;color:#e0edf0;font-size:12px;font-weight:500;overflow-wrap:anywhere}',
+      '.logout .zima-confirm-actions{padding:22px 28px 28px;gap:10px;background:#001d282e;border-color:#ffffff12}',
+      '.logout .zima-confirm-btn{flex:1;min-height:48px;border:1px solid #ffffff30;border-radius:12px;background:transparent;color:#e0edf0;font-size:12px;font-weight:650}',
+      '.logout .zima-confirm-btn:hover{background:#ffffff0d}',
+      '.logout .zima-confirm-btn.primary{background:#f7c600;border-color:#f7c600;color:#062d3a;box-shadow:0 6px 20px #f7c60016}',
+      '.logout .zima-confirm-btn.primary:hover{background:#ffda3d;border-color:#ffda3d}',
+      '.logout .zima-confirm-btn:focus-visible{outline:3px solid #fff;outline-offset:3px}',
+      '@keyframes zima-logout-enter{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}',
+      '@keyframes zima-logout-arrow{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}',
+      '@media(prefers-reduced-motion:reduce){.logout .zima-confirm-card,.logout .zima-confirm-icon .logout-arrow{animation:none}}',
       '@media(max-width:560px){.zima-confirm-actions{flex-direction:column-reverse}.zima-confirm-btn{width:100%}}'
     ].join('');
     document.head.appendChild(style);
@@ -195,9 +191,11 @@
       const backdrop = document.createElement('div');
       backdrop.className = 'zima-confirm-backdrop open';
       if (options.tone === 'success') backdrop.classList.add('success');
-      if (options.tone === 'logout') backdrop.classList.add('session-logout');
-      if (options.tone === 'holiday') backdrop.classList.add('holiday', 'no-print');
+      if (options.tone === 'logout') backdrop.classList.add('logout');
       backdrop.setAttribute('aria-hidden', 'false');
+      const previousFocus = document.activeElement;
+      const previousOverflow = document.body.style.overflow;
+      let settled = false;
 
       const title = options.title || 'Confirmar acci\u00f3n';
       const message = options.message || '\u00bfDesea continuar?';
@@ -207,13 +205,13 @@
       const danger = options.danger !== false;
 
       backdrop.innerHTML =
-        '<div class="zima-confirm-card" role="dialog" aria-modal="true" aria-labelledby="zimaConfirmTitle">' +
+        '<div class="zima-confirm-card" role="dialog" aria-modal="true" aria-labelledby="zimaConfirmTitle" aria-describedby="zimaConfirmMessage">' +
           '<div class="zima-confirm-head">' +
-            '<div class="zima-confirm-icon" aria-hidden="true">' + (options.tone === 'holiday' ? '&#10023;' : options.tone === 'success' ? '&#10003;' : '!') + '</div>' +
-            '<div><h2 class="zima-confirm-title" id="zimaConfirmTitle">' + escapeHtml(title) + '</h2></div>' +
+            '<div class="zima-confirm-icon" aria-hidden="true">' + (options.tone === 'logout' ? '<svg viewBox="0 0 32 32"><path d="M14 5H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h7"/><g class="logout-arrow"><path d="M12 16h15m-6-6 6 6-6 6"/></g></svg>' : options.tone === 'success' ? '&#10003;' : '!') + '</div>' +
+            '<div>' + (options.tone === 'logout' ? '<div class="zima-logout-eyebrow">HASTA PRONTO</div>' : '') + '<h2 class="zima-confirm-title" id="zimaConfirmTitle">' + escapeHtml(title) + '</h2></div>' +
           '</div>' +
           '<div class="zima-confirm-body">' +
-            '<div class="zima-confirm-message">' + escapeHtml(message) + '</div>' +
+            '<div class="zima-confirm-message" id="zimaConfirmMessage">' + escapeHtml(message) + '</div>' +
             (detail ? '<div class="zima-confirm-detail">' + escapeHtml(detail) + '</div>' : '') +
           '</div>' +
           '<div class="zima-confirm-actions">' +
@@ -222,9 +220,6 @@
           '</div>' +
         '</div>';
 
-      const previousFocus = document.activeElement;
-      const previousOverflow = document.body.style.overflow;
-      let settled = false;
       function cleanup(value) {
         if (settled) return;
         settled = true;
@@ -236,7 +231,7 @@
       }
 
       function onKeydown(event) {
-        if (event.key === 'Escape') cleanup(false);
+        if (event.key === 'Escape') { event.preventDefault(); cleanup(false); }
         if (event.key === 'Tab') {
           const buttons = backdrop.querySelectorAll('button');
           const first = buttons[0], last = buttons[buttons.length - 1];
@@ -256,7 +251,7 @@
       document.body.appendChild(backdrop);
       document.body.style.overflow = 'hidden';
 
-      const primary = backdrop.querySelector('[data-zima-confirm="cancel"]');
+      const primary = backdrop.querySelector(options.tone === 'logout' ? '[data-zima-confirm="cancel"]' : '[data-zima-confirm="ok"]');
       if (primary) primary.focus();
     });
   }
@@ -290,8 +285,7 @@
   ];
 
   function clearSession(extraKeys) {
-    if (window.ZimaOffline) window.ZimaOffline.lock();
-    const keys = SESSION_KEYS.concat(['ZIMA_LAST_ACTIVITY', 'ZIMA_SESION_ESTADO', 'ZIMA_SHOW_WELCOME', 'ZIMA_SHOW_ANNOUNCEMENT'], extraKeys || []);
+    const keys = SESSION_KEYS.concat(extraKeys || []);
     [localStorage, sessionStorage].forEach(function (storage) {
       keys.forEach(function (key) {
         try {
@@ -301,114 +295,22 @@
     });
   }
 
-  function installIdleLogout() {
-    const page = window.location.pathname.split('/').pop().toLowerCase();
-    if (!/^(dashboard|planilla|historial|granadmin|informes|soporte)\.html$/.test(page)) return;
-
-    const idleMs = 15 * 60 * 1000;
-    const activityKey = 'ZIMA_LAST_ACTIVITY';
-    let lastActivity = Date.now();
-    let timer;
-    let leaving = false;
-    let lastServerActivity = 0;
-
-    function notifyServer() {
-      if (Date.now() - lastServerActivity < 30000) return;
-      const session = getSupportSession();
-      if (!session.token) return;
-      lastServerActivity = Date.now();
-      const payload = { action: 'sessionactivity', token: session.token };
-      if (window.google && window.google.script && window.google.script.run) {
-        window.google.script.run.withFailureHandler(function () { lastServerActivity = 0; }).apiPost(payload);
-        return;
-      }
-      const url = localStorage.getItem('ZIMA_API_URL');
-      if (!url) return;
-      fetch(url, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) })
-        .catch(function () { lastServerActivity = 0; });
-    }
-
-    function readActivity() {
-      try {
-        const stored = Number(localStorage.getItem(activityKey));
-        if (Number.isFinite(stored) && stored > 0) lastActivity = stored;
-      } catch (_) {}
-      return lastActivity;
-    }
-
-    function exit() {
-      if (leaving) return;
-      leaving = true;
-      clearTimeout(timer);
-      clearSession();
-      window.location.replace('login.html?motivo=inactividad');
-    }
-
-    function check() {
-      if (leaving) return;
-      clearTimeout(timer);
-      const remaining = idleMs - (Date.now() - readActivity());
-      if (remaining <= 0) return exit();
-      timer = setTimeout(check, remaining);
-    }
-
-    function activity() {
-      // Check before renewing: waking a suspended tab must not revive an expired session.
-      if (leaving) return;
-      const previous = readActivity();
-      if (Date.now() - previous >= idleMs) return exit();
-      notifyServer();
-      if (Date.now() - previous < 1000) return;
-      lastActivity = Date.now();
-      try { localStorage.setItem(activityKey, String(lastActivity)); } catch (_) {}
-      check();
-    }
-
-    try {
-      if (!localStorage.getItem(activityKey)) localStorage.setItem(activityKey, String(lastActivity));
-    } catch (_) {}
-    ['pointerdown', 'pointermove', 'keydown', 'scroll', 'touchstart', 'input'].forEach(function (event) {
-      document.addEventListener(event, activity, { capture: true, passive: true });
-    });
-    window.addEventListener('storage', function (event) {
-      if (event.key !== activityKey && event.key !== null) return;
-      if (!localStorage.getItem(activityKey)) return exit();
-      check();
-    });
-    window.addEventListener('focus', check);
-    window.addEventListener('pageshow', check);
-    document.addEventListener('visibilitychange', check);
-    check();
-  }
-
   function confirmLogout(options) {
     options = options || {};
 
     return confirmDialog({
-      title: options.title || 'Cerrar sesi\u00f3n',
-      message: options.message || 'Confirme si desea cerrar la sesi\u00f3n actual de ZIMA 360.',
+      tone: 'logout',
+      title: options.title || '¿Cerramos por hoy?',
+      message: options.message || 'Gracias por ser parte del equipo. Antes de salir, asegúrate de guardar los cambios pendientes.',
       detail: options.detail || '',
       confirmText: options.confirmText || 'Cerrar sesi\u00f3n',
-      cancelText: options.cancelText || 'Cancelar',
-      danger: false,
-      tone: 'logout'
+      cancelText: options.cancelText || 'Seguir aquí',
+      danger: false
     }).then(function (ok) {
       if (!ok) return false;
 
-      const leaving = document.createElement('div');
-      leaving.className = 'zima-confirm-backdrop open session-logout';
-      leaving.innerHTML = '<div class="zima-confirm-card" role="status" aria-live="polite" aria-busy="true"><div class="zima-confirm-head"><div class="session-exit-spinner" aria-hidden="true"></div><h2 class="zima-confirm-title">Cerrando sesi&oacute;n</h2></div><div class="zima-confirm-body">Estamos finalizando tu sesi&oacute;n. En un momento volver&aacute;s al acceso.</div></div>';
-      document.body.appendChild(leaving);
-
       return Promise
-        .resolve().then(function () {
-          if (!options.beforeClear) return;
-          let timeout;
-          return Promise.race([
-            Promise.resolve().then(function () { return options.beforeClear(); }),
-            new Promise(function (resolve) { timeout = setTimeout(resolve, 5000); })
-          ]).finally(function () { clearTimeout(timeout); });
-        })
+        .resolve(options.beforeClear ? options.beforeClear() : null)
         .catch(function () {})
         .then(function () {
           clearSession(options.extraKeys);
@@ -617,6 +519,9 @@
 
   function installSupportLauncher() {
     if (window.self !== window.top || document.getElementById('zimaSupportLauncher')) return;
+    if (document.querySelector('.login-wrapper')) return;
+    const session = getSupportSession();
+    if (!session.usuario || !session.token) return;
     if (!document.querySelector('link[href*="bootstrap-icons"]')) {
       const icons = document.createElement('link');
       icons.rel = 'stylesheet';
@@ -628,7 +533,6 @@
       '#zimaSupportLauncher .support-fab{position:fixed;right:24px;bottom:24px;z-index:1050;width:54px;height:54px;border:1px solid #ffffff50;border-radius:50%;background:#0f6552;color:white;display:grid;place-items:center;box-shadow:0 6px 22px #103e3733;cursor:pointer;font-size:23px}',
       '#zimaSupportLauncher .support-fab:hover{background:#104c40}',
       '#zimaSupportLauncher .support-fab svg{display:block;width:25px;height:25px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}',
-      'body:has(.login-wrapper) #zimaSupportLauncher .support-fab{bottom:24px}',
       '#zimaSupportLauncher .support-fab[hidden]{display:none}',
       '#zimaSupportLauncher button:focus-visible{outline:3px solid #81cbb1;outline-offset:4px}',
       '#zimaSupportModal{position:fixed;inset:0;z-index:2100;background:#0b201b80;backdrop-filter:blur(5px);padding:24px;display:flex;align-items:center;justify-content:center}',
@@ -708,7 +612,7 @@
   function installAdminTicketNotifications(launcher, openSupport) {
     const session = getSupportSession();
     if (!session.token || !/^(ADMIN|ADMINISTRADOR)$/.test(String(session.rol).trim().toUpperCase()) || /\/login\.html$/i.test(location.pathname)) return;
-    const endpoint = 'https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec';
+    const endpoint = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
     const key = 'ZIMA_ADMIN_TICKETS_REVIEWED:' + String(session.usuario).trim().toLowerCase();
     let seen = new Set();
     try {
@@ -859,67 +763,62 @@
     void refresh();
   }
 
-  function installHolidayTheme() {
-    // Tema navideno pausado en toda la aplicacion hasta reactivarlo manualmente.
-    const holidayThemeEnabled = false;
-    if (!holidayThemeEnabled || document.body.dataset.holidayTheme === 'off') {
-      document.querySelectorAll('#zimaHolidayStyle,.zima-holiday-trim,.zima-holiday-note').forEach(function (el) { el.remove(); });
-      document.body.classList.remove('zima-holiday');
-      return;
+  function installResponsiveNavigation() {
+    const sidebar = document.querySelector('.sidebar');
+    const header = document.querySelector('.topbar-left,.topbar,.top,.toolbar');
+    if (!sidebar || !header || document.body.classList.contains('embedded-edit')) return;
+    document.body.classList.add('zima-responsive-nav');
+    const compact = window.matchMedia('(max-width: 1180px)');
+    sidebar.id = sidebar.id || 'zimaMainMenu';
+    const toggle = document.getElementById('menuToggle') || document.createElement('button');
+    toggle.type = 'button';
+    toggle.classList.add('zima-menu-toggle');
+    toggle.setAttribute('aria-controls', sidebar.id);
+    toggle.removeAttribute('onclick');
+    toggle.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>';
+    if (!toggle.parentElement) header.prepend(toggle);
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'zima-menu-close';
+    close.setAttribute('aria-label', 'Cerrar menú');
+    close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>';
+    sidebar.prepend(close);
+    const backdrop = document.createElement('div');
+    backdrop.className = 'zima-nav-backdrop no-print';
+    backdrop.hidden = true;
+    document.body.appendChild(backdrop);
+    function setOpen(open, restoreFocus) {
+      open = Boolean(open && compact.matches);
+      document.body.classList.toggle('zima-nav-open', open);
+      sidebar.classList.toggle('mobile-open', open);
+      sidebar.inert = compact.matches && !open;
+      if (compact.matches) sidebar.setAttribute('aria-hidden', String(!open));
+      else sidebar.removeAttribute('aria-hidden');
+      backdrop.hidden = !open;
+      toggle.setAttribute('aria-expanded', String(open));
+      toggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+      toggle.title = open ? 'Cerrar menú' : 'Abrir menú';
+      if (open) close.focus();
+      else if (restoreFocus) toggle.focus();
     }
-    // 24 de octubre de 2026, 06:00 en Colombia (UTC-05:00).
-    const startsAt = Date.parse('2026-10-24T06:00:00-05:00');
-    const previewUntil = Date.parse('2026-10-23T17:14:21-05:00');
-    let timer;
-    let installed = false;
-    function refresh() {
-      clearTimeout(timer);
-      const now = Date.now();
-      if (now < startsAt && now >= previewUntil) {
-        if (installed) {
-          document.querySelectorAll('#zimaHolidayStyle,.zima-holiday-trim,.zima-holiday-note').forEach(function (el) { el.remove(); });
-          document.body.classList.remove('zima-holiday');
-          installed = false;
-        }
-        timer = setTimeout(refresh, Math.min(startsAt - Date.now(), 60000));
-        return;
-      }
-      if (now < startsAt) timer = setTimeout(refresh, Math.min(previewUntil - now, 60000));
-      if (installed) return;
-      installed = true;
-      const style = document.createElement('style');
-      style.id = 'zimaHolidayStyle';
-      style.textContent = [
-        '.zima-holiday-trim{position:fixed;inset:0 0 auto;height:7px;z-index:2000;pointer-events:none;background:radial-gradient(circle at 12px 3px,#b99a4f 0 2px,transparent 2.5px),radial-gradient(circle at 36px 3px,#446b59 0 2px,transparent 2.5px),radial-gradient(circle at 60px 3px,#a45b57 0 2px,transparent 2.5px);background-size:72px 7px;opacity:.75}',
-        '.zima-holiday-note{display:flex;align-items:center;gap:7px;margin-top:12px;color:#bda773;font-family:"Segoe UI",Arial,sans-serif;font-size:10px;font-weight:400;letter-spacing:.3px;text-transform:none;line-height:1.5}',
-        '.zima-holiday-note svg{display:block;width:17px;height:21px;flex-shrink:0}',
-        'footer .zima-holiday-note,.footer .zima-holiday-note{color:#75846b}',
-        '.footer:has(.zima-holiday-note){flex-wrap:wrap;gap:10px}.footer>.zima-holiday-note{flex-basis:100%;justify-content:center;margin-top:0}',
-        'body.zima-holiday #zimaSupportLauncher .support-fab:after{content:"✦";position:absolute;right:-2px;top:-4px;color:#d4b76d;font-size:17px;text-shadow:0 1px 2px #143b35}',
-        '@media print{.zima-holiday-trim,.zima-holiday-note{display:none!important}}'
-      ].join('\n');
-      document.head.appendChild(style);
-      document.body.classList.add('zima-holiday');
-      // La vista de soporte incrustada conserva el adorno de su ventana principal.
-      if (window.self === window.top) {
-        const trim = document.createElement('div');
-        trim.className = 'zima-holiday-trim no-print';
-        trim.setAttribute('aria-hidden', 'true');
-        document.body.appendChild(trim);
-      }
-      document.querySelectorAll('.sidebar-bottom,.side-foot,body > .shell > .footer,.made-in-colombia').forEach(function (target) {
-        // En el login, añadimos el saludo al contenedor, sin alterar la bandera.
-        const host = target.matches('.made-in-colombia') ? target.parentElement : target;
-        if (host.querySelector('.zima-holiday-note')) return;
-        const note = document.createElement('div');
-        note.className = 'zima-holiday-note no-print';
-        note.innerHTML = '<svg viewBox="0 0 20 26" fill="none" aria-hidden="true"><path d="m10 2 1 2 2 .3-1.5 1.5.4 2.2-1.9-1-1.9 1 .4-2.2L7 4.3 9 4Z" fill="#c3a258"/><path d="m10 8-5 6h3l-5 6h14l-5-6h3l-5-6Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M10 20v4" stroke="currentColor" stroke-width="1.3"/></svg><span>Una temporada para compartir</span>';
-        host.appendChild(note);
+    toggle.onclick = function () { setOpen(!document.body.classList.contains('zima-nav-open'), true); };
+    close.onclick = backdrop.onclick = function () { setOpen(false, true); };
+    sidebar.addEventListener('click', function (event) {
+      if (event.target.closest('a[href]')) setOpen(false, false);
+    });
+    document.addEventListener('keydown', function (event) {
+      if (!document.body.classList.contains('zima-nav-open')) return;
+      if (event.key === 'Escape') { setOpen(false, true); return; }
+      if (event.key !== 'Tab') return;
+      const items = Array.from(sidebar.querySelectorAll('a[href],button')).filter(function (el) {
+        return !el.disabled && el.getClientRects().length;
       });
-    }
-    document.addEventListener('visibilitychange', refresh);
-    window.addEventListener('focus', refresh);
-    refresh();
+      const first = items[0], last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    });
+    compact.addEventListener('change', function () { setOpen(false, false); });
+    setOpen(false, false);
   }
 
   window.ZimaUI = {
@@ -938,18 +837,16 @@
     getSupportSession: getSupportSession
   };
 
-  installIdleLogout();
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
+      installResponsiveNavigation();
       installSupportLauncher();
-      installHolidayTheme();
       repairVisibleText();
       watchTextRepairs();
     });
   } else {
+    installResponsiveNavigation();
     installSupportLauncher();
-    installHolidayTheme();
     repairVisibleText();
     watchTextRepairs();
   }

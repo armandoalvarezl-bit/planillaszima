@@ -2,7 +2,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../zima-ui.js'), 'utf8');
-const fn = source.slice(source.indexOf('  function installAdminTicketNotifications('), source.indexOf('  function installHolidayTheme('));
+const fn = source.slice(source.indexOf('  function installAdminTicketNotifications('), source.indexOf('  window.ZimaUI ='));
 function setup(role = 'ADMIN', saved = []) {
   const storage = new Map([['ZIMA_ADMIN_TICKETS_REVIEWED:admin', JSON.stringify(saved)]]);
   const session = {usuario: 'admin', token: 'test-token', rol: role};
