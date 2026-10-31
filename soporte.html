@@ -30,6 +30,16 @@
     </div>
     <footer>ZIMA 360 · ZimaTicket <div class="menu-edition"><span class="menu-country"><span class="menu-colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span><span class="menu-version">v2.0.0</span></div></footer>
   </main>
+  <dialog id="ticketDialog" class="ticket-dialog" aria-labelledby="conversationTitle">
+    <div class="conversation-head"><div><span class="eyebrow" id="conversationId"></span><h2 id="conversationTitle">Conversación</h2></div><button id="closeConversation" type="button" class="secondary" aria-label="Cerrar conversación">Cerrar</button></div>
+    <div id="conversationNotice" role="status" aria-live="polite"></div>
+    <div id="conversationMessages" class="conversation-messages"></div>
+    <form id="replyForm">
+      <div id="replyStateField"><label for="replyState">Estado</label><select id="replyState"><option value="ABIERTO">Abierto</option><option value="EN_PROCESO">En proceso</option><option value="RESUELTO">Resuelto</option></select></div>
+      <label for="replyMessage">Tu respuesta</label><textarea id="replyMessage" maxlength="6000" rows="3" placeholder="Escribe un mensaje para continuar el caso"></textarea>
+      <p id="replyHint" class="helper"></p><button id="sendReply" type="submit" class="primary">Enviar respuesta</button>
+    </form>
+  </dialog>
   <script src="zima-ui.js"></script><script src="soporte.js"></script>
 </body>
 </html>

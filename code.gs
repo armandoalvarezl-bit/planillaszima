@@ -2500,10 +2500,12 @@ function doGet(e) {
     if (
       action === 'crearticket' ||
       action === 'actualizarticket' ||
+      action === 'responderticket' ||
       action === 'save' ||
       action === 'create' ||
       action === 'update' ||
-      action === 'delete'
+      action === 'delete' ||
+      action === 'permanentdelete'
     ) {
 
       return jsonOutput_(
@@ -3146,6 +3148,7 @@ function apiPost(data) {
 
     case 'crearticket':
       return crearTicket_(data);
+    case 'responderticket':
     case 'actualizarticket':
       return actualizarTicket_(data);
 
@@ -3167,6 +3170,9 @@ function apiPost(data) {
       return eliminarPlanilla_(
         data
       );
+
+    case 'permanentdelete':
+      return eliminarPlanillaDefinitivamente_(data);
 
     case 'soporte':
     case 'reportarsoporte':
@@ -3607,6 +3613,36 @@ function actualizarPlanilla_(data) {
 /* ============================================================
    PLANILLAS · ELIMINAR / ANULAR
    ============================================================ */
+
+function eliminarPlanillaDefinitivamente_(data) {
+  data = data || {};
+  const contexto = obtenerContextoUsuario_(data);
+  if (!contexto.ok) return contexto;
+  const sesion = contexto.sesion;
+  if (!esUsuarioAdministrador_(sesion)) {
+    return {ok: false, error: 'Solo un administrador puede eliminar definitivamente una planilla.'};
+  }
+  const id = String(data.id || '').trim();
+  if (!id) return {ok: false, error: 'Falta el ID de la planilla.'};
+
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const sh = getPlanillasSheet_();
+    const found = findRowById_(sh, id);
+    if (!found) return {ok: false, error: 'Planilla no encontrada.'};
+    const current = rowToObject_(sh, found.rowNumber);
+    if (!puedeAccederPlanilla_(sesion, current)) {
+      return {ok: false, error: 'No tiene permiso para eliminar esta planilla.'};
+    }
+    sh.deleteRow(found.rowNumber);
+    registrarAuditoria_('PERMANENT_DELETE', Object.assign({}, current, {usuario: sesion.usuario}),
+      'Planilla eliminada definitivamente por ' + sesion.usuario);
+    return {ok: true, id: id, message: 'Planilla eliminada definitivamente.'};
+  } finally {
+    lock.releaseLock();
+  }
+}
 
 function eliminarPlanilla_(data) {
 
@@ -5296,7 +5332,7 @@ function registrarAuditoria_(
    SOPORTE EN LINEA
    ============================================================ */
 
-const TICKET_HEADERS = ['id','requestId','fecha','usuario','nombre','peaje','email','categoria','prioridad','titulo','mensaje','estado','respuesta','updatedAt'];
+const TICKET_HEADERS = ['id','requestId','fecha','usuario','nombre','peaje','email','categoria','prioridad','titulo','mensaje','estado','respuesta','updatedAt','conversacion'];
 
 function hojaTickets_() {
   const ss = getSpreadsheet_();
@@ -5307,6 +5343,7 @@ function hojaTickets_() {
     sh.setFrozenRows(1);
     sh.getRange(1, 1, 1, TICKET_HEADERS.length).setFontWeight('bold');
   }
+  sh.getRange(1, 15, 1, 1).setValues([['conversacion']]);
   return sh;
 }
 
@@ -5315,6 +5352,11 @@ function leerTickets_(sh) {
   return sh.getRange(2,1,sh.getLastRow()-1,TICKET_HEADERS.length).getValues().map(function(row) {
     const item = {};
     TICKET_HEADERS.forEach(function(key,index) { item[key] = row[index] instanceof Date ? row[index].toISOString() : row[index]; });
+    try { item.conversacion = JSON.parse(item.conversacion || '[]'); } catch (_) { item.conversacion = []; }
+    if (!Array.isArray(item.conversacion)) item.conversacion = [];
+    if (!item.conversacion.length && item.respuesta) {
+      item.conversacion.push({usuario:'Soporte',rol:'ADMIN',mensaje:item.respuesta,fecha:item.updatedAt || item.fecha});
+    }
     return item;
   });
 }
@@ -5375,11 +5417,12 @@ function crearTicket_(datos) {
 function actualizarTicket_(datos) {
   const ctx = obtenerContextoUsuario_(datos);
   if (!ctx.ok) return ctx;
-  if (!esUsuarioAdministrador_(ctx.sesion)) return {ok:false,error:'Solo el administrador puede gestionar los tickets.'};
-  const estado = String(datos.estado || '');
+  const admin = esUsuarioAdministrador_(ctx.sesion);
   const respuesta = String(datos.respuesta || '').trim();
-  if (['ABIERTO','EN_PROCESO','RESUELTO'].indexOf(estado) < 0 || respuesta.length > 6000) throw Error('Estado o respuesta no válida.');
-  if (estado === 'RESUELTO' && !respuesta) throw Error('Escriba la solución antes de resolver el ticket.');
+  const requestId = String(datos.requestId || '').trim();
+  if (respuesta.length > 6000) throw Error('La respuesta no puede superar 6000 caracteres.');
+  if (!admin && !respuesta) throw Error('Escriba una respuesta.');
+  if (!admin && !/^[a-zA-Z0-9-]{8,100}$/.test(requestId)) throw Error('Falta la identificación del envío.');
   const lock = LockService.getScriptLock();
   lock.waitLock(15000);
   try {
@@ -5387,11 +5430,29 @@ function actualizarTicket_(datos) {
     const rows = leerTickets_(sh);
     const index = rows.findIndex(function(row) { return String(row.id) === String(datos.id); });
     if (index < 0) throw Error('Ticket no encontrado.');
-    sh.getRange(index+2,12,1,3).setValues([[estado,/^[=+@-]/.test(respuesta)?"'"+respuesta:respuesta,new Date().toISOString()]]);
+    const ticket = rows[index];
+    if (!admin && String(ticket.usuario).trim().toLowerCase() !== String(ctx.sesion.usuario).trim().toLowerCase()) {
+      return {ok:false,error:'No tiene permiso para responder este ticket.'};
+    }
+    const conversacion = ticket.conversacion;
+    if (requestId && conversacion.some(function(m) { return m.requestId === requestId && m.usuario === ctx.sesion.usuario; })) {
+      return {ok:true,yaRegistrado:true};
+    }
+    const estado = admin ? String(datos.estado || ticket.estado) : 'ABIERTO';
+    if (['ABIERTO','EN_PROCESO','RESUELTO'].indexOf(estado) < 0) throw Error('Estado no válido.');
+    if (admin && estado === 'RESUELTO' && !respuesta && !ticket.respuesta) throw Error('Escriba la solución antes de resolver el ticket.');
+    const fecha = new Date().toISOString();
+    if (respuesta) conversacion.push({usuario:ctx.sesion.usuario,nombre:ctx.sesion.nombre || '',rol:ctx.sesion.rol,mensaje:respuesta,fecha:fecha,requestId:requestId});
+    // Google Sheets admite hasta 50.000 caracteres por celda.
+    const historial = JSON.stringify(conversacion);
+    if (historial.length > 49000) throw Error('La conversación alcanzó su límite. Cree un nuevo ticket para continuar.');
+    const ultimaRespuesta = admin && respuesta ? respuesta : ticket.respuesta || '';
+    sh.getRange(index+2,12,1,4).setValues([[estado,/^[=+@-]/.test(ultimaRespuesta)?"'"+ultimaRespuesta:ultimaRespuesta,fecha,historial]]);
     SpreadsheetApp.flush();
     return {ok:true};
   } finally { lock.releaseLock(); }
 }
+
 
 function recortarSoporte_(
   value,

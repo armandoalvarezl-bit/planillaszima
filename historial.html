@@ -835,7 +835,7 @@
   </div>
   <script src="zima-ui.js"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzNnN9Mb4jR_5Zp5K4bViCTyJFwm8OE-Stt6HFbwSQe2jKm6Ma7uHeG55SKxM3bsO8NEA/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
     function onlineRun(fn, arg) { return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg)); }
     function leerSesionLocal(){ const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','usuarioSesion','usuario','ZIMA_USER']; for(const storage of [localStorage,sessionStorage]){ for(const k of keys){ try{ const raw=storage.getItem(k); if(!raw || raw==='ACTIVA') continue; if(raw.trim().startsWith('{')) return JSON.parse(raw); return {usuario:raw}; }catch(e){} } } return {}; }
@@ -949,6 +949,36 @@
         ZimaUI.notice('msg', e.message, 'error');
       }
     }
+    const eliminacionesEnCurso = new Set();
+    async function eliminarDefinitivamente(id) {
+      if (!id || !esGranAdministradorSesion()) return;
+      const decodedId = decodeURIComponent(id);
+      if (eliminacionesEnCurso.has(decodedId)) return;
+      const row = allRows.find(x => String(x.id) === decodedId);
+      if (!row) return;
+      eliminacionesEnCurso.add(decodedId);
+      try {
+        const confirmar = await ZimaUI.confirm({
+          title: 'Eliminar planilla definitivamente',
+          message: 'Se borrarán todos los datos de esta planilla de la base de datos. Desaparecerá del historial y de los informes. Esta acción no se puede deshacer; solo se conservará el registro de auditoría.',
+          detail: 'Código: ' + (row.codigo || 'Sin código') + ' · Peaje: ' + (row.peaje || ''),
+          confirmText: 'Eliminar definitivamente',
+          cancelText: 'Conservar planilla',
+          danger: true
+        });
+        if (!confirmar) return;
+        ZimaUI.notice('msg', 'Eliminando planilla...');
+        const r = await apiPost('permanentdelete', {id: decodedId});
+        if (!r || !r.ok) throw Error(r?.error || 'No fue posible eliminar la planilla.');
+        allRows = allRows.filter(x => String(x.id) !== decodedId);
+        render();
+        ZimaUI.notice('msg', 'Planilla eliminada definitivamente.', 'success');
+      } catch (e) {
+        ZimaUI.notice('msg', e.message, 'error');
+      } finally {
+        eliminacionesEnCurso.delete(decodedId);
+      }
+    }
     async function restaurar(id) {
       if (!id || !esGranAdministradorSesion()) return;
       const decodedId = decodeURIComponent(id);
@@ -983,6 +1013,7 @@
         (puedeGestionar && (!anulada || admin) ? '<button class="action" title="Editar / actualizar planilla" onclick="editar(\'' + id + '\')"><i class="bi bi-pencil-square"></i></button>' : '') +
         (admin && anulada ? '<button class="action" title="Restaurar planilla" onclick="restaurar(\'' + id + '\')"><i class="bi bi-arrow-counterclockwise"></i></button>' : '') +
         (puedeGestionar && !anulada ? '<button class="action" title="Anular planilla" onclick="anular(\'' + id + '\')"><i class="bi bi-x-octagon"></i></button>' : '') +
+        (admin ? '<button class="action" title="Eliminar definitivamente" aria-label="Eliminar planilla definitivamente" onclick="eliminarDefinitivamente(\'' + id + '\')"><i class="bi bi-trash-fill"></i></button>' : '') +
       '</div>';
     }
     let allRows = []; function render() { const duplicados=mostrarDuplicadosHistorial(); const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = filasMesHistorial().filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong>${duplicados.has(String(x.codigo ?? '').trim().toUpperCase())?'<br><span class="duplicate-code-badge">Código duplicado</span>':''}</td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }

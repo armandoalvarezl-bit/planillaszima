@@ -612,7 +612,7 @@
   function installAdminTicketNotifications(launcher, openSupport) {
     const session = getSupportSession();
     if (!session.token || !/^(ADMIN|ADMINISTRADOR)$/.test(String(session.rol).trim().toUpperCase()) || /\/login\.html$/i.test(location.pathname)) return;
-    const endpoint = 'https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
+    const endpoint = 'https://script.google.com/macros/s/AKfycbzNnN9Mb4jR_5Zp5K4bViCTyJFwm8OE-Stt6HFbwSQe2jKm6Ma7uHeG55SKxM3bsO8NEA/exec';
     const key = 'ZIMA_ADMIN_TICKETS_REVIEWED:' + String(session.usuario).trim().toLowerCase();
     let seen = new Set();
     try {

@@ -1,13 +1,13 @@
 (function(){
   'use strict';
-  const API_URL='https://script.google.com/macros/s/AKfycbzxAosNabJDbybt7tC4tCReva_O88wBIkCCQDaGHigbCMVipFC_XxLTYDr38sN8TYAhMg/exec';
+  const API_URL='https://script.google.com/macros/s/AKfycbzNnN9Mb4jR_5Zp5K4bViCTyJFwm8OE-Stt6HFbwSQe2jKm6Ma7uHeG55SKxM3bsO8NEA/exec';
   const $=id=>document.getElementById(id);
   const esc=ZimaUI.escapeHtml;
   const session=ZimaUI.getSupportSession();
   if(new URLSearchParams(location.search).get('embed')==='1'){
     document.body.classList.add('embedded-support');
     document.addEventListener('keydown',event=>{
-      if(event.key==='Escape' && !document.querySelector('.zima-confirm-backdrop.open')){
+      if(event.key==='Escape' && !$('ticketDialog').open && !document.querySelector('.zima-confirm-backdrop.open')){
         window.parent.postMessage({type:'zima-support-close'},location.origin);
       }
     });
@@ -55,15 +55,41 @@
     $('progressCount').textContent=tickets.filter(t=>t.estado==='EN_PROCESO').length;
     $('resolvedCount').textContent=tickets.filter(t=>t.estado==='RESUELTO').length;
     const rows=tickets.filter(t=>!$('status').value || t.estado===$('status').value);
-    $('tickets').innerHTML=rows.length?rows.map(t=>`<article class="ticket"><div class="ticket-top"><span class="ticket-id">${esc(t.id)}</span><span class="badge ${labels[t.estado]?t.estado:''}">${esc(labels[t.estado]||t.estado)}</span></div><h3>${esc(t.titulo)}</h3><div class="meta">${esc(t.peaje)} · ${esc(t.categoria)} · ${esc(t.prioridad)}<br>${esc(new Date(t.fecha).toLocaleString('es-CO',{timeZone:'America/Bogota'}))}${admin?' · '+esc(t.nombre||t.usuario):''}</div><details><summary>Ver detalle${t.respuesta?' y respuesta':''}</summary><p class="description">${esc(t.mensaje)}</p>${t.respuesta?'<div class="answer"><strong>Respuesta de soporte</strong><br>'+esc(t.respuesta)+'</div>':''}${admin?`<form class="manage" data-ticket="${esc(t.id)}"><label>Estado<select name="estado">${Object.keys(labels).map(key=>`<option value="${key}" ${key===t.estado?'selected':''}>${labels[key]}</option>`).join('')}</select></label><label>Respuesta o solución<textarea name="respuesta" maxlength="6000" rows="3">${esc(t.respuesta||'')}</textarea></label><button type="submit" class="primary">Guardar seguimiento</button></form>`:''}</details></article>`).join(''):'<div class="empty"><i class="bi bi-inbox" aria-hidden="true"></i><strong>'+ (tickets.length?'Sin casos en este estado':'Tus solicitudes, organizadas aquí') +'</strong><span>'+(tickets.length?'Prueba con otro estado para ver tus tickets.':'Crea tu primer ZimaTicket y consulta aquí cada avance<br>y las respuestas del equipo de soporte.')+'</span></div>';
+    $('tickets').innerHTML=rows.length?rows.map(t=>`<article class="ticket"><div class="ticket-top"><span class="ticket-id">${esc(t.id)}</span><span class="badge ${labels[t.estado]?t.estado:''}">${esc(labels[t.estado]||t.estado)}</span></div><h3>${esc(t.titulo)}</h3><div class="meta">${esc(t.peaje)} · ${esc(t.categoria)} · ${esc(t.prioridad)}${admin?' · '+esc(t.nombre||t.usuario):''}</div><button type="button" class="secondary conversation-button" data-ticket="${esc(t.id)}">Ver conversación y responder</button></article>`).join(''):'<p class="empty">No hay tickets en este estado.</p>';
   }
+  let currentTicketId='';
+  let replyId=requestId();
+  let replying=false;
+  function paintConversation(){
+    const t=tickets.find(t=>t.id===currentTicketId);
+    if(!t)return;
+    $('conversationTitle').textContent=t.titulo;
+    $('conversationId').textContent=t.id;
+    const messages=Array.isArray(t.conversacion)?t.conversacion:[];
+    const history=messages.length?messages:(t.respuesta?[{usuario:'Soporte',rol:'ADMIN',mensaje:t.respuesta,fecha:t.updatedAt}]:[]);
+    $('conversationMessages').innerHTML='<div class="conversation-message"><strong>'+esc(t.nombre||t.usuario)+' · Solicitud inicial</strong><p>'+esc(t.mensaje)+'</p></div>'+history.map(m=>'<div class="conversation-message '+(['ADMIN','ADMINISTRADOR'].includes(m.rol)?'support-message':'')+'"><strong>'+esc(m.nombre||m.usuario)+(['ADMIN','ADMINISTRADOR'].includes(m.rol)?' · Soporte':' · Peaje')+'</strong><time>'+esc(new Date(m.fecha).toLocaleString('es-CO',{timeZone:'America/Bogota'}))+'</time><p>'+esc(m.mensaje)+'</p></div>').join('');
+    $('replyStateField').hidden=!admin;
+    $('replyState').value=t.estado;
+    $('replyMessage').required=!admin;
+    $('replyHint').textContent=admin?'Puedes responder y actualizar el estado del caso.':'Tu respuesta quedará en la conversación y el caso volverá a quedar abierto para soporte.';
+  }
+  $('tickets').addEventListener('click',event=>{
+    const button=event.target.closest('[data-ticket]');
+    if(!button || replying)return;
+    currentTicketId=button.dataset.ticket;replyId=requestId();
+    $('replyForm').reset();$('conversationNotice').innerHTML='';
+    paintConversation();$('ticketDialog').showModal();
+  });
+  $('closeConversation').addEventListener('click',()=>$('ticketDialog').close());
+  $('ticketDialog').addEventListener('click',event=>{if(event.target===$('ticketDialog')){const r=event.target.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)event.target.close();}});
+
   async function load(){
     if(loading)return;
     loading=true;$('refresh').disabled=true;
     try{
       const r=await api('tickets');
       if(!r || !r.ok)throw Error(r && r.error || 'No fue posible consultar los tickets.');
-      tickets=r.rows || [];admin=r.admin===true;render();
+      tickets=r.rows || [];admin=r.admin===true;render();if($('ticketDialog').open)paintConversation();
     }catch(e){ZimaUI.notice('notice',e.message,'error');}
     finally{loading=false;$('refresh').disabled=false;}
   }
@@ -81,14 +107,21 @@
     }catch(e){ZimaUI.notice('notice',e.message==='Failed to fetch'?'No se pudo confirmar el envío. Pulse Crear ZimaTicket para reintentar; se conservará la identificación del caso.':e.message,'error');}
     finally{sending=false;$('submitTicket').disabled=false;$('submitTicket').textContent='Crear ZimaTicket ↗';}
   });
-  $('tickets').addEventListener('submit',async event=>{
-    const form=event.target;if(!form.matches('.manage'))return;
-    event.preventDefault();const button=form.querySelector('button');if(button.disabled)return;button.disabled=true;
+  $('replyForm').addEventListener('submit',async event=>{
+    event.preventDefault();if(replying)return;
+    replying=true;
+    const ticketId=currentTicketId;
+    const text=$('replyMessage').value.trim();
+    const state=$('replyState').value;
+    $('sendReply').disabled=true;$('replyMessage').disabled=true;$('replyState').disabled=true;
     try{
-      const r=await api('actualizarticket',{id:form.dataset.ticket,estado:form.elements.estado.value,respuesta:form.elements.respuesta.value},true);
-      if(!r || !r.ok)throw Error(r && r.error || 'No se pudo guardar el seguimiento.');
-      ZimaUI.notice('notice','Seguimiento guardado. El usuario podrá consultar su respuesta.','success');await load();
-    }catch(e){ZimaUI.notice('notice',e.message,'error');}finally{button.disabled=false;}
+      const r=await api('responderticket',{id:ticketId,requestId:replyId,estado:state,respuesta:text},true);
+      if(!r || !r.ok)throw Error(r && r.error || 'No se pudo enviar la respuesta.');
+      replyId=requestId();$('replyMessage').value='';
+      ZimaUI.notice('conversationNotice','Respuesta guardada correctamente.','success');
+      await load();
+    }catch(e){ZimaUI.notice('conversationNotice',e.message,'error');}
+    finally{replying=false;$('sendReply').disabled=false;$('replyMessage').disabled=false;$('replyState').disabled=false;}
   });
   $('refresh').addEventListener('click',load);$('status').addEventListener('change',render);
   $('sessionName').textContent=session.nombre || session.usuario;
