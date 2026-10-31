@@ -37,7 +37,8 @@ const ZIMA = {
     'estado',
     'usuario',
     'createdAt',
-    'updatedAt'
+    'updatedAt',
+    'tipoPlanilla'
   ],
 
   USUARIOS_HEADERS: [
@@ -3224,6 +3225,35 @@ function validarCodigoUnico_(sh, planilla, sesion) {
   };
 }
 
+function tipoPlanilla_(row) {
+  // El tipo se deduce de las observaciones; no lo decide un campo del cliente.
+  const observaciones = [row.observaciones || '', row.obsValor || ''].join(' ');
+  return /\bre\s*cambio\b/i.test(observaciones) ? 'RECAMBIO' : 'RECAUDO';
+}
+
+function validarFechaPlanilla_(sh, planilla, sesion) {
+  const fecha = String(planilla.fecha || '');
+  const parsed = new Date(fecha + 'T12:00:00Z');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(fecha) || isNaN(parsed.getTime()) || parsed.toISOString().slice(0,10) !== fecha) {
+    return {ok:false, code:'FECHA_INVALIDA', error:'Seleccione una fecha válida para la planilla.'};
+  }
+  const hoy = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd');
+  if (fecha > hoy) return {ok:false, code:'FECHA_INVALIDA', error:'La fecha no puede ser futura. Use la fecha del recaudo o de la visita de TransBank para el recambio.'};
+  const tipo = tipoPlanilla_(planilla);
+  const existente = readAllRows_(sh).find(function(row) {
+    return String(row.id) !== String(planilla.id || '') &&
+      normalizarEstadoPlanilla_(row.estado) !== 'ANULADA' &&
+      normalizarPeaje_(row.peaje) === normalizarPeaje_(planilla.peaje) &&
+      normalizeDateString_(row.fecha) === fecha && tipoPlanilla_(row) === tipo;
+  });
+  if (!existente) return {ok:true};
+  return {
+    ok:false, code:'FECHA_DUPLICADA',
+    error:'Ya existe una planilla de ' + tipo.toLowerCase() + ' del ' + fecha + ' para ' + planilla.peaje + '. No puede registrar otra aunque cambie el código. Edite la existente.',
+    existingId:puedeAccederPlanilla_(sesion, existente) ? String(existente.id) : ''
+  };
+}
+
 function guardarPlanilla_(data) {
 
   const lock =
@@ -3322,6 +3352,8 @@ function guardarPlanilla_(data) {
 
     const codigoUnico = validarCodigoUnico_(sh, clean, sesion);
     if (!codigoUnico.ok) return codigoUnico;
+    const fechaUnica = validarFechaPlanilla_(sh, clean, sesion);
+    if (!fechaUnica.ok) return fechaUnica;
 
     clean.estado =
       clean.estado ||
@@ -3551,6 +3583,8 @@ function actualizarPlanilla_(data) {
 
     const codigoUnico = validarCodigoUnico_(sh, merged, sesion);
     if (!codigoUnico.ok) return codigoUnico;
+    const fechaUnica = validarFechaPlanilla_(sh, merged, sesion);
+    if (!fechaUnica.ok) return fechaUnica;
 
     sh
       .getRange(
@@ -4606,6 +4640,7 @@ function normalizarDatos_(data) {
     normalizarEstadoPlanilla_(
       result.estado
     );
+  result.tipoPlanilla = tipoPlanilla_(data);
 
   return result;
 }
@@ -5036,6 +5071,7 @@ function serializarRegistro_(
     }
   );
 
+  copy.tipoPlanilla = tipoPlanilla_(obj);
   return copy;
 }
 
@@ -5983,6 +6019,7 @@ function construirHtmlPlanillaPdf_(
     filaHtmlPlanillaPdf_('Codigo', row.codigo || ''),
     filaHtmlPlanillaPdf_('ID', row.id || ''),
     filaHtmlPlanillaPdf_('Peaje', row.peaje || ''),
+    filaHtmlPlanillaPdf_('Tipo de planilla', tipoPlanilla_(row)),
     filaHtmlPlanillaPdf_('Razon', row.razon || ''),
     filaHtmlPlanillaPdf_('Moneda', row.moneda || ''),
     filaHtmlPlanillaPdf_('Lugar de entrega', row.lugarEntrega || ''),
@@ -6460,6 +6497,14 @@ function getPlanillasSheet_() {
     );
   }
 
+  // Agregar el nuevo encabezado sin modificar las 25 columnas existentes.
+  const tipoCol = headerIndex_('tipoPlanilla');
+  if (sh.getMaxColumns() < tipoCol) {
+    sh.insertColumnsAfter(sh.getMaxColumns(), tipoCol - sh.getMaxColumns());
+  }
+  if (sh.getLastColumn() < tipoCol || !sh.getRange(1, tipoCol).getValue()) {
+    sh.getRange(1, tipoCol).setValue('tipoPlanilla');
+  }
   return sh;
 }
 

@@ -136,6 +136,7 @@
       '.zima-confirm-card:before{content:"";display:block;height:5px;background:#003747}',
       '.zima-confirm-head{display:flex;align-items:flex-start;gap:13px;padding:20px 22px 10px}',
       '.zima-confirm-icon{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#fff0ef;color:#b42318;border:1px solid #f2c4bd;font-weight:900;font-size:20px;flex:0 0 auto}',
+      '.warning .zima-confirm-card{border-top:5px solid #e6a009}.warning .zima-confirm-icon{width:52px;height:52px;background:#fff5d6;border-color:#f2cf75;color:#925b00;font-size:30px}.warning .zima-confirm-detail{background:#fffaeb;color:#785400}.warning .zima-confirm-btn.primary{background:#f4bd36;border-color:#e6a009;color:#442d00}',
       '.zima-confirm-title{margin:0;font-size:18px;line-height:1.18;font-weight:850;color:#101827}',
       '.zima-confirm-body{padding:0 22px 18px;color:#46515f;font-size:13px;line-height:1.55}',
       '.zima-confirm-message{max-width:390px}',
@@ -183,6 +184,36 @@
     document.head.appendChild(style);
   }
 
+  let warningAudioContext;
+  async function playWarningSound(kind) {
+    try {
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) return false;
+      warningAudioContext = warningAudioContext || new Audio();
+      if (warningAudioContext.state !== 'running') await warningAudioContext.resume();
+      if (warningAudioContext.state !== 'running') return false;
+      const start = warningAudioContext.currentTime;
+      const success = kind === 'success';
+      const notes = success ? [523.25, 659.25, 783.99] : [740, 554, 740, 554];
+      notes.forEach(function(frequency, index) {
+        const oscillator = warningAudioContext.createOscillator();
+        const gain = warningAudioContext.createGain();
+        const at = start + index * (success ? 0.13 : 0.28);
+        oscillator.type = success ? 'triangle' : 'sine';
+        oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(0, at);
+        gain.gain.linearRampToValueAtTime(success ? 0.06 : 0.12, at + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, at + (success ? 0.42 : 0.24));
+        oscillator.connect(gain);
+        gain.connect(warningAudioContext.destination);
+        oscillator.onended = function() { oscillator.disconnect(); gain.disconnect(); };
+        oscillator.start(at);
+        oscillator.stop(at + (success ? 0.45 : 0.26));
+      });
+      return true;
+    } catch (_) { return false; }
+  }
+
   function confirmDialog(options) {
     options = options || {};
     ensureConfirmStyles();
@@ -192,10 +223,19 @@
       backdrop.className = 'zima-confirm-backdrop open';
       if (options.tone === 'success') backdrop.classList.add('success');
       if (options.tone === 'logout') backdrop.classList.add('logout');
+      if (options.tone === 'warning') backdrop.classList.add('warning');
       backdrop.setAttribute('aria-hidden', 'false');
       const previousFocus = document.activeElement;
       const previousOverflow = document.body.style.overflow;
       let settled = false;
+      let soundPlayed = false;
+      let soundPending = false;
+      async function warningSound() {
+        if (options.sound !== 'warning' || soundPlayed || soundPending || settled) return;
+        soundPending = true;
+        soundPlayed = await playWarningSound();
+        soundPending = false;
+      }
 
       const title = options.title || 'Confirmar acci\u00f3n';
       const message = options.message || '\u00bfDesea continuar?';
@@ -205,7 +245,7 @@
       const danger = options.danger !== false;
 
       backdrop.innerHTML =
-        '<div class="zima-confirm-card" role="dialog" aria-modal="true" aria-labelledby="zimaConfirmTitle" aria-describedby="zimaConfirmMessage">' +
+        '<div class="zima-confirm-card" role="' + (options.tone === 'warning' ? 'alertdialog' : 'dialog') + '" aria-modal="true" aria-labelledby="zimaConfirmTitle" aria-describedby="zimaConfirmMessage">' +
           '<div class="zima-confirm-head">' +
             '<div class="zima-confirm-icon" aria-hidden="true">' + (options.tone === 'logout' ? '<svg viewBox="0 0 32 32"><path d="M14 5H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h7"/><g class="logout-arrow"><path d="M12 16h15m-6-6 6 6-6 6"/></g></svg>' : options.tone === 'success' ? '&#10003;' : '!') + '</div>' +
             '<div>' + (options.tone === 'logout' ? '<div class="zima-logout-eyebrow">HASTA PRONTO</div>' : '') + '<h2 class="zima-confirm-title" id="zimaConfirmTitle">' + escapeHtml(title) + '</h2></div>' +
@@ -224,6 +264,8 @@
         if (settled) return;
         settled = true;
         document.removeEventListener('keydown', onKeydown);
+        backdrop.removeEventListener('pointerdown', warningSound);
+        backdrop.removeEventListener('keydown', warningSound);
         document.body.style.overflow = previousOverflow;
         backdrop.remove();
         if (previousFocus && previousFocus.isConnected) previousFocus.focus();
@@ -250,6 +292,9 @@
       document.addEventListener('keydown', onKeydown);
       document.body.appendChild(backdrop);
       document.body.style.overflow = 'hidden';
+      backdrop.addEventListener('pointerdown', warningSound);
+      backdrop.addEventListener('keydown', warningSound);
+      void warningSound();
 
       const primary = backdrop.querySelector(options.tone === 'logout' ? '[data-zima-confirm="cancel"]' : '[data-zima-confirm="ok"]');
       if (primary) primary.focus();
@@ -763,6 +808,43 @@
     void refresh();
   }
 
+  function installFloatingClock() {
+    if (window.self !== window.top || document.getElementById('zimaFloatingClock')) return;
+    const style = document.createElement('style');
+    style.textContent = [
+      '#zimaFloatingClock{position:fixed;right:24px;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:1040;display:flex;align-items:center;gap:10px;box-sizing:border-box;padding:10px 14px;border:1px solid #d6e2e5;border-radius:14px;background:rgba(255,255,255,.96);color:#104149;box-shadow:0 5px 22px #103e371a;font-family:"Segoe UI",Arial,sans-serif;pointer-events:none}',
+      '#zimaFloatingClock.has-support{right:90px}',
+      '#zimaFloatingClock svg{width:22px;height:22px;flex-shrink:0;color:#b28a24}',
+      '#zimaFloatingClock time{display:block;font-size:19px;font-weight:700;line-height:1.15;letter-spacing:.6px;font-variant-numeric:tabular-nums}',
+      '#zimaFloatingClock small{display:block;font-size:10px;line-height:1.4;margin-top:3px;color:#65777a}',
+      '@media(max-width:700px){#zimaFloatingClock{right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));padding:8px 10px;gap:7px}#zimaFloatingClock.has-support{right:76px;bottom:calc(86px + env(safe-area-inset-bottom,0px))}#zimaFloatingClock time{font-size:17px}#zimaFloatingClock svg{width:18px;height:18px}}',
+      '@media print{#zimaFloatingClock{display:none!important}}'
+    ].join('');
+    document.head.appendChild(style);
+    const clock = document.createElement('aside');
+    clock.id = 'zimaFloatingClock';
+    clock.className = 'no-print' + (document.getElementById('zimaSupportLauncher') ? ' has-support' : '');
+    clock.setAttribute('aria-label', 'Hora de Colombia');
+    clock.setAttribute('aria-live', 'off');
+    clock.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><div><time></time><small></small></div>';
+    document.body.appendChild(clock);
+    const time = clock.querySelector('time');
+    const date = clock.querySelector('small');
+    const timeFormat = new Intl.DateTimeFormat('es-CO', {timeZone:'America/Bogota',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+    const dateFormat = new Intl.DateTimeFormat('es-CO', {timeZone:'America/Bogota',day:'numeric',month:'short'});
+    function updateClock() {
+      if (document.hidden) return;
+      const now = new Date();
+      time.textContent = timeFormat.format(now);
+      time.dateTime = now.toISOString();
+      date.textContent = 'Colombia · ' + dateFormat.format(now);
+      clock.title = 'Hora de Colombia · America/Bogota (UTC−5)';
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+    document.addEventListener('visibilitychange', updateClock);
+  }
+
   function installResponsiveNavigation() {
     const sidebar = document.querySelector('.sidebar');
     const header = document.querySelector('.topbar-left,.topbar,.top,.toolbar');
@@ -788,11 +870,13 @@
     backdrop.hidden = true;
     document.body.appendChild(backdrop);
     function setOpen(open, restoreFocus) {
-      open = Boolean(open && compact.matches);
+      const drawer = compact.matches;
+      document.body.classList.toggle('zima-drawer-nav', drawer);
+      open = Boolean(open && drawer);
       document.body.classList.toggle('zima-nav-open', open);
       sidebar.classList.toggle('mobile-open', open);
-      sidebar.inert = compact.matches && !open;
-      if (compact.matches) sidebar.setAttribute('aria-hidden', String(!open));
+      sidebar.inert = drawer && !open;
+      if (drawer) sidebar.setAttribute('aria-hidden', String(!open));
       else sidebar.removeAttribute('aria-hidden');
       backdrop.hidden = !open;
       toggle.setAttribute('aria-expanded', String(open));
@@ -826,6 +910,7 @@
     clearSession: clearSession,
     closeModal: closeModal,
     confirm: confirmDialog,
+    playSaveSound: function() { return playWarningSound('success'); },
     confirmLogout: confirmLogout,
     escapeHtml: escapeHtml,
     fixMojibake: fixMojibake,
@@ -841,12 +926,14 @@
     document.addEventListener('DOMContentLoaded', function () {
       installResponsiveNavigation();
       installSupportLauncher();
+      installFloatingClock();
       repairVisibleText();
       watchTextRepairs();
     });
   } else {
     installResponsiveNavigation();
     installSupportLauncher();
+    installFloatingClock();
     repairVisibleText();
     watchTextRepairs();
   }

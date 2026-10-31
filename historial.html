@@ -898,7 +898,6 @@
       const saving = $('editSaving');
       if(data.type === 'duplicate'){
         if(saving) saving.hidden = true;
-        ZimaUI.notice('msg', data.message || 'Código duplicado. Edite la planilla existente.', 'error');
         return;
       }
       if (data.type === 'saving') {
@@ -1016,7 +1015,7 @@
         (admin ? '<button class="action" title="Eliminar definitivamente" aria-label="Eliminar planilla definitivamente" onclick="eliminarDefinitivamente(\'' + id + '\')"><i class="bi bi-trash-fill"></i></button>' : '') +
       '</div>';
     }
-    let allRows = []; function render() { const duplicados=mostrarDuplicadosHistorial(); const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = filasMesHistorial().filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong>${duplicados.has(String(x.codigo ?? '').trim().toUpperCase())?'<br><span class="duplicate-code-badge">Código duplicado</span>':''}</td><td>${esc(x.fecha || '')}</td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
+    let allRows = []; function render() { const duplicados=mostrarDuplicadosHistorial(); const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = filasMesHistorial().filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong>${duplicados.has(String(x.codigo ?? '').trim().toUpperCase())?'<br><span class="duplicate-code-badge">Código duplicado</span>':''}</td><td>${esc(x.fecha || '')}<br><small>${/\bre\s*cambio\b/i.test([x.observaciones||'',x.obsValor||''].join(' '))?'Recambio':'Recaudo'}</small></td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
     function codigosDuplicados(){
       const cantidades=new Map();
       allRows.forEach(fila=>{
@@ -1041,8 +1040,7 @@
       const duplicados=new Set(filasMesHistorial().map(fila=>String(fila.codigo ?? '').trim().toUpperCase()).filter(codigo=>todos.has(codigo)));
       const aviso=$('duplicateNotice');
       if(aviso){
-        aviso.innerHTML=duplicados.size?'<div class="notice error"><strong>Advertencia: hay códigos duplicados en el historial.</strong> '+
-          [...duplicados].map(esc).join(', ')+'. Debe ajustar las planillas duplicadas o comunicarse con el administrador.</div>':'';
+        aviso.innerHTML='';
       }
       const firma=$('mes').value+':'+[...duplicados].sort().join('|');
       if(!duplicados.size) ultimaAdvertenciaDuplicados='';
@@ -1050,6 +1048,7 @@
         ultimaAdvertenciaDuplicados=firma;
         modalDuplicadosAbierto=true;
         ZimaUI.confirm({
+          tone:'warning',sound:'warning',
           title:'Advertencia: planillas duplicadas',
           message:'Hay códigos duplicados entre las planillas de este mes. Debe revisar y ajustar las planillas duplicadas o comunicarse con el administrador para corregirlas.',
           detail:'Mes: '+$('mes').value+' · Códigos: '+[...duplicados].join(', '),

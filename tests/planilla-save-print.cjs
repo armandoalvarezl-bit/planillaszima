@@ -11,7 +11,7 @@ const printSource = html.slice(html.indexOf('    async function imprimir(){'), h
 function setup() {
   const elements = new Map();
   const el = id => {
-    if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', disabled: false, inert: false, setAttribute() {} });
+    if (!elements.has(id)) elements.set(id, { value: '', innerHTML: '', disabled: false, inert: false, open:false, setAttribute() {}, showModal(){this.open=true;}, close(){this.open=false;} });
     return elements.get(id);
   };
   const actions = ['saveBtn', 'printBtn', 'cancelBtn', 'newBtn'].map(el);
@@ -20,6 +20,7 @@ function setup() {
   const calls = [];
   const dialogs = [];
   let printed = 0;
+  let saveSounds = 0;
   let finish;
   let printError = false;
   const context = vm.createContext({
@@ -28,7 +29,7 @@ function setup() {
     $: el, msg: el('msg'), embeddedEdit: false,
     actualizar() {}, actualizarAccionesAdmin() {},
     syncRows: async () => [],
-    datos: () => ({ peaje: 'ZIMA', fecha: '2026-10-21', total: 1000, codigo: 'BORRADOR' }),
+    datos: () => ({ peaje: 'ZIMA', fecha: '2026-10-21', tipoPlanilla:'RECAUDO', total: 1000, codigo: 'BORRADOR' }),
     apiPost: data => { calls.push(data); return new Promise(resolve => { finish = resolve; }); },
     normalizarEstado: value => value,
     formatCOP: value => String(value), parseMoney: Number,
@@ -40,13 +41,14 @@ function setup() {
       if (printError) throw new Error('Impresora no disponible');
     },
     ZimaUI: {
+      playSaveSound: () => {saveSounds++;},
       confirm: async options => { dialogs.push(options); return false; },
       busy: (id, busy) => { el(id).disabled = busy; },
       notice: (_, message, type) => messages.push({ message, type })
     }
   });
   vm.runInContext('let id=null; let estadoActual="APROBADO";\n' + source + printSource, context);
-  return { context, el, calls, dialogs, messages, navigation, finish: value => finish(value), printed: () => printed, failPrint: () => { printError = true; } };
+  return { context, el, calls, dialogs, messages, navigation, finish: value => finish(value), printed: () => printed, sounds:()=>saveSounds, failPrint: () => { printError = true; } };
 }
 const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APROBADO' } };
 (async () => {
@@ -56,7 +58,10 @@ const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APR
   const saving = success.context.guardar();
   await new Promise(setImmediate);
   assert.equal(success.calls.length, 1);
+  assert.equal(success.dialogs.length, 0); // La validación de fecha es interna.
   assert.equal(success.printed(), 0);
+  assert.equal(success.el('saveProgressModal').open, true);
+  assert.equal(success.sounds(), 0);
   assert.equal(success.el('doc').inert, true);
   assert.equal(success.el('saveBtn').disabled, true);
   success.context.nuevaPlanilla();
@@ -65,6 +70,8 @@ const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APR
   assert.equal(success.calls.length, 1);
   success.finish(saved);
   await saving;
+  assert.equal(success.el('saveProgressModal').open, false);
+  assert.equal(success.sounds(), 1);
   assert.equal(success.printed(), 1);
   assert.equal(success.el('doc').inert, false);
   assert.equal(success.el('saveBtn').disabled, false);
@@ -99,9 +106,13 @@ const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APR
   duplicate.finish({ ok: false, code: 'CODIGO_DUPLICADO', error: 'Ya existe esta planilla.', existingId: 'original-123' });
   await duplicateSaving;
   assert.equal(duplicate.printed(), 0);
+  assert.equal(duplicate.el('saveProgressModal').open, false);
+  assert.equal(duplicate.sounds(), 0);
   assert.equal(vm.runInContext('id', duplicate.context), null);
-  assert.match(duplicate.el('msg').innerHTML, /planilla.html\?id=original-123/);
-  assert.match(duplicate.el('msg').innerHTML, /para editar/);
+  assert.equal(duplicate.el('msg').innerHTML, '');
+  assert.equal(duplicate.dialogs.at(-1).tone, 'warning');
+  assert.equal(duplicate.dialogs.at(-1).sound, 'warning');
+  assert.equal(duplicate.dialogs.at(-1).confirmText, 'Abrir planilla existente');
   assert.equal(duplicate.el('saveBtn').disabled, false);
   assert.equal(duplicate.el('doc').inert, false);
 
@@ -110,12 +121,37 @@ const saved = { ok: true, row: { id: '123', codigo: 'GUARDADO-123', estado: 'APR
   await knownDuplicate.context.guardar();
   assert.equal(knownDuplicate.calls.length, 0);
   assert.equal(knownDuplicate.printed(), 0);
-  assert.match(knownDuplicate.el('msg').innerHTML, /Ya existe una planilla/);
-  assert.match(knownDuplicate.el('msg').innerHTML, /planilla.html\?id=original/);
+  assert.equal(knownDuplicate.el('msg').innerHTML, '');
+  assert.match(knownDuplicate.dialogs[0].message, /Ya existe una planilla/);
+  assert.equal(knownDuplicate.dialogs[0].sound, 'warning');
   assert.equal(knownDuplicate.el('doc').inert, false);
   assert.equal(knownDuplicate.el('saveBtn').disabled, false);
 
   const editing = setup();
+  const fechaDuplicada = setup();
+  fechaDuplicada.context.syncRows = async () => [{id:'fecha-original',codigo:'CODIGO-DIFERENTE',peaje:'ZIMA',fecha:'2026-10-21',tipoPlanilla:'RECAUDO',estado:'APROBADO'}];
+  await fechaDuplicada.context.guardar();
+  assert.equal(fechaDuplicada.calls.length,0);
+  assert.match(fechaDuplicada.dialogs[0].title,/fecha ya registrada/);
+  assert.equal(fechaDuplicada.dialogs[0].sound,'warning');
+  // Una marca recambio en la existente permite el recaudo de esa misma fecha.
+  const recaudoConRecambioPrevio = setup();
+  recaudoConRecambioPrevio.context.syncRows = async () => [{id:'recambio-previo',codigo:'REC-OTRO',peaje:'ZIMA',fecha:'2026-10-21',tipoPlanilla:'RECAUDO',observaciones:'Recambio de TransBank',estado:'APROBADO'}];
+  const guardarRecaudo = recaudoConRecambioPrevio.context.guardar();
+  await new Promise(setImmediate);
+  assert.equal(recaudoConRecambioPrevio.calls.length,1);
+  assert.equal(recaudoConRecambioPrevio.calls[0].tipoPlanilla,'RECAUDO');
+  recaudoConRecambioPrevio.finish(saved);
+  await guardarRecaudo;
+  const recambioConRecaudoPrevio = setup();
+  recambioConRecaudoPrevio.context.datos = () => ({peaje:'ZIMA',fecha:'2026-10-21',total:2500,codigo:'REC-NUEVO',observaciones:'re cambio',tipoPlanilla:'RECAUDO'});
+  recambioConRecaudoPrevio.context.syncRows = async () => [{id:'recaudo-previo',codigo:'RECAUDO-OTRO',peaje:'ZIMA',fecha:'2026-10-21',tipoPlanilla:'RECAMBIO',observaciones:'',estado:'APROBADO'}];
+  const guardarRecambio = recambioConRecaudoPrevio.context.guardar();
+  await new Promise(setImmediate);
+  assert.equal(recambioConRecaudoPrevio.calls.length,1);
+  assert.equal(recambioConRecaudoPrevio.calls[0].tipoPlanilla,'RECAMBIO');
+  recambioConRecaudoPrevio.finish(saved);
+  await guardarRecambio;
   vm.runInContext('id="original"', editing.context);
   editing.context.syncRows = async () => [{ id: 'original', codigo: 'BORRADOR' }];
   const updating = editing.context.guardar();

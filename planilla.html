@@ -1076,11 +1076,12 @@ body.planilla-page .print-preview-backdrop{
        </div>
        <div class="col4 cell codebox">
         <label>
-         Fecha
+         Fecha del recaudo / recambio
         </label>
         <input id="fecha" type="date"/>
        </div>
        <div class="col4 cell">
+        <input id="tipoPlanilla" type="hidden" value="RECAUDO"/>
        </div>
       </div>
       <div class="section">
@@ -1212,6 +1213,11 @@ body.planilla-page .print-preview-backdrop{
 
   <style>
     .planilla-progress{display:flex;align-items:center;gap:16px;padding:18px 20px;margin:0 0 16px;border:1px solid #d5e5eb;border-radius:12px;background:#f1f7fa;color:#124b60;box-shadow:0 4px 16px rgba(18,75,96,.05)}
+    .save-progress-modal{border:0;padding:0;border-radius:22px;width:min(440px,calc(100% - 32px));color:#124b60;box-shadow:0 24px 80px #082d3940;background:#fff}
+    .save-progress-modal::backdrop{background:#082d3980;backdrop-filter:blur(5px)}
+    .save-progress-modal .planilla-progress{margin:0;border:0;border-top:4px solid #dfb33d;border-radius:0;background:#fff;padding:32px 26px;min-height:160px}
+    .save-progress-modal .planilla-progress-spinner{width:38px;height:38px;border-top-color:#b68a22}
+    @media print{.save-progress-modal{display:none!important}}
     .planilla-progress strong{display:block;font-size:14px;margin-bottom:4px}
     .planilla-progress small{display:block;color:#557080;line-height:1.5}
     .planilla-progress-spinner{width:28px;height:28px;flex:0 0 auto;border:3px solid #cddfe7;border-top-color:#00617a;border-radius:50%;animation:planilla-spin .8s linear infinite}
@@ -1223,6 +1229,7 @@ body.planilla-page .print-preview-backdrop{
     @media(prefers-reduced-motion:reduce){.planilla-progress-spinner{animation:none}}
     @media print{.planilla-progress{display:none!important}}
   </style>
+  <dialog id="saveProgressModal" class="save-progress-modal" aria-label="Guardado de planilla" aria-busy="true"><div id="saveProgressContent" role="status" aria-live="polite"></div></dialog>
   <script src="zima-ui.js"></script>
   <script>
    const API_URL='https://script.google.com/macros/s/AKfycbzNnN9Mb4jR_5Zp5K4bViCTyJFwm8OE-Stt6HFbwSQe2jKm6Ma7uHeG55SKxM3bsO8NEA/exec';
@@ -1471,7 +1478,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       }
     }
 
-    $('fecha').value=new Date().toISOString().slice(0,10);
+    $('fecha').value=fechaHoyPlanilla();
+    $('fecha').max=fechaHoyPlanilla();
     inicializarPeajeSesion();
     bloquearCamposFijos();
 
@@ -1577,13 +1585,14 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     function datos(){
       aplicarDatosFijosPlanilla();
       actualizar();
-      const ids=['codigo','peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','fecha','concepto','obsValor','observaciones','entregadoNombre','entregadoFirma','revisadoNombre','revisadoFirma'];
+      const ids=['codigo','peaje','razon','moneda','lugarEntrega','recibe','ciudad','lugarRecibo','fecha','tipoPlanilla','concepto','obsValor','observaciones','entregadoNombre','entregadoFirma','revisadoNombre','revisadoFirma'];
       const d={};
       ids.forEach(x=>d[x]=$(x).value.trim());
       d.total=parseMoney(totalInput.value);
       d.tula=parseMoney($('tula').value);
       d.billetes=parseMoney($('billetes').value);
       d.letras=letrasInput.value;
+      d.tipoPlanilla=tipoRegistroPlanilla(d);
       return d;
     }
 
@@ -1601,6 +1610,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       try{
         const r=await apiGet('get',{id});
         if(!r.ok)throw Error(r.error);
+        r.row.tipoPlanilla=tipoRegistroPlanilla(r.row);
         estadoActual=normalizarEstado(r.row.estado)||'APROBADO';
         Object.keys(r.row).forEach(k=>{
           const e=$(k);
@@ -1630,16 +1640,46 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       const detalle=cargando?'Consultando los datos guardados.':imprimiendo?'Se abrirá el diálogo de impresión del navegador.':'Espere la confirmación del servidor antes de salir.';
       const pasos=!cargando && (!id || imprimiendo);
       msg.setAttribute('aria-busy','true');
-      msg.innerHTML='<div class="planilla-progress"><span class="planilla-progress-spinner" aria-hidden="true"></span><div><strong>'+titulo+'</strong><small>'+detalle+'</small>'+(pasos?'<div class="planilla-progress-steps" aria-hidden="true"><span class="'+(imprimiendo?'done':'active')+'">'+(imprimiendo?'✓ ':'1. ')+'Guardar</span><span class="'+(imprimiendo?'active':'')+'">2. Imprimir</span></div>':'')+'</div></div>';
+      const contenido='<div class="planilla-progress"><span class="planilla-progress-spinner" aria-hidden="true"></span><div><strong>'+titulo+'</strong><small>'+detalle+'</small>'+(pasos?'<div class="planilla-progress-steps" aria-hidden="true"><span class="'+(imprimiendo?'done':'active')+'">'+(imprimiendo?'✓ ':'1. ')+'Guardar</span><span class="'+(imprimiendo?'active':'')+'">2. Imprimir</span></div>':'')+'</div></div>';
+      if(cargando){msg.innerHTML=contenido;return;}
+      msg.innerHTML='';
+      $('saveProgressContent').innerHTML=contenido;
+      const modal=$('saveProgressModal');
+      modal.oncancel=event=>event.preventDefault();
+      if(!modal.open)modal.showModal();
     }
 
-    function mostrarAvisoDuplicado(resultado){
-      msg.innerHTML='<div class="notice error" role="alert">'+esc(resultado.error || 'Ya existe una planilla con este código. Edite la existente.')+
-        (resultado.existingId?'<br><a class="btn btn-primary" target="_top" href="planilla.html?id='+esc(encodeURIComponent(resultado.existingId))+'">Abrir planilla existente para editar</a>':'')+'</div>';
-      msg.scrollIntoView?.({behavior:'auto',block:'center'});
+    function cerrarProgresoGuardado(){
+      const modal=$('saveProgressModal');
+      if(modal.open)modal.close();
+    }
+
+    function fechaHoyPlanilla(){
+      const partes=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Bogota',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date());
+      return ['year','month','day'].map(tipo=>partes.find(p=>p.type===tipo).value).join('-');
+    }
+
+    function tipoRegistroPlanilla(row){
+      return /\bre\s*cambio\b/i.test([row.observaciones||'',row.obsValor||''].join(' '))?'RECAMBIO':'RECAUDO';
+    }
+
+    async function mostrarAvisoDuplicado(resultado){
+      cerrarProgresoGuardado();
+      msg.innerHTML='';
+      msg.setAttribute('aria-busy','false');
       if(embeddedEdit && window.parent && window.parent!==window){
         window.parent.postMessage({source:'zima-planilla',type:'duplicate',message:resultado.error || 'Código duplicado. Edite la planilla existente.'}, '*');
       }
+      const abrir=await ZimaUI.confirm({
+        tone:'warning',sound:'warning',danger:false,
+        title:resultado.code==='FECHA_DUPLICADA'?'Advertencia: fecha ya registrada':'Advertencia: planilla duplicada',
+        message:resultado.code==='FECHA_DUPLICADA'?'Ya hay una planilla del mismo tipo y fecha para este peaje. Cambiar el código no permite crear otra. Abra la existente para revisar sus datos.':'Ya existe una planilla con este código. No se guardó una nueva planilla. Abra la existente para corregir o actualizar sus datos.',
+        detail:resultado.error || 'Revise el código antes de continuar.',
+        confirmText:resultado.existingId?'Abrir planilla existente':'Revisar código',
+        cancelText:'Cerrar aviso'
+      });
+      if(abrir && resultado.existingId)go('planilla.html?id='+encodeURIComponent(resultado.existingId));
+      else if(abrir)$('codigo')?.focus();
     }
 
     function nuevaPlanilla(){
@@ -1651,6 +1691,12 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       if(window.__zimaSavingPlanilla || window.__zimaPrintingPlanilla)return;
       actualizar();
       const d=datos();
+      d.tipoPlanilla=tipoRegistroPlanilla(d);
+      const fechaValidada=new Date(d.fecha+'T12:00:00Z');
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha)||isNaN(fechaValidada.getTime())||fechaValidada.toISOString().slice(0,10)!==d.fecha||d.fecha>fechaHoyPlanilla()){
+        ZimaUI.notice(msg,'Verifique la fecha: debe ser válida y no puede ser futura. Use la fecha del recaudo o de la visita de TransBank para el recambio.','error');
+        return;
+      }
       if(!d.peaje||!d.fecha||d.total<=0){
         ZimaUI.notice(msg,'Complete Peaje, Fecha y Total entregado.','error');
         return;
@@ -1665,17 +1711,26 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         $('doc').inert=true;
         ZimaUI.busy('saveBtn',true,editando?'Actualizando...':'Guardando...');
         mostrarProgresoPlanilla('guardando');
-        if(d.codigo){
+        {
           const codigoBuscado=String(d.codigo).trim().toUpperCase();
           const existentes=await syncRows();
           const duplicada=existentes.find(fila=>
-            String(fila.codigo ?? '').trim().toUpperCase()===codigoBuscado &&
+            codigoBuscado && String(fila.codigo ?? '').trim().toUpperCase()===codigoBuscado &&
             (!id || String(fila.id)!==String(id)));
           if(duplicada){
-            mostrarAvisoDuplicado({
+            await mostrarAvisoDuplicado({
               error:'Ya existe una planilla con este código. Abra la planilla existente para editarla y ajustar sus datos.',
               existingId:duplicada.id
             });
+            return;
+          }
+          const fechaDuplicada=existentes.find(fila=>
+            (!id||String(fila.id)!==String(id)) && normalizarEstado(fila.estado)!=='ANULADA' &&
+            String(fila.peaje||'').trim().toUpperCase()===String(d.peaje).trim().toUpperCase() &&
+            String(fila.fecha||'').slice(0,10)===d.fecha && tipoRegistroPlanilla(fila)===d.tipoPlanilla);
+          if(fechaDuplicada){
+            await mostrarAvisoDuplicado({code:'FECHA_DUPLICADA',existingId:fechaDuplicada.id,
+              error:'Ya existe '+d.tipoPlanilla.toLowerCase()+' del '+d.fecha+' para '+d.peaje+'. Revise la planilla '+(fechaDuplicada.codigo||'existente')+'.'});
             return;
           }
         }
@@ -1688,13 +1743,14 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           }, '*');
         }
         const r=await apiPost({action:id?'update':'save',id,...d,estado:editando?(estadoActual||'APROBADO'):'APROBADO'});
-        if(r && !r.ok && r.code==='CODIGO_DUPLICADO'){
-          mostrarAvisoDuplicado(r);
+        if(r && !r.ok && ['CODIGO_DUPLICADO','FECHA_DUPLICADA'].includes(r.code)){
+          await mostrarAvisoDuplicado(r);
           return;
         }
         if(!r || !r.ok)throw Error(r && r.error || 'No se pudo confirmar el guardado.');
         if(!r.row || !r.row.id)throw Error('El servidor no devolvió la identificación de la planilla guardada.');
         guardada=true;
+        void ZimaUI.playSaveSound();
         id=r.row.id;
         Object.keys(r.row).forEach(k=>{
           const campo=$(k);
@@ -1705,9 +1761,11 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         if(!editando){
           mostrarProgresoPlanilla('imprimiendo');
           ZimaUI.busy('saveBtn',true,'Preparando impresión...');
+          cerrarProgresoGuardado();
           await imprimirDesdeVistaPrevia();
         }
         msg.innerHTML='';
+        cerrarProgresoGuardado();
         if(!embeddedEdit){
           const irAlHistorial=await ZimaUI.confirm({
             tone:'success',danger:false,
@@ -1727,6 +1785,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           }, '*');
         }
       }catch(e){
+        cerrarProgresoGuardado();
         if(embeddedEdit && window.parent && window.parent !== window){
           window.parent.postMessage({
             source:'zima-planilla',
@@ -1737,6 +1796,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         }
         ZimaUI.notice(msg,guardada?'La planilla quedó guardada. No se pudo abrir la impresión: '+e.message+' Use «Volver a imprimir»; no necesita guardarla otra vez. Puede consultarla en el historial y editarla para ajustar sus datos si se equivocó; no necesita crear una nueva.':e.message,'error');
       }finally{
+        cerrarProgresoGuardado();
         window.__zimaSavingPlanilla=false;
         ZimaUI.busy('saveBtn',false);
         $('doc').inert=false;
@@ -1808,7 +1868,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           replacement.textContent=el.value || '';
         }else if(el.tagName==='SELECT'){
           replacement.innerHTML=el.innerHTML;
-          replacement.value=el.value;
+          replacement.value=($(el.id)||el).value;
         }else{
           replacement.value=el.value || '';
           if(el.checked) replacement.checked=true;

@@ -26,10 +26,12 @@ context.testRows = [
 ];
 el('mes').value='2026-10';
 vm.runInContext('allRows=testRows; render()',context);
-assert.match(el('duplicateNotice').innerHTML,/Advertencia/);
+assert.equal(el('duplicateNotice').innerHTML,'');
 assert.doesNotMatch(el('rows').innerHTML,/SEPTIEMBRE|NOVIEMBRE/);
 assert.equal(el('count').textContent,'4 registros');
 assert.equal(dialogs.length,1);
+assert.equal(dialogs[0].tone,'warning');
+assert.equal(dialogs[0].sound,'warning');
 assert.match(dialogs[0].message,/ajustar.*administrador/);
 context.render();
 assert.equal(dialogs.length,1);
