@@ -6,7 +6,7 @@ const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'code.gs'), 'utf8');
 const context = vm.createContext({ console, Date, JSON });
 vm.runInContext(source, context);
-for (const file of ['login.html', 'dashboard.html']) {
+for (const file of ['login.html', 'login-soporte.html', 'dashboard.html']) {
   const html = fs.readFileSync(path.join(root, file), 'utf8');
   for (const [, script] of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) {
     new vm.Script(script, { filename: file });
@@ -30,6 +30,7 @@ const headers = vm.runInContext('ZIMA.USUARIOS_HEADERS.slice()', context);
 const hash = value => 'hash:' + Buffer.from(value).toString('hex');
 const row = ['1', 'prueba', hash('anterior'), 'Prueba', 'PEAJE', 'ZIMA', 'ACTIVO', new Date('2020-01-01'), '', '', '', '', '', ''];
 let sessionsCreated = 0;
+let loginsRegistered = 0;
 const sh = {
   getLastRow: () => 2,
   getLastColumn: () => headers.length,
@@ -49,6 +50,7 @@ Object.assign(context, {
   verificarContrasena_: (value, stored) => stored === hash(value),
   obtenerFotoUsuarioPersistente_: () => '',
   notificarIngresoPlataforma_: () => {},
+  registrarIngresoPeaje_: () => { loginsRegistered++; },
   crearSesion_: () => { sessionsCreated++; return 'token'; },
   LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
   SpreadsheetApp: { flush() {} },
@@ -78,6 +80,16 @@ assert.ok(row[13] instanceof Date);
 assert.equal(context.autenticarUsuario('prueba', 'anterior').ok, false);
 assert.equal(context.autenticarUsuario('prueba', 'nueva clave ').ok, true);
 assert.equal(sessionsCreated, 1);
+const beforeSupportLogin = sessionsCreated;
+assert.equal(context.autenticarUsuario('prueba', 'nueva clave ', 'soporte').ok, false);
+assert.equal(context.doPost({action:'login',usuario:'prueba',password:'nueva clave ',portal:'soporte'}).ok, false);
+assert.equal(context.doGet({parameter:{action:'login',usuario:'prueba',password:'nueva clave ',portal:'soporte'}}).ok, false);
+assert.equal(sessionsCreated, beforeSupportLogin);
+for (const role of ['SOPORTE','ADMIN','ADMINISTRADOR']) {
+  row[4] = role;
+  assert.equal(context.autenticarUsuario('prueba', 'nueva clave ', 'soporte').ok, true);
+}
+row[4] = 'PEAJE';
 const fechaGuardada = row[13].getTime();
 for (let ingreso = 0; ingreso < 3; ingreso++) {
   assert.equal(context.autenticarUsuario('prueba', 'nueva clave ').ok, true);
@@ -105,6 +117,7 @@ assert.equal(context.obtenerUsuariosDesdeHoja_(sh)[0].FECHA_CAMBIO_CONTRASENA.ge
 assert.equal(context.obtenerContextoUsuario_({ token: 'nuevo' }).ok, true);
 
 async function probarFormulario() {
+  assert.equal(loginsRegistered,sessionsCreated);
   const elements = new Map();
   const el = id => {
     if (!elements.has(id)) elements.set(id, {

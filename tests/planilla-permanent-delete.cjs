@@ -47,10 +47,11 @@ assert.equal(audit[0][0], 'PERMANENT_DELETE');
 const html = fs.readFileSync(path.join(__dirname, '..', 'historial.html'), 'utf8');
 for (const [, script] of html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)) new vm.Script(script);
 const calls = [];
+const dialogs = [];
 let admin = true, confirm = false, success = true;
 const ui = vm.createContext({
   esGranAdministradorSesion: () => admin,
-  ZimaUI: {confirm: async () => confirm, notice: () => {}},
+  ZimaUI: {confirm: async options => {dialogs.push(options);return confirm;}, notice: () => {}},
   apiPost: async (...args) => {calls.push(args); return {ok:success};},
   render: () => {}
 });
@@ -65,10 +66,14 @@ vm.runInContext('let allRows = [{id:"a", codigo:"P-1"}];' + html.slice(html.inde
   success = false;
   await ui.eliminarDefinitivamente('a');
   assert.equal(vm.runInContext('allRows.length', ui), 1);
+  assert.equal(dialogs.some(options=>options.animatedCheck),false);
   success = true;
   await Promise.all([ui.eliminarDefinitivamente('a'), ui.eliminarDefinitivamente('a')]);
   assert.equal(calls.length, 2); // Un intento fallido y uno correcto, sin solicitudes simultáneas duplicadas.
   assert.equal(calls[1][0], 'permanentdelete');
   assert.equal(vm.runInContext('allRows.length', ui), 0);
+  assert.equal(dialogs.at(-1).animatedCheck,true);
+  assert.equal(dialogs.at(-1).tone,'success');
+  assert.equal(dialogs.at(-1).hideCancel,true);
   console.log('OK: eliminación definitiva, permisos de servidor, auditoría, cancelación, errores y solicitudes duplicadas.');
 })().catch(error => {console.error(error); process.exitCode = 1;});

@@ -158,27 +158,30 @@
       '.zima-confirm-backdrop.success .zima-confirm-actions{padding:16px 26px 22px;background:#fff;border-color:#f1f5f9}',
       '.zima-confirm-backdrop.success .zima-confirm-btn{border-radius:8px;min-height:42px}',
       '.zima-confirm-backdrop.success .zima-confirm-btn.primary{background:#0f766e;border-color:#0f766e}',
-      '.zima-confirm-backdrop.logout{background:rgba(3,20,29,.76);backdrop-filter:blur(12px)}',
-      '.logout .zima-confirm-card{position:relative;width:min(480px,100%);border:1px solid #ffffff25;border-radius:26px;background:radial-gradient(ellipse at 50% 0,#125867 0,transparent 65%),#062d3a;color:#fff;box-shadow:0 32px 100px #00151bc9;animation:zima-logout-enter .35s ease-out both}',
-      '.logout .zima-confirm-card:before{height:3px;background:linear-gradient(90deg,transparent,#f7c600,transparent)}',
-      '.logout .zima-confirm-head{flex-direction:column;align-items:center;gap:26px;padding:42px 28px 14px;text-align:center}',
-      '.logout .zima-confirm-icon{position:relative;width:92px;height:92px;border-radius:28px;border:1px solid #f7c60060;background:linear-gradient(145deg,#f7c60026,#f7c60008);color:#f7c600;box-shadow:0 0 0 10px #ffffff03,0 0 60px #f7c60012}',
-      '.logout .zima-confirm-icon svg{width:42px;height:42px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}',
-      '.logout .zima-confirm-icon .logout-arrow{animation:zima-logout-arrow 2.4s ease-in-out infinite}',
+      '.success.animated-check .zima-confirm-head{flex-direction:column;text-align:center;gap:20px;padding-top:34px}.success.animated-check .zima-confirm-icon{width:84px;height:84px;border:0;background:#edf8f2;box-shadow:0 0 0 9px #f5fbf7;animation:zima-check-appear .45s ease-out both}.animated-check .zima-confirm-icon svg{width:64px;height:64px;fill:none;stroke:#16845d;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.animated-check .check-ring{stroke:#b8e0cb;stroke-dasharray:145;stroke-dashoffset:145;animation:zima-check-draw .6s ease-out .1s forwards}.animated-check .check-mark{stroke-dasharray:40;stroke-dashoffset:40;animation:zima-check-draw .4s ease-out .45s forwards}.success.animated-check .zima-confirm-body{text-align:center}.success.animated-check .zima-confirm-actions{justify-content:center}.success.animated-check .zima-confirm-btn.primary{min-width:160px}',
+      '@keyframes zima-check-appear{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}@keyframes zima-check-draw{to{stroke-dashoffset:0}}',
+      '@media(prefers-reduced-motion:reduce){.success.animated-check .zima-confirm-icon{animation:none}.animated-check .check-ring,.animated-check .check-mark{animation:none;stroke-dashoffset:0}}',
+      '.zima-confirm-backdrop.zima-logout-dialog{background:rgba(3,20,29,.76);backdrop-filter:blur(12px)}',
+      '.zima-logout-dialog .zima-confirm-card{position:relative;width:min(480px,100%);max-height:calc(100dvh - 40px);overflow-y:auto;box-sizing:border-box;border:1px solid #ffffff25;border-radius:26px;background:radial-gradient(ellipse at 50% 0,#125867 0,transparent 65%),#062d3a;color:#fff;box-shadow:0 32px 100px #00151bc9;animation:zima-logout-enter .35s ease-out both}',
+      '.zima-logout-dialog .zima-confirm-card:before{height:3px;background:linear-gradient(90deg,transparent,#f7c600,transparent)}',
+      '.zima-logout-dialog .zima-confirm-head{flex-direction:column;align-items:center;gap:26px;padding:42px 28px 14px;text-align:center}',
+      '.zima-logout-dialog .zima-confirm-icon{position:relative;width:92px;height:92px;border-radius:28px;border:1px solid #f7c60060;background:linear-gradient(145deg,#f7c60026,#f7c60008);color:#f7c600;box-shadow:0 0 0 10px #ffffff03,0 0 60px #f7c60012}',
+      '.zima-logout-dialog .zima-confirm-icon svg{width:42px;height:42px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}',
+      '.zima-logout-dialog .zima-confirm-icon .logout-arrow{animation:zima-logout-arrow 2.4s ease-in-out infinite}',
       '.zima-logout-eyebrow{margin:0 0 10px;color:#f7c600;font-size:10px;font-weight:750;letter-spacing:2.5px}',
-      '.logout .zima-confirm-title{color:#fff;font-size:30px;font-weight:700;line-height:1.2;letter-spacing:-.8px}',
-      '.logout .zima-confirm-body{padding:0 32px 28px;text-align:center;color:#bcd1d8;font-size:14px;line-height:1.7}',
-      '.logout .zima-confirm-message{max-width:360px;margin:auto}',
-      '.logout .zima-confirm-detail{margin-top:22px;padding:12px 16px;border:1px solid #ffffff14;border-radius:12px;background:#ffffff06;color:#e0edf0;font-size:12px;font-weight:500;overflow-wrap:anywhere}',
-      '.logout .zima-confirm-actions{padding:22px 28px 28px;gap:10px;background:#001d282e;border-color:#ffffff12}',
-      '.logout .zima-confirm-btn{flex:1;min-height:48px;border:1px solid #ffffff30;border-radius:12px;background:transparent;color:#e0edf0;font-size:12px;font-weight:650}',
-      '.logout .zima-confirm-btn:hover{background:#ffffff0d}',
-      '.logout .zima-confirm-btn.primary{background:#f7c600;border-color:#f7c600;color:#062d3a;box-shadow:0 6px 20px #f7c60016}',
-      '.logout .zima-confirm-btn.primary:hover{background:#ffda3d;border-color:#ffda3d}',
-      '.logout .zima-confirm-btn:focus-visible{outline:3px solid #fff;outline-offset:3px}',
+      '.zima-logout-dialog .zima-confirm-title{color:#fff;font-size:30px;font-weight:700;line-height:1.2;letter-spacing:-.8px}',
+      '.zima-logout-dialog .zima-confirm-body{padding:0 32px 28px;text-align:center;color:#bcd1d8;font-size:14px;line-height:1.7}',
+      '.zima-logout-dialog .zima-confirm-message{max-width:360px;margin:auto}',
+      '.zima-logout-dialog .zima-confirm-detail{margin-top:22px;padding:12px 16px;border:1px solid #ffffff14;border-radius:12px;background:#ffffff06;color:#e0edf0;font-size:12px;font-weight:500;overflow-wrap:anywhere}',
+      '.zima-logout-dialog .zima-confirm-actions{padding:22px 28px 28px;gap:10px;background:#001d282e;border-color:#ffffff12}',
+      '.zima-logout-dialog .zima-confirm-btn{flex:1;min-height:48px;border:1px solid #ffffff30;border-radius:12px;background:transparent;color:#e0edf0;font-size:12px;font-weight:650}',
+      '.zima-logout-dialog .zima-confirm-btn:hover{background:#ffffff0d}',
+      '.zima-logout-dialog .zima-confirm-btn.primary{background:#f7c600;border-color:#f7c600;color:#062d3a;box-shadow:0 6px 20px #f7c60016}',
+      '.zima-logout-dialog .zima-confirm-btn.primary:hover{background:#ffda3d;border-color:#ffda3d}',
+      '.zima-logout-dialog .zima-confirm-btn:focus-visible{outline:3px solid #fff;outline-offset:3px}',
       '@keyframes zima-logout-enter{from{opacity:0;transform:translateY(18px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}',
       '@keyframes zima-logout-arrow{0%,100%{transform:translateX(0)}50%{transform:translateX(3px)}}',
-      '@media(prefers-reduced-motion:reduce){.logout .zima-confirm-card,.logout .zima-confirm-icon .logout-arrow{animation:none}}',
+      '@media(prefers-reduced-motion:reduce){.zima-logout-dialog .zima-confirm-card,.zima-logout-dialog .zima-confirm-icon .logout-arrow{animation:none}}',
       '@media(max-width:560px){.zima-confirm-actions{flex-direction:column-reverse}.zima-confirm-btn{width:100%}}'
     ].join('');
     document.head.appendChild(style);
@@ -222,7 +225,8 @@
       const backdrop = document.createElement('div');
       backdrop.className = 'zima-confirm-backdrop open';
       if (options.tone === 'success') backdrop.classList.add('success');
-      if (options.tone === 'logout') backdrop.classList.add('logout');
+      if (options.tone === 'success' && options.animatedCheck) backdrop.classList.add('animated-check');
+      if (options.tone === 'logout') backdrop.classList.add('zima-logout-dialog');
       if (options.tone === 'warning') backdrop.classList.add('warning');
       backdrop.setAttribute('aria-hidden', 'false');
       const previousFocus = document.activeElement;
@@ -247,7 +251,7 @@
       backdrop.innerHTML =
         '<div class="zima-confirm-card" role="' + (options.tone === 'warning' ? 'alertdialog' : 'dialog') + '" aria-modal="true" aria-labelledby="zimaConfirmTitle" aria-describedby="zimaConfirmMessage">' +
           '<div class="zima-confirm-head">' +
-            '<div class="zima-confirm-icon" aria-hidden="true">' + (options.tone === 'logout' ? '<svg viewBox="0 0 32 32"><path d="M14 5H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h7"/><g class="logout-arrow"><path d="M12 16h15m-6-6 6 6-6 6"/></g></svg>' : options.tone === 'success' ? '&#10003;' : '!') + '</div>' +
+            '<div class="zima-confirm-icon" aria-hidden="true">' + (options.tone === 'logout' ? '<svg viewBox="0 0 32 32"><path d="M14 5H7a2 2 0 0 0-2 2v18a2 2 0 0 0 2 2h7"/><g class="logout-arrow"><path d="M12 16h15m-6-6 6 6-6 6"/></g></svg>' : options.tone === 'success' ? (options.animatedCheck ? '<svg viewBox="0 0 56 56"><circle class="check-ring" cx="28" cy="28" r="23"/><path class="check-mark" d="m16 28 8 8 16-17"/></svg>' : '&#10003;') : '!') + '</div>' +
             '<div>' + (options.tone === 'logout' ? '<div class="zima-logout-eyebrow">HASTA PRONTO</div>' : '') + '<h2 class="zima-confirm-title" id="zimaConfirmTitle">' + escapeHtml(title) + '</h2></div>' +
           '</div>' +
           '<div class="zima-confirm-body">' +
@@ -255,7 +259,7 @@
             (detail ? '<div class="zima-confirm-detail">' + escapeHtml(detail) + '</div>' : '') +
           '</div>' +
           '<div class="zima-confirm-actions">' +
-            '<button class="zima-confirm-btn" type="button" data-zima-confirm="cancel">' + escapeHtml(cancelText) + '</button>' +
+            (options.hideCancel ? '' : '<button class="zima-confirm-btn" type="button" data-zima-confirm="cancel">' + escapeHtml(cancelText) + '</button>') +
             '<button class="zima-confirm-btn ' + (danger ? 'danger' : 'primary') + '" type="button" data-zima-confirm="ok">' + escapeHtml(confirmText) + '</button>' +
           '</div>' +
         '</div>';
@@ -605,6 +609,10 @@
     let previousOverflow = '';
     let backgrounds = [];
     function openSupport() {
+      if (/^(ADMIN|ADMINISTRADOR|SOPORTE)$/.test(String(session.rol).trim().toUpperCase()) && !/\/soporte\.html$/i.test(location.pathname)) {
+        window.location.href = 'control-soporte.html#tickets';
+        return;
+      }
       document.dispatchEvent(new Event('zima-support-opened'));
       if (/\/soporte\.html$/i.test(location.pathname)) {
         const subject = document.getElementById('subject');
@@ -656,8 +664,8 @@
 
   function installAdminTicketNotifications(launcher, openSupport) {
     const session = getSupportSession();
-    if (!session.token || !/^(ADMIN|ADMINISTRADOR)$/.test(String(session.rol).trim().toUpperCase()) || /\/login\.html$/i.test(location.pathname)) return;
-    const endpoint = 'https://script.google.com/macros/s/AKfycbzNnN9Mb4jR_5Zp5K4bViCTyJFwm8OE-Stt6HFbwSQe2jKm6Ma7uHeG55SKxM3bsO8NEA/exec';
+    if (!session.token || !/^(ADMIN|ADMINISTRADOR|SOPORTE)$/.test(String(session.rol).trim().toUpperCase()) || /\/login(?:-soporte)?\.html$/i.test(location.pathname)) return;
+    const endpoint = 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
     const key = 'ZIMA_ADMIN_TICKETS_REVIEWED:' + String(session.usuario).trim().toLowerCase();
     let seen = new Set();
     try {
@@ -763,7 +771,7 @@
     async function refresh() {
       if (loading || stopped || document.hidden) return;
       const current = getSupportSession();
-      if (current.token !== session.token || !/^(ADMIN|ADMINISTRADOR)$/.test(String(current.rol).trim().toUpperCase())) {
+      if (current.token !== session.token || !/^(ADMIN|ADMINISTRADOR|SOPORTE)$/.test(String(current.rol).trim().toUpperCase())) {
         stopped = true; updateCounts(0); alert.hidden = true; return;
       }
       loading = true;
@@ -808,6 +816,210 @@
     void refresh();
   }
 
+  function installSupportWorkspace() {
+    const session = getSupportSession();
+    if (String(session.rol || '').trim().toUpperCase() !== 'SOPORTE') return;
+    const page = location.pathname.split('/').pop().toLowerCase();
+    if (page === 'login-soporte.html') return;
+    if (!['login.html','soporte.html','granadmin.html','control-soporte.html'].includes(page)) {
+      window.location.replace('control-soporte.html');
+      return;
+    }
+    document.body.classList.add('zima-support-workspace');
+    const style = document.createElement('style');
+    style.textContent = 'body.zima-support-workspace [data-zima-support-hidden]{display:none!important}';
+    document.head.appendChild(style);
+    document.querySelectorAll('nav a[href], .sidebar .nav a[href]').forEach(function(link) {
+      const target = new URL(link.getAttribute('href'),location.href).pathname.split('/').pop().toLowerCase();
+      if (!['soporte.html','granadmin.html','control-soporte.html'].includes(target)) link.setAttribute('data-zima-support-hidden','');
+      if (target === 'granadmin.html' && page !== 'control-soporte.html') {
+        const label = link.querySelector('span:last-child');
+        if (label) label.textContent = 'Accesos y auditoría';
+        else link.textContent = 'Accesos y auditoría';
+      }
+    });
+    document.querySelectorAll('.top nav').forEach(function(nav) {
+      if (nav.querySelector('a[href="granadmin.html"]')) return;
+      const link = document.createElement('a');
+      link.href = 'granadmin.html';
+      link.textContent = 'Accesos y auditoría';
+      nav.appendChild(link);
+    });
+    if (page !== 'login.html') {
+      document.querySelectorAll('.sidebar nav, .sidebar .nav, .top nav').forEach(function(nav) {
+        if (page === 'control-soporte.html') return;
+        if (nav.querySelector('a[href="control-soporte.html"]')) return;
+        const link = document.createElement('a');
+        link.href = 'control-soporte.html';
+        link.textContent = 'Centro de control';
+        if (nav.closest('.sidebar')) link.className = 'nav-item';
+        nav.prepend(link);
+      });
+      if (window.self === window.top && !document.getElementById('zimaSupportCore')) {
+        const script = document.createElement('script');
+        script.id = 'zimaSupportCore';
+        script.src = 'control-soporte-core.js';
+        document.head.appendChild(script);
+      }
+    }
+  }
+
+  function installDesktopNotifications() {
+    const session = getSupportSession();
+    if (window.self !== window.top || !session.token || !/^(ADMIN|ADMINISTRADOR|SOPORTE)$/.test(String(session.rol).trim().toUpperCase()) || /\/login(?:-soporte)?\.html$/i.test(location.pathname)) return;
+    if (!window.ZimaSupportControl && !document.getElementById('zimaSupportCore')) {
+      const script = document.createElement('script');
+      script.id = 'zimaSupportCore';
+      script.src = 'control-soporte-core.js';
+      document.head.appendChild(script);
+    }
+    if (document.getElementById('openDesktop') || document.getElementById('zimaDesktopLauncher')) return;
+    const header = document.querySelector('.topbar .userbox,.topbar-right,.toolbar .actions,.top .session-user') || document.querySelector('.topbar,.top,.toolbar');
+    if (!header) return;
+    const style = document.createElement('style');
+    style.textContent = '.zima-desktop-launcher{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:8px 10px;border:1px solid #cbd8dc;border-radius:8px;background:#fff;color:#003747;font:700 11px "Segoe UI",Arial,sans-serif;cursor:pointer}.zima-desktop-launcher svg{width:16px;height:16px}.topbar .zima-desktop-launcher,.top .zima-desktop-launcher{color:inherit;background:transparent;border-color:#ffffff50}.zima-desktop-settings{width:min(450px,calc(100% - 24px));max-height:90dvh;overflow:auto;border:1px solid #e4e8ee;border-radius:12px;padding:24px;background:#fff;color:#172235;box-shadow:0 24px 70px #08111e40;font-family:"Segoe UI",Arial,sans-serif}.zima-desktop-settings::backdrop{background:#08111e80;backdrop-filter:blur(5px)}.zima-desktop-settings h2{margin:0 0 14px;font-size:21px}.zima-desktop-settings p{font-size:13px;color:#64748b;line-height:1.7}.zima-desktop-settings .desktop-state{padding:12px;background:#f8fafc;border:1px solid #e4e8ee;border-radius:8px;font-size:12px;line-height:1.7}.zima-desktop-settings .desktop-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.zima-desktop-settings .btn{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:10px 14px;border:1px solid #e4e8ee;border-radius:8px;background:#fff;color:#172235;font:750 12px "Segoe UI",Arial,sans-serif;cursor:pointer}.zima-desktop-settings .btn.primary{background:#003747;border-color:#003747;color:#fff}.zima-desktop-settings [data-desktop-message]{font-size:12px;line-height:1.7;margin-top:14px;color:#8b6a1e}.zima-desktop-settings button:disabled{opacity:.55;cursor:wait}@media(max-width:600px){.zima-desktop-launcher span{display:none}}@media print{.zima-desktop-launcher,.zima-desktop-settings{display:none!important}}';
+    document.head.appendChild(style);
+    const launcher = document.createElement('button');
+    launcher.id = 'zimaDesktopLauncher';
+    launcher.type = 'button';
+    launcher.className = 'btn zima-desktop-launcher no-print';
+    launcher.setAttribute('aria-label','Activar notificaciones de escritorio');
+    launcher.title = 'Notificaciones de escritorio';
+    launcher.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>Notificaciones</span>';
+    header.appendChild(launcher);
+    const dialog = document.createElement('dialog');
+    dialog.className = 'zima-desktop-settings no-print';
+    dialog.setAttribute('aria-labelledby','zimaDesktopTitle');
+    dialog.innerHTML = '<h2 id="zimaDesktopTitle">Notificaciones de escritorio</h2><p>Activa los avisos en este PC para saber cuándo ingresa un peaje. El sistema debe permanecer abierto.</p><div class="desktop-state" data-desktop-state>Cargando el servicio de notificaciones…</div><div data-desktop-message role="status" aria-live="polite"></div><div class="desktop-actions"><button type="button" class="btn primary" data-desktop-enable>Activar notificaciones</button><button type="button" class="btn" data-desktop-test>Probar aviso</button><button type="button" class="btn" data-desktop-disable>Desactivar</button><button type="button" class="btn" data-desktop-close>Cerrar</button></div>';
+    document.body.appendChild(dialog);
+    const state = dialog.querySelector('[data-desktop-state]');
+    const message = dialog.querySelector('[data-desktop-message]');
+    const enable = dialog.querySelector('[data-desktop-enable]');
+    const test = dialog.querySelector('[data-desktop-test]');
+    const disable = dialog.querySelector('[data-desktop-disable]');
+    let connected = false;
+    function connect() {
+      if (connected || !window.ZimaSupportControl) return;
+      connected = true;
+      window.ZimaSupportControl.subscribe(function(value) {
+        const labels = {enabled:'Notificaciones activadas en este PC.',disabled:'Sin activar. Pulsa «Activar notificaciones» y permite los avisos del navegador.',denied:'El navegador las bloqueó. Abre la configuración de este sitio y permite las notificaciones.',unavailable:'Para mostrar avisos en el escritorio debes abrir el sitio con HTTPS en un navegador de escritorio compatible.'};
+        state.textContent = labels[value.desktop];
+        enable.disabled = value.desktop === 'enabled';
+        test.disabled = value.desktop !== 'enabled';
+        disable.disabled = value.desktop !== 'enabled';
+      });
+    }
+    launcher.onclick = function() {
+      connect();message.textContent = '';
+      if (!window.ZimaSupportControl) state.textContent = 'No se cargó el servicio. Publica control-soporte-core.js junto con zima-ui.js y recarga la página.';
+      dialog.showModal();
+    };
+    enable.onclick = async function() {
+      if (!window.ZimaSupportControl) {message.textContent='Falta cargar control-soporte-core.js. Actualiza los archivos del sitio y recarga.';return;}
+      enable.disabled = true;
+      try {const result=await window.ZimaSupportControl.enable();message.textContent=result.message;}
+      catch (error) {message.textContent=error.message;}
+      finally {enable.disabled=window.ZimaSupportControl.state().desktop==='enabled';}
+    };
+    test.onclick = function() {message.textContent=window.ZimaSupportControl?.test()?'Aviso de prueba enviado al escritorio.':'No se pudo mostrar el aviso. Revisa los permisos del navegador y del PC.';};
+    disable.onclick = function() {window.ZimaSupportControl?.disable();message.textContent='Notificaciones desactivadas en este equipo.';};
+    dialog.querySelector('[data-desktop-close]').onclick = function() {dialog.close();};
+    window.addEventListener('zima-support-ready',connect);
+    connect();
+  }
+
+  function simplifyPeajeMenu() {
+    const role = String(getSupportSession().rol || '').trim().toUpperCase();
+    if (role !== 'PEAJE') return;
+    document.body.classList.add('zima-peaje-menu');
+    const style = document.createElement('style');
+    style.textContent = 'body.zima-peaje-menu [data-zima-peaje-hidden]{display:none!important}';
+    document.head.appendChild(style);
+    document.querySelectorAll('nav a[href], .sidebar .nav a[href]').forEach(function(link) {
+      const page = new URL(link.getAttribute('href'), location.href).pathname.split('/').pop().toLowerCase();
+      if (page !== 'planilla.html' && page !== 'historial.html') {
+        link.setAttribute('data-zima-peaje-hidden', '');
+      }
+    });
+    // El portal de soporte también ofrece acceso directo a la planilla.
+    document.querySelectorAll('.top nav').forEach(function(nav) {
+      if (nav.querySelector('a[href="planilla.html"]')) return;
+      const link = document.createElement('a');
+      link.href = 'planilla.html';
+      link.textContent = 'Planilla';
+      nav.prepend(link);
+    });
+    if (window.self !== window.top || document.getElementById('zimaPeajeTopbar')) return;
+    const nav = document.querySelector('.sidebar nav, .sidebar .nav, .top nav');
+    if (!nav) return;
+    const planillaLink = nav.querySelector('a[href="planilla.html"]');
+    if (planillaLink) {
+      const label = planillaLink.querySelector('span:last-child');
+      if (label) label.textContent = 'Planilla';
+      else planillaLink.textContent = 'Planilla';
+    }
+    document.body.classList.add('zima-peaje-topnav');
+    style.textContent += [
+      'body.zima-peaje-topnav{padding-top:104px!important}',
+      'body.zima-peaje-topnav .sidebar,body.zima-peaje-topnav .zima-menu-toggle,body.zima-peaje-topnav .zima-nav-backdrop{display:none!important}',
+      'body.zima-peaje-topnav .main,body.zima-peaje-topnav .main-content{margin-left:0!important;width:100%!important;padding-bottom:0!important}',
+      '#zimaPeajeTopbar{position:fixed;inset:0 0 auto;z-index:1003;height:104px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:22px;padding:14px 24px;background:#fff;color:#172d36;border-bottom:1px solid #dce5e7;box-shadow:0 4px 20px #10414912;font-family:"Segoe UI",Arial,sans-serif}',
+      '#zimaPeajeTopbar .brand-block{display:flex!important;align-items:center!important;gap:12px!important;min-height:0!important;flex:none!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;text-align:left!important}',
+      '#zimaPeajeTopbar .brand-logo-pair{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;width:auto!important}',
+      '#zimaPeajeTopbar .brand-symbol{display:grid!important;place-items:center!important;width:54px!important;min-width:54px!important;height:54px!important;padding:0!important;border-radius:14px!important;background:#fff!important;box-shadow:none!important;overflow:hidden}',
+      '#zimaPeajeTopbar .brand-symbol img{display:block!important;width:48px!important;height:48px!important;object-fit:contain!important;padding:2px!important}',
+      '#zimaPeajeTopbar .brand-ani{display:flex!important;align-items:center!important;width:37px!important;min-width:37px!important;height:48px!important;padding:0 0 0 8px!important;border-left:1px solid #dce5e7!important;background:transparent!important}',
+      '#zimaPeajeTopbar .brand-ani img{display:block!important;width:29px!important;height:43px!important;object-fit:contain!important}',
+      '#zimaPeajeTopbar .brand-copy{display:block!important;min-width:0!important}#zimaPeajeTopbar .brand-name{font-size:21px!important;font-weight:800!important;color:#172d36!important;white-space:nowrap}#zimaPeajeTopbar .brand-name strong{color:#172d36!important}#zimaPeajeTopbar .brand-caption{display:block!important;font-size:10px!important;color:#64748b!important;margin-top:5px!important}',
+      '#zimaPeajeTopbar .branch-card,#zimaPeajeTopbar .branch{display:block!important;margin:0!important;padding:10px 14px!important;border:1px solid #e2e8f0!important;border-radius:12px!important;background:#f8fafc!important;min-width:100px;max-width:190px}#zimaPeajeTopbar .branch-label{font-size:8px!important;letter-spacing:1.2px;color:#64748b!important}#zimaPeajeTopbar .branch-name{font-size:13px!important;font-weight:700;color:#172d36!important;margin-top:4px!important;overflow-wrap:anywhere}#zimaPeajeTopbar .branch-status{font-size:10px!important;color:#64748b!important;margin-top:6px!important}',
+      '#zimaPeajeTopbar .sidebar-bottom,#zimaPeajeTopbar .side-foot{display:block!important;flex:none!important;margin:0!important;padding:0!important;border:0!important;font-size:10px;color:#64748b!important}#zimaPeajeTopbar .secure-line{font-size:10px;color:#64748b!important}#zimaPeajeTopbar .menu-country{color:#64748b!important}#zimaPeajeTopbar .menu-version{color:#475569!important;background:#f1f5f9!important;border-color:#dce5e7!important}#zimaPeajeTopbar .menu-edition{gap:10px;margin-top:8px}',
+      '#zimaPeajeTopbar nav{display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;width:auto!important;margin:0!important;padding:0!important}',
+      '#zimaPeajeTopbar .nav-title{display:none!important}',
+      '#zimaPeajeTopbar nav a:not([data-zima-peaje-hidden]){display:flex!important;align-items:center;justify-content:center;flex:none!important;gap:8px!important;min-height:46px!important;padding:12px 16px!important;margin:0!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#36535b!important;font-size:13px!important;font-weight:700!important;text-decoration:none;box-shadow:none!important}',
+      '#zimaPeajeTopbar nav a.active,#zimaPeajeTopbar nav a[aria-current]{background:#eef3f3!important;color:#172d36!important;box-shadow:inset 0 -3px #f7c600!important}',
+      '#zimaPeajeTopbar nav a:hover{background:#f2f6f7!important}',
+      '#zimaPeajeTopbar .peaje-logout{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;min-height:44px;padding:10px 13px;border:1px solid #dce5e7;border-radius:10px;background:#fff;color:#36535b;font:650 12px "Segoe UI",Arial,sans-serif;white-space:nowrap;cursor:pointer}#zimaPeajeTopbar .peaje-logout:hover{background:#fff8df;border-color:#ebcf70}#zimaPeajeTopbar .peaje-logout:focus-visible{outline:3px solid #e4b923;outline-offset:3px}#zimaPeajeTopbar .peaje-logout:disabled{opacity:.6;cursor:wait}',
+      '#zimaPeajeTopbar nav a>span{display:block!important;font-size:13px!important}#zimaPeajeTopbar .nav-icon{color:inherit!important}#zimaPeajeTopbar svg{width:18px;height:18px}',
+      '@media(min-width:701px) and (max-width:950px){#zimaPeajeTopbar .brand-copy{display:none!important}}',
+      '@media(max-width:1200px){#zimaPeajeTopbar .sidebar-bottom,#zimaPeajeTopbar .side-foot{display:none!important}}',
+      '@media(max-width:700px){body.zima-peaje-topnav{padding-top:136px!important}#zimaPeajeTopbar{height:136px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:54px 44px;gap:10px;padding:12px}#zimaPeajeTopbar nav{grid-column:1/-1;justify-content:center!important}#zimaPeajeTopbar nav a:not([data-zima-peaje-hidden]){padding:10px 20px!important;min-height:42px!important}#zimaPeajeTopbar .brand-block{gap:8px!important}#zimaPeajeTopbar .brand-symbol{width:44px!important;min-width:44px!important;height:44px!important}#zimaPeajeTopbar .brand-symbol img{width:40px!important;height:40px!important}#zimaPeajeTopbar .brand-ani{width:28px!important;min-width:28px!important;padding-left:5px!important;height:40px!important}#zimaPeajeTopbar .brand-ani img{width:22px!important;height:36px!important}#zimaPeajeTopbar .brand-name{font-size:17px!important}#zimaPeajeTopbar .brand-caption{font-size:8px!important}#zimaPeajeTopbar .branch-card,#zimaPeajeTopbar .branch{min-width:0;max-width:120px;padding:8px!important}#zimaPeajeTopbar .branch-name{font-size:11px!important}#zimaPeajeTopbar .branch-status{display:none!important}}',
+      '@media(max-width:700px){#zimaPeajeTopbar nav{gap:5px!important}#zimaPeajeTopbar nav a:not([data-zima-peaje-hidden]){padding:10px!important}#zimaPeajeTopbar nav a .nav-icon{display:none!important}#zimaPeajeTopbar .peaje-logout{padding:10px;font-size:11px}}',
+      '@media print{body.zima-peaje-topnav{padding-top:0!important}#zimaPeajeTopbar{display:none!important}}'
+    ].join('');
+    const topbar = document.createElement('header');
+    topbar.id = 'zimaPeajeTopbar';
+    topbar.className = 'no-print';
+    const brand = document.querySelector('.sidebar .brand-block') || document.createElement('div');
+    if (!brand.classList.contains('brand-block')) {
+      brand.className = 'brand-block';
+      brand.innerHTML = '<div class="brand-logo-pair"><div class="brand-symbol"><img src="img/logo.png" alt="Logo ZIMA"></div><div class="brand-ani"><img src="img/logo-ani.png" alt="Logo ANI"></div></div><div class="brand-copy"><div class="brand-name">ZIMA <strong>360</strong></div><div class="brand-caption">Gestión empresarial</div></div>';
+    }
+    topbar.appendChild(brand);
+    const branch = document.querySelector('.sidebar .branch-card, .sidebar .branch');
+    if (branch) {
+      const name = branch.querySelector('.branch-name');
+      if (name) name.textContent = getSupportSession().peaje || name.textContent;
+      topbar.appendChild(branch);
+    }
+    topbar.appendChild(nav);
+    const logout = document.createElement('button');
+    logout.type = 'button';
+    logout.className = 'peaje-logout';
+    logout.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v16h5M14 8l4 4-4 4M8 12h10"/></svg><span>Cerrar sesión</span>';
+    logout.onclick = async function() {
+      if (logout.disabled) return;
+      logout.disabled = true;
+      try {
+        const session = getSupportSession();
+        await confirmLogout({detail:[session.nombre || session.usuario, session.peaje].filter(Boolean).join(' · ')});
+      } finally { logout.disabled = false; }
+    };
+    nav.appendChild(logout);
+    const footer = document.querySelector('.sidebar .sidebar-bottom, .sidebar .side-foot');
+    if (footer) topbar.appendChild(footer);
+    document.body.prepend(topbar);
+  }
+
   function installFloatingClock() {
     if (window.self !== window.top || document.getElementById('zimaFloatingClock')) return;
     const style = document.createElement('style');
@@ -848,7 +1060,7 @@
   function installResponsiveNavigation() {
     const sidebar = document.querySelector('.sidebar');
     const header = document.querySelector('.topbar-left,.topbar,.top,.toolbar');
-    if (!sidebar || !header || document.body.classList.contains('embedded-edit')) return;
+    if (!sidebar || !header || document.body.classList.contains('embedded-edit') || document.body.classList.contains('zima-peaje-topnav')) return;
     document.body.classList.add('zima-responsive-nav');
     const compact = window.matchMedia('(max-width: 1180px)');
     sidebar.id = sidebar.id || 'zimaMainMenu';
@@ -888,7 +1100,7 @@
     toggle.onclick = function () { setOpen(!document.body.classList.contains('zima-nav-open'), true); };
     close.onclick = backdrop.onclick = function () { setOpen(false, true); };
     sidebar.addEventListener('click', function (event) {
-      if (event.target.closest('a[href]')) setOpen(false, false);
+      if (event.target.closest('a[href], [role="tab"]')) setOpen(false, !!event.target.closest('[role="tab"]'));
     });
     document.addEventListener('keydown', function (event) {
       if (!document.body.classList.contains('zima-nav-open')) return;
@@ -906,6 +1118,7 @@
   }
 
   window.ZimaUI = {
+    apiUrl: 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec',
     busy: busy,
     clearSession: clearSession,
     closeModal: closeModal,
@@ -924,6 +1137,9 @@
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
+      installSupportWorkspace();
+      installDesktopNotifications();
+      simplifyPeajeMenu();
       installResponsiveNavigation();
       installSupportLauncher();
       installFloatingClock();
@@ -931,6 +1147,9 @@
       watchTextRepairs();
     });
   } else {
+    installSupportWorkspace();
+    installDesktopNotifications();
+    simplifyPeajeMenu();
     installResponsiveNavigation();
     installSupportLauncher();
     installFloatingClock();

@@ -1,11 +1,16 @@
 (function(){
   'use strict';
-  const API_URL='https://script.google.com/macros/s/AKfycbzNnN9Mb4jR_5Zp5K4bViCTyJFwm8OE-Stt6HFbwSQe2jKm6Ma7uHeG55SKxM3bsO8NEA/exec';
+  const API_URL='https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
   const $=id=>document.getElementById(id);
   const esc=ZimaUI.escapeHtml;
   const session=ZimaUI.getSupportSession();
   if(new URLSearchParams(location.search).get('embed')==='1'){
     document.body.classList.add('embedded-support');
+    if(/^(SOPORTE|ADMIN|ADMINISTRADOR)$/.test(String(session.rol).toUpperCase())){
+      document.body.classList.add('control-ticket-inbox');
+      document.querySelector('.hero h1').textContent='Bandeja de tickets';
+      document.querySelector('.hero p').textContent='Consulta los casos, responde al equipo y actualiza su estado.';
+    }
     document.addEventListener('keydown',event=>{
       if(event.key==='Escape' && !$('ticketDialog').open && !document.querySelector('.zima-confirm-backdrop.open')){
         window.parent.postMessage({type:'zima-support-close'},location.origin);
@@ -60,6 +65,13 @@
   let currentTicketId='';
   let replyId=requestId();
   let replying=false;
+  let requestedTicketOpened=false;
+  function openTicket(id){
+    if(replying || !tickets.some(ticket=>ticket.id===id))return;
+    currentTicketId=id;replyId=requestId();
+    $('replyForm').reset();$('conversationNotice').innerHTML='';
+    paintConversation();$('ticketDialog').showModal();
+  }
   function paintConversation(){
     const t=tickets.find(t=>t.id===currentTicketId);
     if(!t)return;
@@ -67,7 +79,7 @@
     $('conversationId').textContent=t.id;
     const messages=Array.isArray(t.conversacion)?t.conversacion:[];
     const history=messages.length?messages:(t.respuesta?[{usuario:'Soporte',rol:'ADMIN',mensaje:t.respuesta,fecha:t.updatedAt}]:[]);
-    $('conversationMessages').innerHTML='<div class="conversation-message"><strong>'+esc(t.nombre||t.usuario)+' · Solicitud inicial</strong><p>'+esc(t.mensaje)+'</p></div>'+history.map(m=>'<div class="conversation-message '+(['ADMIN','ADMINISTRADOR'].includes(m.rol)?'support-message':'')+'"><strong>'+esc(m.nombre||m.usuario)+(['ADMIN','ADMINISTRADOR'].includes(m.rol)?' · Soporte':' · Peaje')+'</strong><time>'+esc(new Date(m.fecha).toLocaleString('es-CO',{timeZone:'America/Bogota'}))+'</time><p>'+esc(m.mensaje)+'</p></div>').join('');
+    $('conversationMessages').innerHTML='<div class="conversation-message"><strong>'+esc(t.nombre||t.usuario)+' · Solicitud inicial</strong><p>'+esc(t.mensaje)+'</p></div>'+history.map(m=>'<div class="conversation-message '+(['ADMIN','ADMINISTRADOR','SOPORTE'].includes(m.rol)?'support-message':'')+'"><strong>'+esc(m.nombre||m.usuario)+(['ADMIN','ADMINISTRADOR','SOPORTE'].includes(m.rol)?' · Soporte':' · Peaje')+'</strong><time>'+esc(new Date(m.fecha).toLocaleString('es-CO',{timeZone:'America/Bogota'}))+'</time><p>'+esc(m.mensaje)+'</p></div>').join('');
     $('replyStateField').hidden=!admin;
     $('replyState').value=t.estado;
     $('replyMessage').required=!admin;
@@ -76,9 +88,7 @@
   $('tickets').addEventListener('click',event=>{
     const button=event.target.closest('[data-ticket]');
     if(!button || replying)return;
-    currentTicketId=button.dataset.ticket;replyId=requestId();
-    $('replyForm').reset();$('conversationNotice').innerHTML='';
-    paintConversation();$('ticketDialog').showModal();
+    openTicket(button.dataset.ticket);
   });
   $('closeConversation').addEventListener('click',()=>$('ticketDialog').close());
   $('ticketDialog').addEventListener('click',event=>{if(event.target===$('ticketDialog')){const r=event.target.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)event.target.close();}});
@@ -90,6 +100,8 @@
       const r=await api('tickets');
       if(!r || !r.ok)throw Error(r && r.error || 'No fue posible consultar los tickets.');
       tickets=r.rows || [];admin=r.admin===true;render();if($('ticketDialog').open)paintConversation();
+      const requested=new URLSearchParams(location.search).get('ticket');
+      if(requested && !requestedTicketOpened){requestedTicketOpened=true;openTicket(requested);}
     }catch(e){ZimaUI.notice('notice',e.message,'error');}
     finally{loading=false;$('refresh').disabled=false;}
   }

@@ -791,7 +791,8 @@ function obtenerUsuariosDesdeHoja_(sh) {
 
 function autenticarUsuario(
   usuario,
-  password
+  password,
+  portal
 ) {
 
   try {
@@ -958,6 +959,11 @@ function autenticarUsuario(
           };
         }
 
+        if (String(portal || '').toLowerCase() === 'soporte' &&
+            ['SOPORTE', 'ADMIN', 'ADMINISTRADOR'].indexOf(rol) === -1) {
+          return {ok: false, mensaje: 'Este acceso es exclusivo de Soporte y administradores. Use el ingreso general de ZIMA 360.'};
+        }
+
         const politica = estadoContrasena_({
           FECHA_CREACION: fila[7],
           FECHA_CAMBIO_CONTRASENA: fila[columnaCambio - 1]
@@ -1020,6 +1026,7 @@ function autenticarUsuario(
             usuarioSesion
           );
 
+        registrarIngresoPeaje_(usuarioSesion);
         notificarIngresoPlataforma_(
           usuarioSesion
         );
@@ -1266,7 +1273,7 @@ function obtenerContextoUsuario_(data) {
 
   return {
     ok: true,
-    sesion: sesion
+    sesion: Object.assign({}, sesion, {rol: usuarioActual.ROL || sesion.rol, peaje: usuarioActual.PEAJE || sesion.peaje, nombre: usuarioActual.NOMBRE || sesion.nombre})
   };
 }
 
@@ -1322,7 +1329,7 @@ function buscarUsuario_(usuario) {
    CREAR USUARIO
    ============================================================ */
 
-function crearUsuario(datos) {
+function crearUsuarioInterno_(datos) {
 
   const ss =
     getSpreadsheet_();
@@ -1392,6 +1399,7 @@ function crearUsuario(datos) {
     rol !== 'ADMIN' &&
     rol !== 'ADMINISTRADOR' &&
     rol !== 'INTERVENTORIA' &&
+    rol !== 'SOPORTE' &&
     rol !== 'PEAJE'
   ) {
     throw new Error(
@@ -1497,7 +1505,7 @@ function crearUsuario(datos) {
 }
 
 
-function actualizarUsuario(datos) {
+function actualizarUsuarioInterno_(datos) {
 
   const ss =
     getSpreadsheet_();
@@ -1558,6 +1566,7 @@ function actualizarUsuario(datos) {
     rol !== 'ADMIN' &&
     rol !== 'ADMINISTRADOR' &&
     rol !== 'INTERVENTORIA' &&
+    rol !== 'SOPORTE' &&
     rol !== 'PEAJE'
   ) {
     throw new Error(
@@ -2153,7 +2162,7 @@ function renovarContrasena_(datos) {
   }
 }
 
-function cambiarContrasenaUsuario(
+function cambiarContrasenaUsuarioInterno_(
   usuario,
   nuevaContrasena
 ) {
@@ -2205,7 +2214,7 @@ function cambiarContrasenaUsuario(
    LISTAR USUARIOS
    ============================================================ */
 
-function listarUsuarios() {
+function listarUsuariosInterno_() {
 
   const ss =
     getSpreadsheet_();
@@ -2288,7 +2297,7 @@ function listarPeajes_(params) {
   if (
     !esUsuarioGlobal_(
       sesion
-    )
+    ) && !esUsuarioSoporte_(sesion)
   ) {
 
     const peajeSesion =
@@ -2316,14 +2325,14 @@ function listarPeajes_(params) {
 
   try {
 
-    listarUsuarios()
+    listarUsuariosInterno_()
       .forEach(
         function(usuario) {
 
           if (
-            esUsuarioGlobal_(
+            (esUsuarioGlobal_(
               sesion
-            ) ||
+            ) || esUsuarioSoporte_(sesion)) ||
             normalizarPeaje_(
               usuario.PEAJE
             ) === normalizarPeaje_(
@@ -2356,7 +2365,7 @@ function listarPeajes_(params) {
    CAMBIAR ESTADO USUARIO
    ============================================================ */
 
-function cambiarEstadoUsuario(
+function cambiarEstadoUsuarioInterno_(
   usuario,
   nuevoEstado
 ) {
@@ -2455,6 +2464,10 @@ function doGet(e) {
       params.callback ||
       '';
 
+    if (['usuarios','auditoria','crearusuario','actualizarusuario','cambiarcontrasenausuario','cambiarestadousuario'].indexOf(action) >= 0) {
+      return jsonOutput_(accionAccesos_(action, params), callback);
+    }
+
     if (
       action === 'login'
     ) {
@@ -2464,7 +2477,8 @@ function doGet(e) {
           params.usuario ||
           '',
           params.password ||
-          ''
+          '',
+          params.portal || ''
         ),
         callback
       );
@@ -2518,41 +2532,6 @@ function doGet(e) {
     }
 
     if (
-      action === 'usuarios'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          params
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(
-          contexto,
-          callback
-        );
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede consultar los usuarios.'
-        }, callback);
-      }
-
-      return jsonOutput_({
-        ok: true,
-        usuarios:
-          listarUsuarios()
-      }, callback);
-    }
-
-    if (
       action === 'soportes' ||
       action === 'listasoporte'
     ) {
@@ -2584,75 +2563,6 @@ function doGet(e) {
       return jsonOutput_(
         listarSoporte_(
           params
-        ),
-        callback
-      );
-    }
-
-    if (
-      action === 'crearusuario' ||
-      action === 'actualizarusuario' ||
-      action === 'cambiarcontrasenausuario' ||
-      action === 'cambiarestadousuario'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          params
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(
-          contexto,
-          callback
-        );
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede modificar usuarios.'
-        }, callback);
-      }
-
-      if (action === 'crearusuario') {
-        return jsonOutput_(
-          crearUsuario(
-            params
-          ),
-          callback
-        );
-      }
-
-      if (action === 'actualizarusuario') {
-        return jsonOutput_(
-          actualizarUsuario(
-            params
-          ),
-          callback
-        );
-      }
-
-      if (action === 'cambiarcontrasenausuario') {
-        return jsonOutput_(
-          cambiarContrasenaUsuario(
-            params.usuario,
-            params.nuevaContrasena ||
-            params.password
-          ),
-          callback
-        );
-      }
-
-      return jsonOutput_(
-        cambiarEstadoUsuario(
-          params.usuario,
-          params.estado
         ),
         callback
       );
@@ -2791,6 +2701,10 @@ function doPost(e) {
         .trim()
         .toLowerCase();
 
+    if (['crearusuario','actualizarusuario','cambiarcontrasenausuario','cambiarestadousuario'].indexOf(action) >= 0) {
+      return jsonOutput_(gestionarAccesos_(action, payload));
+    }
+
     if (action === 'renovarcontrasena') {
       return jsonOutput_(renovarContrasena_(payload));
     }
@@ -2804,7 +2718,8 @@ function doPost(e) {
           payload.usuario ||
           '',
           payload.password ||
-          ''
+          '',
+          payload.portal || ''
         )
       );
     }
@@ -2847,141 +2762,6 @@ function doPost(e) {
       );
     }
 
-    if (
-      action ===
-      'crearusuario'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          payload
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(contexto);
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede crear usuarios.'
-        });
-      }
-
-      return jsonOutput_(
-        crearUsuario(
-          payload
-        )
-      );
-    }
-
-    if (
-      action ===
-      'actualizarusuario'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          payload
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(contexto);
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede actualizar usuarios.'
-        });
-      }
-
-      return jsonOutput_(
-        actualizarUsuario(
-          payload
-        )
-      );
-    }
-
-    if (
-      action ===
-      'cambiarcontrasenausuario'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          payload
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(contexto);
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede cambiar contraseñas.'
-        });
-      }
-
-      return jsonOutput_(
-        cambiarContrasenaUsuario(
-          payload.usuario,
-          payload.nuevaContrasena ||
-          payload.password
-        )
-      );
-    }
-
-    if (
-      action ===
-      'cambiarestadousuario'
-    ) {
-
-      const contexto =
-        obtenerContextoUsuario_(
-          payload
-        );
-
-      if (!contexto.ok) {
-        return jsonOutput_(contexto);
-      }
-
-      if (
-        !esUsuarioAdministrador_(
-          contexto.sesion
-        )
-      ) {
-        return jsonOutput_({
-          ok: false,
-          error:
-            'Solo un administrador puede cambiar estados de usuarios.'
-        });
-      }
-
-      return jsonOutput_(
-        cambiarEstadoUsuario(
-          payload.usuario,
-          payload.estado
-        )
-      );
-    }
-
     return jsonOutput_(
       apiPost(
         payload
@@ -3016,7 +2796,17 @@ function apiGet(params) {
       .trim()
       .toLowerCase();
 
+  if (['usuarios','auditoria'].indexOf(action) >= 0) return accionAccesos_(action, params);
+  if (['list','get','dashboard'].indexOf(action) >= 0) {
+    const ctx = obtenerContextoUsuario_(params);
+    if (!ctx.ok) return ctx;
+    if (esUsuarioSoporte_(ctx.sesion)) return {ok:false,error:'Soporte no tiene acceso a valores ni planillas.'};
+  }
+
   switch (action) {
+
+    case 'controlsoporte':
+      return controlSoporte_(params);
 
     case 'tickets':
       return listarTickets_(params);
@@ -3144,6 +2934,13 @@ function apiPost(data) {
     )
       .trim()
       .toLowerCase();
+
+  if (['crearusuario','actualizarusuario','cambiarcontrasenausuario','cambiarestadousuario'].indexOf(action) >= 0) return gestionarAccesos_(action, data);
+  if (['save','create','update','delete','permanentdelete'].indexOf(action) >= 0) {
+    const ctx = obtenerContextoUsuario_(data);
+    if (!ctx.ok) return ctx;
+    if (esUsuarioSoporte_(ctx.sesion)) return {ok:false,error:'Soporte no puede crear, editar, anular ni eliminar planillas.'};
+  }
 
   switch (action) {
 
@@ -4361,6 +4158,138 @@ function obtenerDashboard_(params) {
    SEGURIDAD · ROLES Y CONTRASEÑAS
    ============================================================ */
 
+function esUsuarioSoporte_(sesion) {
+  return String(sesion && sesion.rol || '').trim().toUpperCase() === 'SOPORTE';
+}
+
+function puedeGestionarSoporte_(sesion) {
+  return esUsuarioAdministrador_(sesion) || esUsuarioSoporte_(sesion);
+}
+
+function accionAccesos_(action, data) {
+  if (action === 'usuarios') return listarUsuariosAutorizados_(data);
+  if (action === 'auditoria') return listarAuditoria_(data);
+  return gestionarAccesos_(action, data);
+}
+
+function listarUsuariosAutorizados_(data) {
+  const ctx = obtenerContextoUsuario_(data);
+  if (!ctx.ok) return ctx;
+  if (!puedeGestionarSoporte_(ctx.sesion)) return {ok:false,error:'No tiene permiso para gestionar accesos.'};
+  const soporte = esUsuarioSoporte_(ctx.sesion);
+  const usuarios = listarUsuariosInterno_().filter(function(u) {
+    return !soporte || String(u.ROL).trim().toUpperCase() === 'PEAJE';
+  });
+  return {ok:true,usuarios:usuarios,soporte:soporte};
+}
+
+function gestionarAccesos_(action, data) {
+  data = data || {};
+  const ctx = obtenerContextoUsuario_(data);
+  if (!ctx.ok) return ctx;
+  if (!puedeGestionarSoporte_(ctx.sesion)) return {ok:false,error:'No tiene permiso para gestionar accesos.'};
+  const lock = LockService.getScriptLock();
+  lock.waitLock(15000);
+  try {
+    const usuario = String(data.usuario || '').trim();
+    const anterior = buscarUsuario_(usuario);
+    const creando = action === 'crearusuario';
+    if (!creando && !anterior) return {ok:false,error:'Usuario no encontrado.'};
+    if (data.estado && ['ACTIVO','INACTIVO'].indexOf(String(data.estado).trim().toUpperCase()) < 0) return {ok:false,error:'Estado de acceso no válido.'};
+    if (esUsuarioSoporte_(ctx.sesion)) {
+      if ((!creando && String(anterior.ROL).trim().toUpperCase() !== 'PEAJE') ||
+          ((creando || action === 'actualizarusuario') && String(data.rol || '').toUpperCase() !== 'PEAJE')) {
+        return {ok:false,error:'Soporte solo puede gestionar usuarios de peaje. No puede modificar administradores ni conceder otros roles.'};
+      }
+      if ((creando || action === 'actualizarusuario') && (!data.peaje || /^(TODOS|ADMINISTRACI[ÓO]N CENTRAL)$/i.test(String(data.peaje).trim()))) {
+        return {ok:false,error:'Seleccione el peaje específico del usuario.'};
+      }
+    }
+    const password = String(data.nuevaContrasena || data.password || data.contrasena || '');
+    if ((creando || action === 'cambiarcontrasenausuario' || password) && password.length < 6) {
+      return {ok:false,error:'La contraseña debe tener al menos 6 caracteres.'};
+    }
+    prepararHojaAuditoria_(getSpreadsheet_());
+    let result;
+    let evento;
+    if (creando) {result = crearUsuarioInterno_(data);evento = 'USER_CREATE';}
+    else if (action === 'actualizarusuario') {result = actualizarUsuarioInterno_(data);evento = 'USER_UPDATE';}
+    else if (action === 'cambiarcontrasenausuario') {result = cambiarContrasenaUsuarioInterno_(usuario,password);evento = 'USER_PASSWORD';}
+    else if (action === 'cambiarestadousuario') {result = cambiarEstadoUsuarioInterno_(usuario,data.estado);evento = 'USER_STATUS';}
+    else return {ok:false,error:'Acción de acceso no soportada.'};
+    if (!result || !result.ok) return result;
+    SpreadsheetApp.flush();
+    const actual = buscarUsuario_(usuario);
+    if (!actual) throw Error('No se pudo verificar el usuario guardado.');
+    if (password && !verificarContrasena_(password, actual.CONTRASENA)) throw Error('No se pudo confirmar el cambio de contraseña.');
+    if (data.estado && String(actual.ESTADO).toUpperCase() !== String(data.estado).toUpperCase()) throw Error('No se pudo confirmar el estado del usuario.');
+    const cambios = [];
+    const campos = {nombre:'NOMBRE',rol:'ROL',peaje:'PEAJE',estado:'ESTADO',email:'EMAIL',telefono:'TELEFONO',cargo:'CARGO'};
+    Object.keys(campos).forEach(function(key) {
+      let esperado = String(data[key] || (key === 'peaje' ? 'TODOS' : '')).trim();
+      if (key === 'rol' || key === 'estado') esperado = esperado.toUpperCase();
+      if (data[key] !== undefined && String(actual[campos[key]] || '').trim() !== esperado) {
+        throw Error('No se pudo confirmar el campo ' + key + '. Actualice la lista antes de reintentar.');
+      }
+      if (data[key] !== undefined && String(anterior && anterior[campos[key]] || '') !== String(actual[campos[key]] || '')) cambios.push(key);
+    });
+    if (password) cambios.push('contraseña renovada');
+    registrarAuditoria_(evento,{id:actual.ID,usuario:ctx.sesion.usuario},'Usuario: '+usuario+' · Cambios: '+(cambios.join(', ') || 'perfil'));
+    return Object.assign({}, result, {ok:true,verificado:true});
+  } finally {lock.releaseLock();}
+}
+
+function listarAuditoria_(data) {
+  const ctx = obtenerContextoUsuario_(data);
+  if (!ctx.ok) return ctx;
+  if (!puedeGestionarSoporte_(ctx.sesion)) return {ok:false,error:'No tiene permiso para consultar auditoría.'};
+  const sh = getSpreadsheet_().getSheetByName(ZIMA.SHEET_AUDITORIA);
+  if (!sh || sh.getLastRow() < 2) return {ok:true,rows:[]};
+  const inicio = Math.max(2,sh.getLastRow()-199);
+  const rows = sh.getRange(inicio,1,sh.getLastRow()-inicio+1,7).getValues().reverse().map(function(row) {
+    let ingreso = {};
+    if (row[1] === 'PEAJE_LOGIN') {try {const decoded = JSON.parse(row[5]);if (decoded && typeof decoded === 'object') ingreso = decoded;} catch (_) {}}
+    const tecnico = /^USER_/.test(String(row[1])) || row[1] === 'TICKET_UPDATE';
+    const detalle = row[1] === 'PEAJE_LOGIN' ? 'Ingreso al sistema · '+String(ingreso.peaje || '') : esUsuarioSoporte_(ctx.sesion) && !tecnico ? 'Movimiento de planilla (datos financieros reservados).' : row[5];
+    return {fecha:row[0] instanceof Date ? row[0].toISOString() : String(row[0] || ''),accion:row[1],id:row[2],codigo:row[3],usuario:row[4],detalle:detalle,peaje:String(ingreso.peaje || ''),nombre:String(ingreso.nombre || '')};
+  });
+  return {ok:true,rows:rows};
+}
+
+function registrarIngresoPeaje_(sesion) {
+  if (String(sesion.rol).toUpperCase() !== 'PEAJE') return;
+  try {
+    prepararHojaAuditoria_(getSpreadsheet_());
+    registrarAuditoria_('PEAJE_LOGIN',{id:Utilities.getUuid(),usuario:sesion.usuario},JSON.stringify({peaje:sesion.peaje,nombre:sesion.nombre || sesion.usuario}));
+  } catch (error) {console.error('No se pudo registrar el ingreso: '+errorMessage_(error));}
+}
+
+function controlSoporte_(data) {
+  const ctx = obtenerContextoUsuario_(data);
+  if (!ctx.ok) return ctx;
+  if (!puedeGestionarSoporte_(ctx.sesion)) return {ok:false,error:'Este centro está reservado a soporte y administración.'};
+  const hoy = Utilities.formatDate(new Date(),'America/Bogota','yyyy-MM-dd');
+  function iso(value) {const date = value ? new Date(value) : null;return date && !isNaN(date.getTime()) ? date.toISOString() : '';}
+  const usuarios = obtenerUsuariosDesdeHoja_(prepararHojaUsuarios_(getSpreadsheet_())).filter(function(user) {return String(user.ROL).trim().toUpperCase() === 'PEAJE';}).map(function(user) {
+    const ultimo = iso(user.ULTIMO_INGRESO);
+    return {usuario:user.USUARIO,nombre:user.NOMBRE || user.USUARIO,peaje:user.PEAJE,estado:String(user.ESTADO || '').trim().toUpperCase(),ultimoIngreso:ultimo,ingresoHoy:!!ultimo && Utilities.formatDate(new Date(ultimo),'America/Bogota','yyyy-MM-dd') === hoy,requiereCambioContrasena:estadoContrasena_(user).requiereCambioContrasena};
+  });
+  const auditoria = listarAuditoria_(data);
+  if (!auditoria.ok) return auditoria;
+  const tickets = listarTickets_(data);
+  if (!tickets.ok) return tickets;
+  return {ok:true,serverTime:new Date().toISOString(),usuarios:usuarios,auditoria:auditoria.rows,
+    eventos:auditoria.rows.filter(function(row) {return row.accion === 'PEAJE_LOGIN' && row.id;}).map(function(row) {return {id:row.id,fecha:row.fecha,usuario:row.usuario,nombre:row.nombre,peaje:row.peaje};}),
+    tickets:tickets.rows.map(function(row) {return {id:row.id,titulo:row.titulo,estado:row.estado,prioridad:row.prioridad,peaje:row.peaje,fecha:row.fecha,updatedAt:row.updatedAt};})};
+}
+
+// Entradas públicas compatibles con google.script.run, siempre autenticadas.
+function crearUsuario(data) {return gestionarAccesos_('crearusuario',data);}
+function actualizarUsuario(data) {return gestionarAccesos_('actualizarusuario',data);}
+function cambiarContrasenaUsuario(data) {return gestionarAccesos_('cambiarcontrasenausuario',data);}
+function cambiarEstadoUsuario(data) {return gestionarAccesos_('cambiarestadousuario',data);}
+function listarUsuarios(data) {return listarUsuariosAutorizados_(data);}
+
 function esUsuarioAdministrador_(sesion) {
 
   if (!sesion) {
@@ -4465,6 +4394,8 @@ function esUsuarioGlobal_(sesion) {
     return false;
   }
 
+  if (esUsuarioSoporte_(sesion)) return false;
+
   const rol =
     String(
       sesion.rol ||
@@ -4507,6 +4438,7 @@ function puedeAccederPlanilla_(
     return false;
   }
 
+  if (esUsuarioSoporte_(sesion)) return false;
   if (
     esUsuarioGlobal_(
       sesion
@@ -5400,7 +5332,7 @@ function leerTickets_(sh) {
 function listarTickets_(datos) {
   const ctx = obtenerContextoUsuario_(datos);
   if (!ctx.ok) return ctx;
-  const admin = esUsuarioAdministrador_(ctx.sesion);
+  const admin = puedeGestionarSoporte_(ctx.sesion);
   const sh = getSpreadsheet_().getSheetByName('ZIMATICKETS');
   const rows = (sh ? leerTickets_(sh) : []).filter(function(row) {
     return admin || String(row.usuario).trim().toLowerCase() === String(ctx.sesion.usuario).trim().toLowerCase();
@@ -5453,7 +5385,7 @@ function crearTicket_(datos) {
 function actualizarTicket_(datos) {
   const ctx = obtenerContextoUsuario_(datos);
   if (!ctx.ok) return ctx;
-  const admin = esUsuarioAdministrador_(ctx.sesion);
+  const admin = puedeGestionarSoporte_(ctx.sesion);
   const respuesta = String(datos.respuesta || '').trim();
   const requestId = String(datos.requestId || '').trim();
   if (respuesta.length > 6000) throw Error('La respuesta no puede superar 6000 caracteres.');
@@ -5485,6 +5417,7 @@ function actualizarTicket_(datos) {
     const ultimaRespuesta = admin && respuesta ? respuesta : ticket.respuesta || '';
     sh.getRange(index+2,12,1,4).setValues([[estado,/^[=+@-]/.test(ultimaRespuesta)?"'"+ultimaRespuesta:ultimaRespuesta,fecha,historial]]);
     SpreadsheetApp.flush();
+    registrarAuditoria_('TICKET_UPDATE',{id:ticket.id,usuario:ctx.sesion.usuario},'Ticket actualizado · Estado: '+estado);
     return {ok:true};
   } finally { lock.releaseLock(); }
 }
@@ -5747,7 +5680,7 @@ function listarSoporte_(
   }
 
   if (
-    !esUsuarioAdministrador_(
+    !puedeGestionarSoporte_(
       contexto.sesion
     )
   ) {
@@ -6663,7 +6596,7 @@ function configurarSistemaUsuarios() {
    PRUEBA DE BACKEND
    ============================================================ */
 
-function pruebaBackend() {
+function pruebaBackend_() {
 
   const setup =
     setupSistema();
@@ -6788,7 +6721,7 @@ function pruebaBackend() {
    PRUEBA DE LOGIN
    ============================================================ */
 
-function pruebaLogin() {
+function pruebaLogin_() {
 
   const resultado =
     autenticarUsuario(
@@ -6812,7 +6745,7 @@ function pruebaLogin() {
    PRUEBA DE USUARIO
    ============================================================ */
 
-function pruebaUsuario(
+function pruebaUsuario_(
   usuario
 ) {
 

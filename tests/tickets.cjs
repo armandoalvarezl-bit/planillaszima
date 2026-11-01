@@ -25,7 +25,8 @@ Object.assign(ctx,{
   Utilities:{getUuid:()=> 'uuid-'+(++sequence)},SpreadsheetApp:{flush(){}},
   obtenerEmailNotificacion_:()=> 'soporte@example.com',
   MailApp:{sendEmail:mail=>{emails++;assert.equal(mail.to,'soporte@example.com');assert.equal(mail.replyTo,'operador@example.com');if(failEmail)throw Error('Correo no disponible');}},
-  jsonOutput_:value=>value
+  jsonOutput_:value=>value,
+  registrarAuditoria_:()=>{}
 });
 const data={token:'session',requestId:'request-123',titulo:'Error al guardar',mensaje:'No puedo guardar mi planilla de hoy.',email:'operador@example.com',categoria:'PLANILLAS',prioridad:'NORMAL'};
 assert.equal(ctx.apiGet({action:'tickets'}).ok,false);
@@ -65,6 +66,12 @@ assert.equal(ctx.apiPost({action:'responderticket',token:'session',id:first.id,r
 assert.equal(ctx.listarTickets_({token:'session'}).rows[0].conversacion.length,2);
 assert.equal(values[0][14],'conversacion');
 failEmail=true;
+session={usuario:'tecnico',peaje:'TODOS',rol:'SOPORTE'};
+assert.equal(ctx.listarTickets_({token:'session'}).admin,true);
+assert.equal(ctx.listarTickets_({token:'session'}).rows.length,1);
+assert.equal(ctx.actualizarTicket_({token:'session',id:first.id,requestId:'support-reply-123',estado:'EN_PROCESO',respuesta:'Soporte revisa el caso.'}).ok,true);
+assert.equal(ctx.listarTickets_({token:'session'}).rows[0].conversacion.at(-1).rol,'SOPORTE');
+session={usuario:'fragua',peaje:'FRAGUA',rol:'PEAJE'};
 const saved=ctx.crearTicket_({...data,requestId:'request-456'});
 assert.equal(saved.ok,true);assert.equal(saved.correoEnviado,false);assert.equal(values.length,3);
 assert.equal(ctx.crearTicket_({...data,requestId:'request-456'}).id,saved.id);

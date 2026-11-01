@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..');
 const browser=spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',[
   '--headless','--no-sandbox','--disable-gpu','--disable-software-rasterizer','--no-first-run',
   '--disable-background-networking','--remote-debugging-port=9352',
-  '--user-data-dir='+path.resolve(root,'../edge-logout-check'),'about:blank'
+  '--user-data-dir='+path.resolve(root,'.tmp','edge-logout-check'),'about:blank'
 ],{stdio:'ignore',windowsHide:true});
 let socket;
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
@@ -28,7 +28,7 @@ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   await call('Network.setBlockedURLs',{urls:['*cdn.jsdelivr.net*','*fonts.googleapis.com*','*fonts.gstatic.com*']});
   const fixture=path.join(root,'.tmp','logout-layout.html');
   fs.mkdirSync(path.dirname(fixture),{recursive:true});
-  fs.writeFileSync(fixture,'<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;background:#edf3f6}</style></head><body><button id="logout">Cerrar sesión</button><script src="../zima-ui.js"></script></body></html>');
+  fs.writeFileSync(fixture,'<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font-family:Arial,sans-serif;background:#edf3f6}.logout{width:34px;height:34px;display:grid;place-items:center}</style></head><body><button id="logout">Cerrar sesión</button><script src="../zima-ui.js"></script></body></html>');
   await call('Page.navigate',{url:pathToFileURL(fixture).href});
   await pause(300);
   await call('Runtime.evaluate',{expression:'ZimaUI.clearSession();'});
@@ -45,7 +45,7 @@ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
     await call('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:width<800});
     await call('Runtime.evaluate',{expression:`document.getElementById('logout').focus();window.result=null;ZimaUI.confirmLogout({detail:'Equipo ZIMA · Peaje de prueba'}).then(value=>window.result=value);`});
     await pause(400);
-    const result=await call('Runtime.evaluate',{expression:`(()=>{const card=document.querySelector('.logout .zima-confirm-card'),r=card.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,cancelFocused:document.activeElement.dataset.zimaConfirm==='cancel'};})()`,returnByValue:true});
+    const result=await call('Runtime.evaluate',{expression:`(()=>{const card=document.querySelector('.zima-logout-dialog .zima-confirm-card'),r=card.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,cancelFocused:document.activeElement.dataset.zimaConfirm==='cancel'};})()`,returnByValue:true});
     const r=result.result.value;
     assert(r.left>=0&&r.right<=width&&r.top>=0&&r.bottom<=900,JSON.stringify(r));
     assert.equal(r.cancelFocused,true,'Foco inicial en seguir aquí');

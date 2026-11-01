@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="img/logo.png">
   <title>ZIMA 360 - Gran Administrador</title>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
     :root{--navy:#101827;--top:#003747;--gold:#f7c600;--line:#e4e8ee;--bg:#f5f7fa;--ink:#172235;--muted:#6d7b8d;--green:#15803d;--red:#b42318;--white:#fff}
     *{box-sizing:border-box}
@@ -172,12 +172,12 @@
       <div class="branch"><small>Acceso actual</small><b id="sideUser">Usuario</b></div>
       <nav class="nav" aria-label="Menu principal">
         <div class="nav-title">Menu principal</div>
-        <a href="dashboard.html"><i data-lucide="layout-dashboard"></i><span>Inicio</span></a>
-        <a href="planilla.html"><i data-lucide="file-plus-2"></i><span>Nueva planilla</span></a>
-        <a href="historial.html"><i data-lucide="history"></i><span>Historial</span></a>
-        <a href="informes.html"><i data-lucide="bar-chart-3"></i><span>Informes</span></a>
+        <a href="dashboard.html"><i class="bi bi-grid" aria-hidden="true"></i><span>Inicio</span></a>
+        <a href="planilla.html"><i class="bi bi-file-earmark-plus" aria-hidden="true"></i><span>Nueva planilla</span></a>
+        <a href="historial.html"><i class="bi bi-clock-history" aria-hidden="true"></i><span>Historial</span></a>
+        <a href="informes.html"><i class="bi bi-bar-chart" aria-hidden="true"></i><span>Informes</span></a>
         <a href="soporte.html"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2M4 12H3v6h4v-6H4Zm16 0h1v6h-4v-6h3Zm0 6v1a2 2 0 0 1-2 2h-4M10 21h4"/></svg><span>ZimaTicket</span></a>
-        <a class="active" href="granadmin.html"><i data-lucide="shield"></i><span>Gran admin</span></a>
+        <a class="active" href="granadmin.html"><i class="bi bi-shield-check" aria-hidden="true"></i><span>Gran admin</span></a>
       </nav>
       <div class="side-foot"><div class="menu-edition"><span class="menu-country"><span class="menu-colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span><span class="menu-version">v2.0.0</span></div></div>
     </aside>
@@ -188,14 +188,14 @@
         <div class="userbox">
           <div class="avatar" id="avatar">GA</div>
           <div><strong id="topName">Gran Administrador</strong></div>
-          <button class="logout zima-logout-button" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesion" title="Cerrar sesion"><i data-lucide="log-out"></i></button>
+          <button class="logout zima-logout-button" type="button" onclick="cerrarSesion()" aria-label="Cerrar sesion" title="Cerrar sesion"><i class="bi bi-box-arrow-right" aria-hidden="true"></i></button>
         </div>
       </header>
 
       <div class="locked" id="locked">
-        <i data-lucide="shield-alert"></i>
+        <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
         <h1>Acceso restringido</h1>
-        <p>Este panel solo esta disponible para usuarios con rol ADMIN o ADMINISTRADOR.</p>
+        <p>Este panel está disponible para administración y soporte, según sus permisos.</p>
         <div class="actions" style="justify-content:center;margin-top:18px"><button class="btn primary" type="button" onclick="location.href='dashboard.html'">Volver al inicio</button></div>
       </div>
 
@@ -207,8 +207,8 @@
             <p>Gestiona usuarios, roles, peajes, estados de acceso y contrase&ntilde;as operativas.</p>
           </div>
           <div class="actions">
-            <button class="btn" type="button" onclick="cargarUsuarios()"><i data-lucide="refresh-cw"></i>Actualizar</button>
-            <button class="btn primary" type="button" onclick="limpiarFormulario()"><i data-lucide="user-plus"></i>Nuevo usuario</button>
+            <button class="btn" type="button" onclick="cargarUsuarios()"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i>Actualizar</button>
+            <button class="btn primary" type="button" onclick="limpiarFormulario()"><i class="bi bi-person-plus" aria-hidden="true"></i>Nuevo usuario</button>
           </div>
         </div>
 
@@ -242,6 +242,7 @@
                       <select id="newRole" required>
                         <option value="PEAJE">PEAJE</option>
                         <option value="INTERVENTORIA">INTERVENTORIA</option>
+                        <option value="SOPORTE">SOPORTE</option>
                         <option value="ADMIN">ADMIN</option>
                         <option value="ADMINISTRADOR">ADMINISTRADOR</option>
                       </select>
@@ -263,7 +264,7 @@
                       <input id="newPassword" type="password" minlength="6" required>
                     </label>
                   </div>
-                  <button class="btn gold" id="createUserBtn" type="submit"><i data-lucide="save"></i>Crear usuario</button>
+                  <button class="btn gold" id="createUserBtn" type="submit"><i class="bi bi-floppy" aria-hidden="true"></i>Crear usuario</button>
                 </form>
               </div>
             </section>
@@ -292,6 +293,7 @@
                       <select id="editRole" required>
                         <option value="PEAJE">PEAJE</option>
                         <option value="INTERVENTORIA">INTERVENTORIA</option>
+                        <option value="SOPORTE">SOPORTE</option>
                         <option value="ADMIN">ADMIN</option>
                         <option value="ADMINISTRADOR">ADMINISTRADOR</option>
                       </select>
@@ -328,8 +330,8 @@
                       <input id="editPassword" type="password" minlength="6" placeholder="Opcional">
                     </label>
                   </div>
-                  <button class="btn danger" id="removeEditPhoto" type="button"><i data-lucide="image-off"></i>Quitar foto</button>
-                  <button class="btn primary" id="saveProfileBtn" type="submit"><i data-lucide="save"></i>Guardar perfil</button>
+                  <button class="btn danger" id="removeEditPhoto" type="button"><i class="bi bi-image" aria-hidden="true"></i>Quitar foto</button>
+                  <button class="btn primary" id="saveProfileBtn" type="submit"><i class="bi bi-floppy" aria-hidden="true"></i>Guardar perfil</button>
                 </form>
               </div>
             </section>
@@ -358,15 +360,21 @@
           </section>
         </section>
 
+        <section class="panel" style="margin-top:24px"><div class="panel-head"><h2>Auditoría de cambios</h2><p>Últimos 200 movimientos. Las contraseñas se mantienen reservadas; soporte no ve datos financieros.</p><button class="btn" type="button" onclick="cargarAuditoria()">Actualizar auditoría</button></div><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Acción</th><th>Responsable</th><th>Detalle</th></tr></thead><tbody id="auditBody"><tr><td colspan="4">Consultando auditoría...</td></tr></tbody></table></div></section>
       </section>
     </main>
   </div>
 
+  <style>
+    body.embedded-edit{background:#f6f7f9}body.embedded-edit>.app>.sidebar,body.embedded-edit .sidebar,body.embedded-edit .topbar{display:none!important}body.embedded-edit .main{margin:0;width:100%;padding:0}body.embedded-edit .page{padding:0 0 24px;max-width:none}.bi{display:inline-block;font-size:17px;line-height:1}.icon-btn .bi{font-size:16px}
+  </style>
+  <script>if(new URLSearchParams(location.search).get('embed')==='1')document.body.classList.add('embedded-edit');</script>
   <script src="zima-ui.js"></script>
   <script>
-    const API_URL='https://script.google.com/macros/s/AKfycbzNnN9Mb4jR_5Zp5K4bViCTyJFwm8OE-Stt6HFbwSQe2jKm6Ma7uHeG55SKxM3bsO8NEA/exec';
+    const API_URL='https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
     let USUARIOS=[];
     let PEAJES=[];
+    let requestedUserOpened=false;
 
     function getStore(key){try{return localStorage.getItem(key)||sessionStorage.getItem(key)||'';}catch(e){return '';}}
     function leerSesion(){
@@ -400,6 +408,8 @@
       const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
       return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role)&&peajeGlobal;
     }
+    function isSupport(){return SESSION.role==='SOPORTE';}
+    function canManageAccess(){return isGranAdmin()||isSupport();}
     function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));}
     function setText(id,value){const el=document.getElementById(id);if(el)el.textContent=String(value??'');}
     function notice(msg,type='ok'){const el=document.getElementById('notice');el.textContent=msg;el.className='notice show '+type;clearTimeout(notice.t);notice.t=setTimeout(()=>{el.className='notice';},4500);}
@@ -541,12 +551,14 @@
     }
     async function apiGet(action,params={}){
       const payload=sessionPayload({action,...params});
-      if(window.google&&google.script&&google.script.run) return onlineRun('apiGet',payload);
-      const query=new URLSearchParams(payload);
-      const response=await fetch(API_URL+'?'+query.toString(),{method:'GET',cache:'no-store',redirect:'follow',headers:{Accept:'application/json'}});
-      const data=await response.json();
-      if(data.ok===false) throw new Error(data.error||data.mensaje||'Operación rechazada.');
-      return data;
+      if(window.google&&google.script&&google.script.run)return confirmedResponse(await onlineRun('apiGet',payload));
+      let data;
+      try{
+        const response=await fetch(API_URL+'?'+new URLSearchParams(payload),{method:'GET',cache:'no-store',redirect:'follow',headers:{Accept:'application/json'}});
+        if(!response.ok)throw Error('HTTP '+response.status);
+        data=await response.json();
+      }catch(error){data=await accessJsonp(payload);}
+      return confirmedResponse(data);
     }
     function actualizarSesionLocal(datos){
       datos=datos||{};
@@ -579,70 +591,35 @@
         });
       }catch(e){}
     }
-    function postViaHiddenForm(payload){
+    function accessJsonp(payload){
       return new Promise((resolve,reject)=>{
-        const iframeName='zimaPostFrame_'+Date.now();
-        const iframe=document.createElement('iframe');
-        const form=document.createElement('form');
-        let settled=false;
-        const finish=(result)=>{
-          if(settled) return;
-          settled=true;
-          setTimeout(()=>{
-            try{form.remove();}catch(e){}
-            try{iframe.remove();}catch(e){}
-          },700);
-          resolve(result||{ok:true});
-        };
-        iframe.name=iframeName;
-        iframe.style.display='none';
-        iframe.onload=()=>finish({ok:true,mensaje:'Cambios enviados al servidor.'});
-        iframe.onerror=()=>reject(new Error('No se pudo enviar la información al servidor.'));
-        form.method='POST';
-        form.action=API_URL;
-        form.target=iframeName;
-        form.style.display='none';
-        Object.keys(payload).forEach(key=>{
-          const input=document.createElement('input');
-          input.type='hidden';
-          input.name=key;
-          input.value=payload[key]==null?'':String(payload[key]);
-          form.appendChild(input);
-        });
-        document.body.appendChild(iframe);
-        document.body.appendChild(form);
-        form.submit();
-        setTimeout(()=>finish({ok:true,mensaje:'Cambios enviados al servidor.'}),8000);
+        const callback='__zima_access_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+        const script=document.createElement('script');
+        const cleanup=()=>{clearTimeout(timer);delete window[callback];script.remove();};
+        const timer=setTimeout(()=>{cleanup();reject(Error('No se pudo confirmar el cambio. Actualice la lista antes de reintentar.'));},20000);
+        window[callback]=data=>{cleanup();resolve(data);};
+        script.onerror=()=>{cleanup();reject(Error('No se pudo conectar con el servidor.'));};
+        script.src=API_URL+'?'+new URLSearchParams({...payload,callback});
+        document.head.appendChild(script);
       });
+    }
+    function confirmedResponse(data){
+      if(!data||data.ok!==true)throw Error(data&&(data.error||data.mensaje)||'El servidor no confirmó la operación.');
+      return data;
     }
     async function apiPost(action,params={}){
       const payload=sessionPayload({action,...params});
-      if(window.google&&google.script&&google.script.run){
-        if(action==='crearusuario') return onlineRun('crearUsuario',payload);
-        if(action==='actualizarusuario') return onlineRun('actualizarUsuario',payload);
-        if(action==='cambiarestadousuario') return onlineRun('cambiarEstadoUsuario',[payload.usuario,payload.estado]);
-        if(action==='cambiarcontrasenausuario') return onlineRun('cambiarContrasenaUsuario',[payload.usuario,payload.nuevaContrasena||payload.password]);
-        return onlineRun('apiPost',payload);
-      }
+      if(window.google&&google.script&&google.script.run)return confirmedResponse(await onlineRun('apiPost',payload));
       let data;
       try{
         const response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload),redirect:'follow'});
+        if(!response.ok)throw Error('HTTP '+response.status);
         data=await response.json();
       }catch(error){
-        if(payload.foto && JSON.stringify(payload).length>5000){
-          await postViaHiddenForm(payload);
-          return {ok:true,mensaje:'Perfil actualizado correctamente.',foto:payload.foto};
-        }
-        const query=new URLSearchParams(payload);
-        if(query.toString().length>6000){
-          await postViaHiddenForm(payload);
-          return {ok:true,mensaje:'Cambios enviados al servidor.',foto:payload.foto||''};
-        }
-        const response=await fetch(API_URL+'?'+query.toString(),{method:'GET',cache:'no-store',redirect:'follow',headers:{Accept:'application/json'}});
-        data=await response.json();
+        if(new URLSearchParams(payload).toString().length>6000)throw Error('No se pudo confirmar el guardado. Actualice la lista para comprobar los datos antes de reintentar; si persiste, reduzca el tamaño de la foto.');
+        data=await accessJsonp(payload);
       }
-      if(data.ok===false) throw new Error(data.error||data.mensaje||'Operación rechazada.');
-      return data;
+      return confirmedResponse(data);
     }
 
     function normalizarUsuario(row){
@@ -756,9 +733,9 @@
           <td>${esc(u.email||u.telefono||'--')}</td>
           <td><span class="pill ${esc(u.estado)}">${esc(u.estado)}</span></td>
           <td><div class="row-actions">
-            <button class="icon-btn" type="button" title="Editar perfil" onclick="editarUsuario('${encoded}')"><i data-lucide="pencil"></i></button>
-            <button class="icon-btn" type="button" title="Cambiar estado" onclick="cambiarEstado('${encoded}','${next}')"><i data-lucide="${u.estado==='ACTIVO'?'user-x':'user-check'}"></i></button>
-            <button class="icon-btn" type="button" title="Cambiar contrase\u00f1a" onclick="enfocarPassword('${encoded}')"><i data-lucide="key-round"></i></button>
+            <button class="icon-btn" type="button" title="Editar perfil" onclick="editarUsuario('${encoded}')"><i class="bi bi-pencil" aria-hidden="true"></i></button>
+            <button class="icon-btn" type="button" title="Cambiar estado" onclick="cambiarEstado('${encoded}','${next}')"><i class="bi ${u.estado==='ACTIVO'?'bi-person-x':'bi-person-check'}" aria-hidden="true"></i></button>
+            <button class="icon-btn" type="button" title="Cambiar contrase\u00f1a" onclick="enfocarPassword('${encoded}')"><i class="bi bi-key" aria-hidden="true"></i></button>
           </div></td>
         </tr>`;
       }).join('');
@@ -772,6 +749,8 @@
         USUARIOS=(data.usuarios||[]).map(normalizarUsuario);
         await cargarPeajes();
         renderUsuarios();
+        const requested=new URLSearchParams(location.search).get('usuario');
+        if(requested&&!requestedUserOpened){requestedUserOpened=true;editarUsuario(encodeURIComponent(requested));}
       }catch(error){
         document.getElementById('usersBody').innerHTML='<tr><td class="empty" colspan="7">'+esc(error.message||error)+'</td></tr>';
         notice(error.message||'No se pudieron cargar los usuarios.','error');
@@ -789,6 +768,7 @@
         await apiPost('cambiarestadousuario',{usuario,estado});
         notice('Estado actualizado correctamente.');
         await cargarUsuarios();
+        await cargarAuditoria();
       }catch(error){notice(error.message||'No se pudo cambiar el estado.','error');}
     }
     function editarUsuario(usuario){
@@ -864,6 +844,7 @@
         await new Promise(resolve=>setTimeout(resolve,700));
         await cargarUsuarios();
         editarUsuario(encodeURIComponent(payload.usuario));
+        await cargarAuditoria();
       }catch(error){notice(error.message||'No se pudo guardar el perfil.','error');}
       finally{ZimaUI.busy('saveProfileBtn',false);}
     }
@@ -903,10 +884,16 @@
           foto:payload.foto
         });
         notice('Usuario creado correctamente.');
+        await cargarAuditoria();
         limpiarFormulario();
         await cargarUsuarios();
       }catch(error){notice(error.message||'No se pudo crear el usuario.','error');}
       finally{ZimaUI.busy('createUserBtn',false);}
+    }
+    async function cargarAuditoria(){
+      const body=document.getElementById('auditBody');
+      try{const r=await apiGet('auditoria');body.innerHTML=r.rows.length?r.rows.map(row=>'<tr><td>'+esc(new Date(row.fecha).toLocaleString('es-CO',{timeZone:'America/Bogota'}))+'</td><td>'+esc(row.accion)+'</td><td>'+esc(row.usuario)+'</td><td>'+esc(row.detalle)+'</td></tr>').join(''):'<tr><td colspan="4" class="empty">Sin movimientos registrados.</td></tr>';}
+      catch(error){body.innerHTML='<tr><td colspan="4" class="empty">'+esc(error.message)+'</td></tr>';}
     }
     function cerrarSesion(){
       return ZimaUI.confirmLogout({
@@ -929,12 +916,20 @@
         setPhoto('editPhotoPreview','',document.getElementById('editName').value||document.getElementById('editUser').value||'Usuario');
       });
       document.getElementById('search').addEventListener('input',renderUsuarios);
-      if(!isGranAdmin()){
+      if(!canManageAccess()){
         document.getElementById('adminPage').style.display='none';
         document.getElementById('locked').style.display='block';
         return;
       }
+      if(isSupport()){
+        document.title='ZIMA 360 - Soporte y accesos';
+        document.querySelector('#adminPage h1').textContent='Centro de soporte y accesos';
+        document.querySelector('#adminPage .hero p').textContent='Gestiona tickets y accesos de los peajes. Los valores de las planillas están reservados.';
+        document.querySelector('.breadcrumb').textContent='Soporte / Accesos y auditoría';
+        ['newRole','editRole'].forEach(id=>{const select=document.getElementById(id);Array.from(select.options).forEach(option=>{if(option.value!=='PEAJE')option.remove();});select.value='PEAJE';select.disabled=true;});
+      }
       cargarUsuarios();
+      cargarAuditoria();
     }
     if(window.lucide) lucide.createIcons({attrs:{"stroke-width":1.9}});
     init();

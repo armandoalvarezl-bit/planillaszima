@@ -553,6 +553,7 @@
 
     <div class="footer">
       <span>ZIMA 360 &middot; Sistema de Gesti&oacute;n</span>
+      <a href="login-soporte.html" style="color:#006077;font-size:12px;text-decoration:none"><i class="bi bi-headset" aria-hidden="true"></i> Acceso de Soporte</a>
       <span class="made-in-colombia"><span class="colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span>
     </div>
 
@@ -583,7 +584,7 @@
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzNnN9Mb4jR_5Zp5K4bViCTyJFwm8OE-Stt6HFbwSQe2jKm6Ma7uHeG55SKxM3bsO8NEA/exec";
+  "https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);
@@ -834,8 +835,8 @@ function esAdminLogin(datos) {
 
 function irDashboard() {
 
-  window.location.href =
-    "dashboard.html";
+  const sesion = window.ZimaUI ? ZimaUI.getSupportSession() : {};
+  window.location.href = String(sesion.rol || '').toUpperCase() === 'SOPORTE' ? 'control-soporte.html' : 'dashboard.html';
 
 }
 
