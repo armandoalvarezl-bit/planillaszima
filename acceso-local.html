@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <title>ZIMA 360 · Acceso al sistema local</title>
+  <link rel="icon" type="image/png" href="img/logo.png">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; background: #f3f6fa; color: #183354; font-family: Arial, Helvetica, sans-serif; }
+    main { width: min(100%, 540px); padding: 32px; border-top: 5px solid #00566b; border-radius: 20px; background: #fff; box-shadow: 0 18px 50px #18335418; }
+    img { display: block; max-width: 190px; height: auto; margin: 0 auto 28px; }
+    h1 { font-size: 25px; line-height: 1.25; }
+    p { line-height: 1.65; color: #526573; }
+    code { overflow-wrap: anywhere; }
+    .address { padding: 14px; background: #f3f8fa; border-radius: 10px; }
+    a { color: #00566b; }
+    .open { display: block; padding: 16px; margin: 24px 0; border-radius: 12px; background: #00566b; color: #fff; text-align: center; text-decoration: none; font-weight: bold; }
+    a:focus-visible { outline: 3px solid #e8b700; outline-offset: 4px; }
+    .back { display: inline-block; margin-top: 12px; }
+    @media (max-width: 480px) { main { padding: 24px; } }
+  </style>
+</head>
+<body>
+  <main>
+    <img src="img/logo.png" alt="ZIMA 360">
+    <h1>Acceso al sistema local</h1>
+    <p>Abre el equipo desde esta PC conectada a la misma red local. El acceso se abre en otra pestaña para que puedas seguir usando ZIMA.</p>
+    <p class="address"><code>http://192.168.0.136/#/index/preview/</code></p>
+    <a class="open" href="http://192.168.0.136/#/index/preview/" target="_blank" rel="noopener noreferrer">Abrir sistema local ↗</a>
+    <p>Si el equipo solicita usuario y contraseña, utiliza sus credenciales de acceso.</p>
+    <p>Si no abre, comprueba que esta PC esté en la misma red y que el equipo esté encendido. Este acceso también puede usarse desde la web publicada mientras estés en esa red.</p>
+    <p>Esta página abre el sistema local; la consulta de sus datos dentro de ZIMA está pendiente de configurar.</p>
+    <a class="back" href="login-soporte.html">← Volver a Soporte</a>
+  </main>
+</body>
+</html>

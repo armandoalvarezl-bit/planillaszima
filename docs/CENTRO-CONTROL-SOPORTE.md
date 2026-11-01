@@ -50,7 +50,10 @@ tickets o accesos. El navegador puede retrasar los temporizadores en segundo
 plano y el sistema operativo puede silenciar avisos mediante sus propias opciones.
 No se envían avisos con todas las pestañas cerradas; no se implementa Web Push.
 
-La primera consulta establece una base sin notificar ingresos históricos. Cada
+La primera consulta del navegador establece una base sin notificar ingresos históricos.
+Esta base se conserva al cambiar de página o recargar: los ingresos nuevos que
+lleguen durante la navegación se avisan en la siguiente consulta. Si el navegador
+no puede crear un aviso, se muestra el error y se reintenta al sincronizar. Cada
 ingreso nuevo tiene un ID único. El historial local y la etiqueta del aviso evitan
 repetirlo al sincronizar. Hacer clic en el aviso abre la actividad del centro.
 

@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..');
 const browser=spawn('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',[
   '--headless','--no-sandbox','--disable-gpu','--disable-software-rasterizer','--no-first-run',
   '--disable-background-networking','--remote-debugging-port=9351',
-  '--user-data-dir='+path.resolve(root,'../edge-menu-check'),'about:blank'
+  '--user-data-dir='+path.join(root,'.tmp','edge-menu-check'),'about:blank'
 ],{stdio:'ignore',windowsHide:true});
 let socket;
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));

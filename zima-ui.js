@@ -928,98 +928,6 @@
     connect();
   }
 
-  function simplifyPeajeMenu() {
-    const role = String(getSupportSession().rol || '').trim().toUpperCase();
-    if (role !== 'PEAJE') return;
-    document.body.classList.add('zima-peaje-menu');
-    const style = document.createElement('style');
-    style.textContent = 'body.zima-peaje-menu [data-zima-peaje-hidden]{display:none!important}';
-    document.head.appendChild(style);
-    document.querySelectorAll('nav a[href], .sidebar .nav a[href]').forEach(function(link) {
-      const page = new URL(link.getAttribute('href'), location.href).pathname.split('/').pop().toLowerCase();
-      if (page !== 'planilla.html' && page !== 'historial.html') {
-        link.setAttribute('data-zima-peaje-hidden', '');
-      }
-    });
-    // El portal de soporte también ofrece acceso directo a la planilla.
-    document.querySelectorAll('.top nav').forEach(function(nav) {
-      if (nav.querySelector('a[href="planilla.html"]')) return;
-      const link = document.createElement('a');
-      link.href = 'planilla.html';
-      link.textContent = 'Planilla';
-      nav.prepend(link);
-    });
-    if (window.self !== window.top || document.getElementById('zimaPeajeTopbar')) return;
-    const nav = document.querySelector('.sidebar nav, .sidebar .nav, .top nav');
-    if (!nav) return;
-    const planillaLink = nav.querySelector('a[href="planilla.html"]');
-    if (planillaLink) {
-      const label = planillaLink.querySelector('span:last-child');
-      if (label) label.textContent = 'Planilla';
-      else planillaLink.textContent = 'Planilla';
-    }
-    document.body.classList.add('zima-peaje-topnav');
-    style.textContent += [
-      'body.zima-peaje-topnav{padding-top:104px!important}',
-      'body.zima-peaje-topnav .sidebar,body.zima-peaje-topnav .zima-menu-toggle,body.zima-peaje-topnav .zima-nav-backdrop{display:none!important}',
-      'body.zima-peaje-topnav .main,body.zima-peaje-topnav .main-content{margin-left:0!important;width:100%!important;padding-bottom:0!important}',
-      '#zimaPeajeTopbar{position:fixed;inset:0 0 auto;z-index:1003;height:104px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:22px;padding:14px 24px;background:#fff;color:#172d36;border-bottom:1px solid #dce5e7;box-shadow:0 4px 20px #10414912;font-family:"Segoe UI",Arial,sans-serif}',
-      '#zimaPeajeTopbar .brand-block{display:flex!important;align-items:center!important;gap:12px!important;min-height:0!important;flex:none!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;text-align:left!important}',
-      '#zimaPeajeTopbar .brand-logo-pair{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:8px!important;width:auto!important}',
-      '#zimaPeajeTopbar .brand-symbol{display:grid!important;place-items:center!important;width:54px!important;min-width:54px!important;height:54px!important;padding:0!important;border-radius:14px!important;background:#fff!important;box-shadow:none!important;overflow:hidden}',
-      '#zimaPeajeTopbar .brand-symbol img{display:block!important;width:48px!important;height:48px!important;object-fit:contain!important;padding:2px!important}',
-      '#zimaPeajeTopbar .brand-ani{display:flex!important;align-items:center!important;width:37px!important;min-width:37px!important;height:48px!important;padding:0 0 0 8px!important;border-left:1px solid #dce5e7!important;background:transparent!important}',
-      '#zimaPeajeTopbar .brand-ani img{display:block!important;width:29px!important;height:43px!important;object-fit:contain!important}',
-      '#zimaPeajeTopbar .brand-copy{display:block!important;min-width:0!important}#zimaPeajeTopbar .brand-name{font-size:21px!important;font-weight:800!important;color:#172d36!important;white-space:nowrap}#zimaPeajeTopbar .brand-name strong{color:#172d36!important}#zimaPeajeTopbar .brand-caption{display:block!important;font-size:10px!important;color:#64748b!important;margin-top:5px!important}',
-      '#zimaPeajeTopbar .branch-card,#zimaPeajeTopbar .branch{display:block!important;margin:0!important;padding:10px 14px!important;border:1px solid #e2e8f0!important;border-radius:12px!important;background:#f8fafc!important;min-width:100px;max-width:190px}#zimaPeajeTopbar .branch-label{font-size:8px!important;letter-spacing:1.2px;color:#64748b!important}#zimaPeajeTopbar .branch-name{font-size:13px!important;font-weight:700;color:#172d36!important;margin-top:4px!important;overflow-wrap:anywhere}#zimaPeajeTopbar .branch-status{font-size:10px!important;color:#64748b!important;margin-top:6px!important}',
-      '#zimaPeajeTopbar .sidebar-bottom,#zimaPeajeTopbar .side-foot{display:block!important;flex:none!important;margin:0!important;padding:0!important;border:0!important;font-size:10px;color:#64748b!important}#zimaPeajeTopbar .secure-line{font-size:10px;color:#64748b!important}#zimaPeajeTopbar .menu-country{color:#64748b!important}#zimaPeajeTopbar .menu-version{color:#475569!important;background:#f1f5f9!important;border-color:#dce5e7!important}#zimaPeajeTopbar .menu-edition{gap:10px;margin-top:8px}',
-      '#zimaPeajeTopbar nav{display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;width:auto!important;margin:0!important;padding:0!important}',
-      '#zimaPeajeTopbar .nav-title{display:none!important}',
-      '#zimaPeajeTopbar nav a:not([data-zima-peaje-hidden]){display:flex!important;align-items:center;justify-content:center;flex:none!important;gap:8px!important;min-height:46px!important;padding:12px 16px!important;margin:0!important;border:0!important;border-radius:12px!important;background:transparent!important;color:#36535b!important;font-size:13px!important;font-weight:700!important;text-decoration:none;box-shadow:none!important}',
-      '#zimaPeajeTopbar nav a.active,#zimaPeajeTopbar nav a[aria-current]{background:#eef3f3!important;color:#172d36!important;box-shadow:inset 0 -3px #f7c600!important}',
-      '#zimaPeajeTopbar nav a:hover{background:#f2f6f7!important}',
-      '#zimaPeajeTopbar .peaje-logout{display:inline-flex;align-items:center;justify-content:center;gap:7px;flex:none;min-height:44px;padding:10px 13px;border:1px solid #dce5e7;border-radius:10px;background:#fff;color:#36535b;font:650 12px "Segoe UI",Arial,sans-serif;white-space:nowrap;cursor:pointer}#zimaPeajeTopbar .peaje-logout:hover{background:#fff8df;border-color:#ebcf70}#zimaPeajeTopbar .peaje-logout:focus-visible{outline:3px solid #e4b923;outline-offset:3px}#zimaPeajeTopbar .peaje-logout:disabled{opacity:.6;cursor:wait}',
-      '#zimaPeajeTopbar nav a>span{display:block!important;font-size:13px!important}#zimaPeajeTopbar .nav-icon{color:inherit!important}#zimaPeajeTopbar svg{width:18px;height:18px}',
-      '@media(min-width:701px) and (max-width:950px){#zimaPeajeTopbar .brand-copy{display:none!important}}',
-      '@media(max-width:1200px){#zimaPeajeTopbar .sidebar-bottom,#zimaPeajeTopbar .side-foot{display:none!important}}',
-      '@media(max-width:700px){body.zima-peaje-topnav{padding-top:136px!important}#zimaPeajeTopbar{height:136px;display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:54px 44px;gap:10px;padding:12px}#zimaPeajeTopbar nav{grid-column:1/-1;justify-content:center!important}#zimaPeajeTopbar nav a:not([data-zima-peaje-hidden]){padding:10px 20px!important;min-height:42px!important}#zimaPeajeTopbar .brand-block{gap:8px!important}#zimaPeajeTopbar .brand-symbol{width:44px!important;min-width:44px!important;height:44px!important}#zimaPeajeTopbar .brand-symbol img{width:40px!important;height:40px!important}#zimaPeajeTopbar .brand-ani{width:28px!important;min-width:28px!important;padding-left:5px!important;height:40px!important}#zimaPeajeTopbar .brand-ani img{width:22px!important;height:36px!important}#zimaPeajeTopbar .brand-name{font-size:17px!important}#zimaPeajeTopbar .brand-caption{font-size:8px!important}#zimaPeajeTopbar .branch-card,#zimaPeajeTopbar .branch{min-width:0;max-width:120px;padding:8px!important}#zimaPeajeTopbar .branch-name{font-size:11px!important}#zimaPeajeTopbar .branch-status{display:none!important}}',
-      '@media(max-width:700px){#zimaPeajeTopbar nav{gap:5px!important}#zimaPeajeTopbar nav a:not([data-zima-peaje-hidden]){padding:10px!important}#zimaPeajeTopbar nav a .nav-icon{display:none!important}#zimaPeajeTopbar .peaje-logout{padding:10px;font-size:11px}}',
-      '@media print{body.zima-peaje-topnav{padding-top:0!important}#zimaPeajeTopbar{display:none!important}}'
-    ].join('');
-    const topbar = document.createElement('header');
-    topbar.id = 'zimaPeajeTopbar';
-    topbar.className = 'no-print';
-    const brand = document.querySelector('.sidebar .brand-block') || document.createElement('div');
-    if (!brand.classList.contains('brand-block')) {
-      brand.className = 'brand-block';
-      brand.innerHTML = '<div class="brand-logo-pair"><div class="brand-symbol"><img src="img/logo.png" alt="Logo ZIMA"></div><div class="brand-ani"><img src="img/logo-ani.png" alt="Logo ANI"></div></div><div class="brand-copy"><div class="brand-name">ZIMA <strong>360</strong></div><div class="brand-caption">Gestión empresarial</div></div>';
-    }
-    topbar.appendChild(brand);
-    const branch = document.querySelector('.sidebar .branch-card, .sidebar .branch');
-    if (branch) {
-      const name = branch.querySelector('.branch-name');
-      if (name) name.textContent = getSupportSession().peaje || name.textContent;
-      topbar.appendChild(branch);
-    }
-    topbar.appendChild(nav);
-    const logout = document.createElement('button');
-    logout.type = 'button';
-    logout.className = 'peaje-logout';
-    logout.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H4v16h5M14 8l4 4-4 4M8 12h10"/></svg><span>Cerrar sesión</span>';
-    logout.onclick = async function() {
-      if (logout.disabled) return;
-      logout.disabled = true;
-      try {
-        const session = getSupportSession();
-        await confirmLogout({detail:[session.nombre || session.usuario, session.peaje].filter(Boolean).join(' · ')});
-      } finally { logout.disabled = false; }
-    };
-    nav.appendChild(logout);
-    const footer = document.querySelector('.sidebar .sidebar-bottom, .sidebar .side-foot');
-    if (footer) topbar.appendChild(footer);
-    document.body.prepend(topbar);
-  }
-
   function installFloatingClock() {
     if (window.self !== window.top || document.getElementById('zimaFloatingClock')) return;
     const style = document.createElement('style');
@@ -1060,7 +968,7 @@
   function installResponsiveNavigation() {
     const sidebar = document.querySelector('.sidebar');
     const header = document.querySelector('.topbar-left,.topbar,.top,.toolbar');
-    if (!sidebar || !header || document.body.classList.contains('embedded-edit') || document.body.classList.contains('zima-peaje-topnav')) return;
+    if (!sidebar || !header || document.body.classList.contains('embedded-edit')) return;
     document.body.classList.add('zima-responsive-nav');
     const compact = window.matchMedia('(max-width: 1180px)');
     sidebar.id = sidebar.id || 'zimaMainMenu';
@@ -1139,7 +1047,6 @@
     document.addEventListener('DOMContentLoaded', function () {
       installSupportWorkspace();
       installDesktopNotifications();
-      simplifyPeajeMenu();
       installResponsiveNavigation();
       installSupportLauncher();
       installFloatingClock();
@@ -1149,7 +1056,6 @@
   } else {
     installSupportWorkspace();
     installDesktopNotifications();
-    simplifyPeajeMenu();
     installResponsiveNavigation();
     installSupportLauncher();
     installFloatingClock();

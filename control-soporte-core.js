@@ -6,7 +6,9 @@
   const key='ZIMA_SUPPORT_DESKTOP:'+String(session.usuario).toLowerCase();
   const seenKey=key+':seen';
   const listeners=new Set();
-  let snapshot=null,error='',busy=false,initialized=false,timer;
+  let snapshot=null,error='',busy=false,timer;
+  // Conservar la base al navegar, incluso si la primera consulta no tenía eventos.
+  let initialized=Array.isArray(read(seenKey,null));
   function read(k,fallback){try{return JSON.parse(localStorage.getItem(k))??fallback;}catch(_){return fallback;}}
   function write(k,value){try{localStorage.setItem(k,JSON.stringify(value));}catch(_){}}
   function desktopState(){
@@ -26,18 +28,21 @@
   function processEvents(events){
     const seen=new Set(read(seenKey,[]));
     const fresh=events.filter(event=>!seen.has(event.id));
-    // La primera consulta establece una base: no avisa ingresos históricos.
-    if(initialized && desktopState()==='enabled'){
-      fresh.slice().reverse().forEach(event=>{
-        const shared=new Set(read(seenKey,[]));
-        if(shared.has(event.id))return;
-        shared.add(event.id);write(seenKey,[...shared].slice(-300));
-        notify('Ingreso de peaje · '+event.peaje,(event.nombre||event.usuario)+' ingresó al sistema.','zima-peaje-'+event.id);
-      });
+    // Solo la primera consulta de este navegador descarta ingresos históricos.
+    if(!initialized || desktopState()!=='enabled'){
+      events.slice().reverse().forEach(event=>seen.add(event.id));
+      write(seenKey,[...seen].slice(-300));
+      initialized=true;
+      return;
     }
-    events.slice().reverse().forEach(event=>seen.add(event.id));
-    write(seenKey,[...seen].slice(-300));
-    initialized=true;
+    fresh.slice().reverse().forEach(event=>{
+      const shared=new Set(read(seenKey,[]));
+      if(shared.has(event.id))return;
+      // Un fallo del navegador se reintenta en la próxima sincronización.
+      if(notify('Ingreso de peaje · '+event.peaje,(event.nombre||event.usuario)+' ingresó al sistema.','zima-peaje-'+event.id)){
+        shared.add(event.id);write(seenKey,[...shared].slice(-300));
+      }
+    });
   }
   function request(){
     const payload={action:'controlsoporte',token:session.token};
@@ -60,7 +65,7 @@
     try{
       const result=await request();
       if(!result || !result.ok)throw Error(result?.error || 'No se pudo consultar la operación.');
-      processEvents(result.eventos||[]);snapshot=result;error='';
+      error='';processEvents(result.eventos||[]);snapshot=result;
     }catch(e){error=e.message||String(e);}
     finally{busy=false;publish();}
   }
