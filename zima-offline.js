@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const API = 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
+  const API = 'https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
   const SESSION = 'ZIMA_OFFLINE_UNLOCK';
   const supported = !!(window.isSecureContext && window.crypto && crypto.subtle && window.indexedDB && navigator.locks);
   const encoder = new TextEncoder(), decoder = new TextDecoder();
@@ -170,6 +170,60 @@
     } catch (_) { lock(); }
   }
   const ready = restore();
+  let connectionAudio;
+  function prepareConnectionSound() {
+    try {
+      const Audio = window.AudioContext || window.webkitAudioContext;
+      if (!Audio) return;
+      connectionAudio = connectionAudio || new Audio();
+      if (connectionAudio.state === 'suspended') connectionAudio.resume().catch(() => {});
+    } catch (_) {}
+  }
+  function playConnectionSound() {
+    try {
+      if (!connectionAudio || connectionAudio.state !== 'running') return;
+      const start = connectionAudio.currentTime;
+      [659.25, 523.25].forEach((frequency, index) => {
+        const note = connectionAudio.createOscillator(), gain = connectionAudio.createGain();
+        const at = start + index * 0.18;
+        note.type = 'sine'; note.frequency.value = frequency;
+        gain.gain.setValueAtTime(0, at);
+        gain.gain.linearRampToValueAtTime(0.045, at + 0.025);
+        gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.55);
+        note.connect(gain); gain.connect(connectionAudio.destination);
+        note.start(at); note.stop(at + 0.6);
+      });
+    } catch (_) {}
+  }
+  ['pointerdown', 'keydown'].forEach(event => window.addEventListener(event, prepareConnectionSound, { passive: true }));
+  let connectionNoticeShown = false;
+  function showConnectionNotice() {
+    if (!document.body || navigator.onLine !== false || connectionNoticeShown) return;
+    try { if (sessionStorage.getItem('ZIMA_CONNECTION_NOTICE')) return; } catch (_) {}
+    connectionNoticeShown = true;
+    try { sessionStorage.setItem('ZIMA_CONNECTION_NOTICE', '1'); } catch (_) {}
+    const prepared = !!key && shellReady;
+    const previousFocus = document.activeElement;
+    const dialog = document.createElement('dialog');
+    dialog.id = 'zimaConnectionNotice';
+    dialog.setAttribute('aria-labelledby', 'zimaConnectionTitle');
+    dialog.setAttribute('aria-describedby', 'zimaConnectionDescription');
+    dialog.innerHTML = '<div class="zc-top"><span class="zc-brand">ZIMA 360</span><span class="zc-badge">Sin conexión</span></div>' +
+      '<div class="zc-icon" aria-hidden="true"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="m3 3 18 18M8.5 8.5a10 10 0 0 1 11.3 2M4.2 10.5a10 10 0 0 1 1.3-1M9 13.5a5 5 0 0 1 5.7.2M2 6.5a16 16 0 0 1 1.6-1M7.2 4.2A16 16 0 0 1 22 6.5"/><circle cx="12" cy="18" r="1"/></svg></div>' +
+      '<h2 id="zimaConnectionTitle">Se fue internet.<br><span>' + (prepared ? 'Tu trabajo continúa.' : 'Vamos a revisar tu acceso.') + '</span></h2>' +
+      '<p id="zimaConnectionDescription"></p><div class="zc-detail"></div><button type="button" class="zc-continue"></button>' +
+      '<p class="zc-foot">Te avisamos con calma. Tú sigues al mando.</p>';
+    dialog.querySelector('#zimaConnectionDescription').textContent = prepared
+      ? 'No te preocupes. Puedes seguir trabajando con normalidad en este equipo.'
+      : 'Si ya preparaste tu cuenta en este navegador, puedes ingresar con tu usuario y contraseña sin internet.';
+    dialog.querySelector('.zc-detail').textContent = prepared
+      ? 'Tus planillas se guardan aquí y se enviarán automáticamente cuando vuelva la conexión.'
+      : 'La primera preparación de una cuenta necesita internet. Tus pendientes guardados se conservan.';
+    dialog.querySelector('button').textContent = prepared ? 'Continuar trabajando' : 'Entendido';
+    dialog.querySelector('button').onclick = () => dialog.close();
+    dialog.addEventListener('close', () => { dialog.remove(); if (previousFocus && previousFocus.isConnected) previousFocus.focus({ preventScroll: true }); }, { once: true });
+    document.body.appendChild(dialog); dialog.showModal(); playConnectionSound();
+  }
   // La actividad real prolonga la sesión; una sesión vencida requiere reingreso.
   let lastActivityWrite = 0;
   ['pointerdown', 'keydown', 'touchstart'].forEach(event => window.addEventListener(event, () => {
@@ -199,7 +253,6 @@
       let local;
       const secretKey = await derive(password, saved.salt);
       try { local = await decrypt(saved, secretKey); } catch (_) { throw Error('Usuario o contraseña local incorrectos.'); }
-      if (Date.now() >= local.grant.expiresAt) throw Error('El acceso sin internet venció. Ingrese con internet; sus planillas pendientes se conservan.');
       localStorage.setItem('ZIMA_LAST_ACTIVITY', String(Date.now()));
       await unlock(account, secretKey);
       return { ok: true, ...local.profile, offline: true, offlineReady: true };
@@ -270,7 +323,6 @@
     const response = await transport('offlineresume', data.grant, true);
     if (!response.ok) {
       warning = response.error || 'Ingrese de nuevo con internet.';
-      await change(local => { local.grant.expiresAt = Math.min(local.grant.expiresAt, Date.now()); });
       const error = Error(warning); error.denied = true; throw error;
     }
     token = response.token;
@@ -349,7 +401,6 @@
   }
   async function enqueue(action, params) {
     return change(local => {
-      if (Date.now() >= local.grant.expiresAt) throw Error('Valide su cuenta con internet antes de guardar nuevos cambios.');
       let operationId = uid();
       let data = { ...params };
       const autoCode = action === 'save' && !String(data.codigo || '').trim();
@@ -394,7 +445,12 @@
       return { ok: true, row, pending: true, local: true, operationId };
     });
   }
-  async function sync() {
+  let syncTask;
+  function sync() {
+    if (!syncTask) syncTask = runSync().finally(() => { syncTask = null; });
+    return syncTask;
+  }
+  async function runSync() {
     await ready;
     if (!supported || !active() || navigator.onLine === false || syncing) return;
     syncing = true; render();
@@ -461,13 +517,16 @@
     if (write && ['save', 'create', 'update', 'delete', 'crearticket'].includes(action)) {
       const result = await enqueue(action === 'create' ? 'save' : action, params);
       if (result.ok && navigator.onLine !== false) {
+        // Con conexión, mostrar éxito del servidor únicamente después de su confirmación.
+        // La operación conserva el mismo identificador si se pierde la respuesta.
         await sync();
         const local = await state();
         const pending = local.queue.find(op => op.operationId === result.operationId);
-        if (pending && pending.status === 'blocked') result.syncError = pending.error + ' Abra «Pendientes» para revisar el envío; su copia local sigue guardada.';
-        if (result.row && !local.queue.some(op => op.data.id === result.row.id)) {
-          result.row = local.rows.find(row => row.id === result.row.id) || result.row;
+        if (!pending) {
+          if (result.row) result.row = local.rows.find(row => row.id === result.row.id) || result.row;
           result.pending = false; result.local = false;
+        } else if (pending.status === 'blocked') {
+          result.syncError = pending.error;
         }
       }
       render(); return result;
@@ -501,7 +560,6 @@
       }
     }
     const local = await state();
-    if (Date.now() >= local.grant.expiresAt) throw Error('Valide su cuenta con internet para seguir consultando datos locales.');
     lastState = local; render();
     return localRead(local, action, params);
   }
@@ -513,7 +571,24 @@
       box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite');
       box.style.cssText = 'position:fixed;left:12px;bottom:12px;z-index:9500;max-width:min(440px,calc(100vw - 24px));padding:10px 14px;border:1px solid #bed1dc;border-radius:12px;background:#fff;color:#143b48;box-shadow:0 4px 20px #001b3022;font:12px/1.5 Segoe UI,Arial,sans-serif';
       document.body.appendChild(box);
-      const style = document.createElement('style'); style.textContent = '@media print{#zimaOfflineStatus,.zima-offline-dialog{display:none!important}}'; document.head.appendChild(style);
+      const style = document.createElement('style'); style.textContent = `
+        #zimaConnectionNotice{box-sizing:border-box;width:min(440px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;margin:auto;padding:30px;border:1px solid #e2e9ed;border-radius:24px;background:linear-gradient(150deg,#fff 60%,#edf6f8);color:#173a47;box-shadow:0 28px 100px #061e3540;font:15px/1.6 "Segoe UI",Arial,sans-serif}
+        #zimaConnectionNotice::backdrop{background:#0b203580;backdrop-filter:blur(5px)}
+        #zimaConnectionNotice .zc-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+        #zimaConnectionNotice .zc-brand{font-size:12px;font-weight:800;letter-spacing:1.8px;color:#5a727c}
+        #zimaConnectionNotice .zc-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:99px;background:#fff2ce;color:#8a6115}
+        #zimaConnectionNotice .zc-icon{display:grid;place-items:center;width:74px;height:74px;margin:28px 0 20px;border:1px solid #d6e8ec;border-radius:24px;background:#eaf4f6;color:#196779}
+        #zimaConnectionNotice h2{margin:0 0 16px;font-size:30px;line-height:1.2;letter-spacing:-.8px;font-weight:750}
+        #zimaConnectionNotice h2 span{color:#236e7d}
+        #zimaConnectionNotice p{margin:0;color:#607580}
+        #zimaConnectionNotice .zc-detail{margin:20px 0 24px;padding:15px 17px;border-left:3px solid #e7bd48;border-radius:0 12px 12px 0;background:#f1f6f7;font-size:13px}
+        #zimaConnectionNotice .zc-continue{width:100%;padding:14px 18px;border:0;border-radius:12px;background:#184b5b;color:#fff;font:700 14px "Segoe UI",Arial,sans-serif;cursor:pointer}
+        #zimaConnectionNotice .zc-continue:hover{background:#103b49}
+        #zimaConnectionNotice .zc-continue:focus-visible{outline:3px solid #e7bd48;outline-offset:4px}
+        #zimaConnectionNotice .zc-foot{margin-top:16px;text-align:center;font-size:11px;color:#7b8c94}
+        @media(max-width:400px){#zimaConnectionNotice{padding:24px}#zimaConnectionNotice h2{font-size:27px}}
+        @media print{#zimaOfflineStatus,.zima-offline-dialog,#zimaConnectionNotice{display:none!important}#zimaConnectionNotice::backdrop{display:none}}
+      `; document.head.appendChild(style);
     }
     box.replaceChildren();
     const pending = lastState ? lastState.queue.length : 0;
@@ -580,11 +655,16 @@
     const close = document.createElement('button'); close.textContent = 'Cerrar'; close.onclick = () => { dialog.close(); dialog.remove(); }; dialog.appendChild(close);
     dialog.addEventListener('close', () => dialog.remove()); document.body.appendChild(dialog); dialog.showModal();
   }
-  window.ZimaOffline = { login, request, sync, lock, ready, status: () => ({ supported, unlocked: !!key, prepared: !!key && shellReady, warning, pending: lastState ? lastState.queue.length : 0, dailyPreparedDay: lastState ? lastState.dailyPreparedDay : '', downloadedAt: lastState ? lastState.downloadedAt : 0 }) };
-  window.addEventListener('online', () => { warning = ''; render(); backgroundCycle(); });
+  window.ZimaOffline = { login, request, sync, lock, ready, localList: async () => { await ready; if (!active()) throw Error('Ingrese nuevamente para consultar sus planillas.'); return localRead(await state(), 'list', {}); }, status: () => ({ supported, unlocked: !!key, prepared: !!key && shellReady, warning, pending: lastState ? lastState.queue.length : 0, dailyPreparedDay: lastState ? lastState.dailyPreparedDay : '', downloadedAt: lastState ? lastState.downloadedAt : 0 }) };
+  window.addEventListener('online', () => {
+    connectionNoticeShown = false;
+    try { sessionStorage.removeItem('ZIMA_CONNECTION_NOTICE'); } catch (_) {}
+    const notice = document.getElementById('zimaConnectionNotice'); if (notice) notice.close();
+    warning = ''; render(); backgroundCycle();
+  });
   window.addEventListener('focus', backgroundCycle);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') backgroundCycle(); });
-  window.addEventListener('offline', render);
+  window.addEventListener('offline', () => { render(); ready.then(showConnectionNotice); });
   window.addEventListener('storage', async event => {
     if (event.key === 'ZIMA_LAST_ACTIVITY' && !event.newValue) lock();
     if (event.key === 'ZIMA360_SESION' && key) {
@@ -611,7 +691,7 @@
           else if (worker.state === 'redundant') reject(Error('La descarga no se completó. Recargue con internet.'));
         };
         worker.addEventListener('statechange', check); check();
-      })).then(() => { shellReady = true; render(); }).catch(error => { warning = 'No se pudo preparar la apertura sin internet: ' + error.message; render(); });
+      })).then(() => { shellReady = true; render(); showConnectionNotice(); }).catch(error => { warning = 'No se pudo preparar la apertura sin internet: ' + error.message; render(); });
     }
     if (key) backgroundCycle();
   });

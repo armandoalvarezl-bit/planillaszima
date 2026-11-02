@@ -333,6 +333,24 @@
     'ZIMA_API_URL'
   ];
 
+  let toastTimer;
+  function toast(message) {
+    let box = document.getElementById('zimaQuickNotice');
+    if (!box) {
+      box = document.createElement('div'); box.id = 'zimaQuickNotice';
+      box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite');
+      box.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:12000;max-width:calc(100vw - 32px);width:max-content;padding:13px 20px;border:1px solid #b6ddcf;border-radius:14px;background:#effaf5;color:#155d43;box-shadow:0 8px 28px #153d3020;font:600 14px/1.5 Segoe UI,Arial,sans-serif;pointer-events:none';
+      document.body.appendChild(box);
+    }
+    if (!document.getElementById('zimaQuickNoticeStyle')) {
+      const style = document.createElement('style'); style.id = 'zimaQuickNoticeStyle';
+      style.textContent = '@media print{#zimaQuickNotice{display:none!important}}'; document.head.appendChild(style);
+    }
+    box.textContent = '✓ ' + message;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { box.remove(); }, 1800);
+  }
+
   function clearSession(extraKeys) {
     if (window.ZimaOffline) window.ZimaOffline.lock();
     localStorage.removeItem('ZIMA_LAST_ACTIVITY');
@@ -360,14 +378,13 @@
     }).then(function (ok) {
       if (!ok) return false;
 
-      return Promise
-        .resolve(options.beforeClear ? options.beforeClear() : null)
-        .catch(function () {})
-        .then(function () {
-          clearSession(options.extraKeys);
-          window.location.href = options.redirect || 'login.html';
-          return true;
-        });
+      clearSession(options.extraKeys);
+      // El cierre local no depende de que el servidor responda.
+      try {
+        if (options.beforeClear) Promise.resolve(options.beforeClear()).catch(function () {});
+      } catch (_) {}
+      window.location.href = options.redirect || 'login.html';
+      return true;
     });
   }
 
@@ -667,7 +684,7 @@
   function installAdminTicketNotifications(launcher, openSupport) {
     const session = getSupportSession();
     if (!session.token || !/^(ADMIN|ADMINISTRADOR|SOPORTE)$/.test(String(session.rol).trim().toUpperCase()) || /\/login(?:-soporte)?\.html$/i.test(location.pathname)) return;
-    const endpoint = 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
+    const endpoint = 'https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
     const key = 'ZIMA_ADMIN_TICKETS_REVIEWED:' + String(session.usuario).trim().toLowerCase();
     let seen = new Set();
     try {
@@ -1028,7 +1045,8 @@
   }
 
   window.ZimaUI = {
-    apiUrl: 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec',
+    toast: toast,
+    apiUrl: 'https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec',
     busy: busy,
     clearSession: clearSession,
     closeModal: closeModal,

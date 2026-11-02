@@ -793,7 +793,10 @@
           <div class="pdf-dialog-title" id="pdfTitle">Vista previa de la planilla</div>
           <div class="pdf-dialog-subtitle">Desde aquí puede imprimirla o guardarla como PDF.</div>
         </div>
-        <button class="pdf-close" type="button" title="Cerrar vista previa" aria-label="Cerrar vista previa" onclick="cerrarPdf()"><i class="bi bi-x-lg"></i></button>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="pdf-close" style="width:auto;padding:8px 12px;font-size:13px" type="button" onclick="imprimirVistaPrevia()"><i class="bi bi-printer" aria-hidden="true"></i> Imprimir / Guardar PDF</button>
+          <button class="pdf-close" type="button" title="Cerrar vista previa" aria-label="Cerrar vista previa" onclick="cerrarPdf()"><i class="bi bi-x-lg"></i></button>
+        </div>
       </div>
       <div class="pdf-loading" id="pdfLoading" hidden>
         <span class="zima-spinner" aria-hidden="true"></span>
@@ -836,7 +839,7 @@
   <script src="zima-offline.js"></script>
 <script src="zima-ui.js"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
     function onlineRun(fn, arg) { return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg)); }
     function leerSesionLocal(){ const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','usuarioSesion','usuario','ZIMA_USER']; for(const storage of [localStorage,sessionStorage]){ for(const k of keys){ try{ const raw=storage.getItem(k); if(!raw || raw==='ACTIVA') continue; if(raw.trim().startsWith('{')) return JSON.parse(raw); return {usuario:raw}; }catch(e){} } } return {}; }
@@ -1078,6 +1081,10 @@ async function onlineApiPost(action, params = {}){ const ses=zimaSessionParams()
     }
     let currentPreviewId = '';
     function ver(id) { if (!id) return; const decodedId=decodeURIComponent(id); const row = allRows.find(x => String(x.id) === decodedId); const modal = $('pdfModal'); const frame = $('pdfFrame'); const loading=$('pdfLoading'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); if(loading)loading.hidden=false; frame.onload=function(){ if(loading)loading.hidden=true; }; if(currentPreviewId!==decodedId){ frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; currentPreviewId=decodedId; } ZimaUI.openModal(modal); }
+    function imprimirVistaPrevia() {
+      const content = $('pdfFrame')?.contentWindow;
+      if (content && typeof content.imprimir === 'function') content.imprimir();
+    }
     function cerrarPdf() { const frame = $('pdfFrame'); ZimaUI.closeModal('pdfModal'); if (frame) frame.src = 'about:blank'; currentPreviewId=''; const loading=$('pdfLoading'); if(loading)loading.hidden=true; }
     function cerrarPdfDesdeFondo(e) { if (e.target && e.target.id === 'pdfModal') cerrarPdf(); }
     async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando...'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }

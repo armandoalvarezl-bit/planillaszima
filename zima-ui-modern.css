@@ -455,8 +455,8 @@ body:has(.illustration) .content h1 {
   }
 
   .planilla {
-    width: 203mm !important;
-    max-width: 203mm !important;
+    width: 203.9mm !important;
+    max-width: 203.9mm !important;
     margin: 0 auto !important;
     border-radius: 0;
     box-shadow: none !important;

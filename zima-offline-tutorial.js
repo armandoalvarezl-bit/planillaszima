@@ -23,7 +23,7 @@
     {
       icon: 'laptop', tag: '02 · CONTINÚA', title: 'Se va internet. Tu turno sigue.',
       text: 'Puedes volver a entrar con tu usuario y contraseña, consultar lo descargado y crear, editar, anular e imprimir planillas sin conexión.',
-      points: ['El acceso local dura hasta 7 días desde la validación, o menos si vence tu contraseña.', 'Después de 15 minutos sin actividad, vuelve a iniciar sesión.'],
+      points: ['Prepara tu cuenta una sola vez en este navegador. Después puedes ingresar sin internet, sin vencimiento por días.', 'Usa tu usuario y contraseña local para volver a entrar; cerrar sesión conserva tus planillas pendientes.'],
       preview: 'Sin internet · trabajando en este equipo', caption: 'Trabajas con los datos de tu última descarga', badge: 'Tu operación continúa',
       note: 'Usuarios, permisos, perfiles y contraseñas se modifican con internet.'
     },

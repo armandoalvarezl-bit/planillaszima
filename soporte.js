@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const API_URL='https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
+  const API_URL='https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
   const $=id=>document.getElementById(id);
   const esc=ZimaUI.escapeHtml;
   const session=ZimaUI.getSupportSession();

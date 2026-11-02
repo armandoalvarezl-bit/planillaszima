@@ -934,7 +934,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 <style id="notification-panel-style">
 .notification-wrap{position:relative;display:grid;place-items:center}
 .notification-button{position:relative}
-.notification-button::after{content:"";position:absolute;right:8px;top:8px;width:7px;height:7px;border-radius:50%;background:#f4c20d;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,24,39,.06)}
+.notification-button::after{display:none;content:"";position:absolute;right:8px;top:8px;width:7px;height:7px;border-radius:50%;background:#f4c20d;border:2px solid #fff;box-shadow:0 0 0 1px rgba(17,24,39,.06)}
 .notification-panel{position:absolute;top:44px;right:0;width:min(340px,calc(100vw - 32px));background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 18px 45px rgba(17,24,39,.16);padding:14px;z-index:60;display:none}
 .notification-panel.open{display:block}
 .notification-panel::before{content:"";position:absolute;right:12px;top:-7px;width:12px;height:12px;background:#fff;border-left:1px solid #e5e7eb;border-top:1px solid #e5e7eb;transform:rotate(45deg)}
@@ -1204,7 +1204,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
   <script src="zima-offline.js"></script>
 <script src="zima-ui.js"></script>
-  <script src="zima-updates.js"></script>
+
   <script>
     if (window.lucide && typeof lucide.createIcons === 'function') {
       lucide.createIcons({attrs:{"stroke-width":1.9}});
@@ -1212,7 +1212,7 @@ body{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
     /* Web App ACTUAL de ZIMA 360.
        Se fuerza esta URL para evitar que el navegador reutilice una URL antigua guardada. */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
 
     /* =========================================================
@@ -1848,14 +1848,8 @@ async function onlineApiPost(action,params={}){
       const list=document.getElementById('notificationList');
       if(!list) return;
       const rows=Array.isArray(data)?data:[];
-      setText('notificationStatus', 'Novedades');
-      list.innerHTML=[
-        ...(window.ZimaUpdates?[{icon:'bell-ring',title:ZimaUpdates.release.title,text:ZimaUpdates.release.message}]:[])
-      ].map(item=>`<div class="notification-item" role="menuitem">
-        <div class="notification-icon"><i data-lucide="${item.icon}"></i></div>
-        <div class="notification-copy"><strong>${esc(item.title)}</strong><span>${esc(item.text)}</span></div>
-      </div>`).join('');
-      if(window.ZimaUpdates && (status==='Actualizado' || status==='Conectado')) ZimaUpdates.observe(rows);
+      setText('notificationStatus', 'Al día');
+      list.innerHTML='<div class="notification-empty">No tienes avisos pendientes.</div>';
       if(window.lucide && typeof lucide.createIcons === 'function'){
         lucide.createIcons({attrs:{"stroke-width":1.9}});
       }
@@ -1891,7 +1885,6 @@ async function onlineApiPost(action,params={}){
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden','true');
       document.body.style.overflow='';
-      if(window.ZimaUpdates && tieneSesion()) ZimaUpdates.announce(SESSION.user);
     }
 
     function mostrarBienvenidaIngreso(){
@@ -2001,6 +1994,7 @@ async function onlineApiPost(action,params={}){
             }else{
               await fetch(API_URL,{
                 method:'POST',
+                keepalive:true,
                 headers:{'Content-Type':'text/plain;charset=utf-8'},
                 body:JSON.stringify({action:'logout',token:token})
               });
@@ -2163,7 +2157,6 @@ async function onlineApiPost(action,params={}){
     setupPerfilModal();
     if(setupSession()){
       mostrarBienvenidaIngreso();
-      if(window.ZimaUpdates && !document.getElementById('zimaWelcomeModal').classList.contains('open')) ZimaUpdates.announce(SESSION.user);
       refrescarFotoPerfil();
       cargar();
     }

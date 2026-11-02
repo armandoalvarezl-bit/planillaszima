@@ -6806,14 +6806,14 @@ function accionOffline_(action, data) {
       if (!ctx.ok) return ctx;
       if (!/^[a-f0-9-]{36}$/i.test(data.device || '')) return {ok:false,error:'Dispositivo inválido.'};
       const u = buscarUsuario_(ctx.sesion.usuario);
-      const expiresAt = Math.min(Date.now()+7*86400000, new Date(estadoContrasena_(u).venceContrasena).getTime());
+      const expiresAt = 8640000000000000; // Preparación permanente del dispositivo; permisos comprobados al reconectar.
       const secret = Utilities.getUuid()+'-'+Utilities.getUuid();
       const id = hashOffline_(ctx.sesion.usuario+'|'+data.device);
       props.setProperty('ZIMA_OFFLINE_'+id,JSON.stringify({usuario:ctx.sesion.usuario,device:data.device,secret:hashOffline_(secret),identity:identidadOffline_(u),expiresAt:expiresAt}));
       return {ok:true,id:id,secret:secret,expiresAt:expiresAt,device:data.device};
     }
     const saved = JSON.parse(props.getProperty('ZIMA_OFFLINE_'+String(data.id || '')) || 'null');
-    if (!saved || saved.secret !== hashOffline_(data.secret || '') || saved.device !== data.device || Date.now() >= saved.expiresAt) return {ok:false,error:'El permiso sin internet venció. Ingrese con internet.'};
+    if (!saved || saved.secret !== hashOffline_(data.secret || '') || saved.device !== data.device) return {ok:false,error:'Ingrese con internet para validar la sincronización. Sus pendientes se conservan.'};
     const user = buscarUsuario_(saved.usuario);
     if (!user || String(user.ESTADO).toUpperCase() !== 'ACTIVO' || identidadOffline_(user) !== saved.identity || estadoContrasena_(user).requiereCambioContrasena) return {ok:false,error:'La cuenta o sus permisos cambiaron. Ingrese nuevamente con internet.'};
     const profile = {usuario:saved.usuario,nombre:user.NOMBRE,rol:user.ROL,peaje:user.PEAJE,estado:user.ESTADO,loginAt:new Date().toISOString()};
