@@ -369,7 +369,8 @@
     body.embedded-edit{background:#f6f7f9}body.embedded-edit>.app>.sidebar,body.embedded-edit .sidebar,body.embedded-edit .topbar{display:none!important}body.embedded-edit .main{margin:0;width:100%;padding:0}body.embedded-edit .page{padding:0 0 24px;max-width:none}.bi{display:inline-block;font-size:17px;line-height:1}.icon-btn .bi{font-size:16px}
   </style>
   <script>if(new URLSearchParams(location.search).get('embed')==='1')document.body.classList.add('embedded-edit');</script>
-  <script src="zima-ui.js"></script>
+  <script src="zima-offline.js"></script>
+<script src="zima-ui.js"></script>
   <script>
     const API_URL='https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
     let USUARIOS=[];
@@ -550,6 +551,10 @@
       });
     }
     async function apiGet(action,params={}){
+  if(window.ZimaOffline)return ZimaOffline.request(action,params,false,()=>onlineApiGet(action, params));
+  return onlineApiGet(action, params);
+}
+async function onlineApiGet(action,params={}){
       const payload=sessionPayload({action,...params});
       if(window.google&&google.script&&google.script.run)return confirmedResponse(await onlineRun('apiGet',payload));
       let data;
@@ -608,6 +613,10 @@
       return data;
     }
     async function apiPost(action,params={}){
+  if(window.ZimaOffline)return ZimaOffline.request(action,params,true,()=>onlineApiPost(action, params));
+  return onlineApiPost(action, params);
+}
+async function onlineApiPost(action,params={}){
       const payload=sessionPayload({action,...params});
       if(window.google&&google.script&&google.script.run)return confirmedResponse(await onlineRun('apiPost',payload));
       let data;

@@ -1,5 +1,5 @@
-const CACHE_NAME = 'zima360-shell-offline-v9';
-const OPTIONAL_CACHE = 'zima360-assets-offline-v9';
+const CACHE_NAME = 'zima360-shell-offline-v10';
+const OPTIONAL_CACHE = 'zima360-assets-offline-v10';
 const APP_SHELL = [
   'login.html', 'dashboard.html', 'planilla.html', 'historial.html', 'informes.html',
   'granadmin.html', 'soporte.html', 'mantenimiento.html',

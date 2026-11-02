@@ -37,6 +37,10 @@
     });
   }
   async function api(action,data={},write=false){
+    if(window.ZimaOffline)return ZimaOffline.request(action,data,write,()=>onlineApi(action,data,write));
+    return onlineApi(action,data,write);
+  }
+  async function onlineApi(action,data={},write=false){
     const payload={...data,action,token:session.token};
     if(window.google && google.script && google.script.run){
       return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[write?'apiPost':'apiGet'](payload));

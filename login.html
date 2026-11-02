@@ -576,6 +576,7 @@
     </div>
   </div>
 
+<script src="zima-offline.js"></script>
 <script src="zima-ui.js"></script>
 <script>
 
@@ -1099,6 +1100,9 @@ function loginJsonp(usuario, password) {
 
 
 async function autenticarRemoto(usuario, password) {
+  return window.ZimaOffline ? ZimaOffline.login(usuario,password,()=>autenticarSoloRemoto(usuario,password)) : autenticarSoloRemoto(usuario,password);
+}
+async function autenticarSoloRemoto(usuario, password) {
 
   try {
 

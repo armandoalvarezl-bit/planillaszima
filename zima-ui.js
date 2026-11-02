@@ -334,6 +334,8 @@
   ];
 
   function clearSession(extraKeys) {
+    if (window.ZimaOffline) window.ZimaOffline.lock();
+    localStorage.removeItem('ZIMA_LAST_ACTIVITY');
     const keys = SESSION_KEYS.concat(extraKeys || []);
     [localStorage, sessionStorage].forEach(function (storage) {
       keys.forEach(function (key) {

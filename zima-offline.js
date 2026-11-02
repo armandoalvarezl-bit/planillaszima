@@ -1,6 +1,6 @@
 (function () {
   'use strict';
-  const API = 'https://script.google.com/macros/s/AKfycbwcCMhxYhF3uMmzpAmGL2uK02UHkHP1gyikRSsW5OfLxTofSjnT821hgqAuWX9TyrWXZg/exec';
+  const API = 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
   const SESSION = 'ZIMA_OFFLINE_UNLOCK';
   const supported = !!(window.isSecureContext && window.crypto && crypto.subtle && window.indexedDB && navigator.locks);
   const encoder = new TextEncoder(), decoder = new TextDecoder();
@@ -170,6 +170,14 @@
     } catch (_) { lock(); }
   }
   const ready = restore();
+  // La actividad real prolonga la sesión; una sesión vencida requiere reingreso.
+  let lastActivityWrite = 0;
+  ['pointerdown', 'keydown', 'touchstart'].forEach(event => window.addEventListener(event, () => {
+    if (active() && Date.now() - lastActivityWrite > 1000) {
+      lastActivityWrite = Date.now();
+      localStorage.setItem('ZIMA_LAST_ACTIVITY', String(lastActivityWrite));
+    }
+  }, { passive: true }));
   async function login(id, password, remote) {
     await ready;
     let result;
@@ -177,7 +185,7 @@
       try { result = await remote(); } catch (error) {
         warning = 'Servidor no disponible. Se intentará el acceso local de este equipo.';
       }
-      if (result && !result.ok) return result; // Nunca ignorar una denegación del servidor.
+      if (result && (!result.ok || result.requiereCambioContrasena)) return result; // Nunca ignorar una denegación del servidor.
     }
     if (!supported) {
       if (result) return result;
@@ -511,7 +519,7 @@
     const pending = lastState ? lastState.queue.length : 0;
     const blocked = lastState ? lastState.queue.filter(op => op.status === 'blocked').length : 0;
     const label = document.createElement('span');
-    label.textContent = warning || (syncing ? 'Sincronizando…' : navigator.onLine === false ? 'Sin internet · trabajando en este equipo' : key ? (shellReady ? 'Conexión disponible · copia local preparada' : 'Datos preparados · descargando pantallas para uso sin internet…') : 'Ingrese con internet para preparar este equipo');
+    label.textContent = warning || (syncing ? 'Sincronizando…' : navigator.onLine === false ? (key && shellReady ? 'Sin internet. No te preocupes, puedes seguir trabajando. Tus cambios se guardan en este equipo y se enviarán cuando vuelva la conexión.' : 'Sin internet. Este equipo aún no está listo para trabajar sin conexión. Ingresa con internet para prepararlo.') : key ? (shellReady ? 'Conexión disponible · copia local preparada' : 'Datos preparados · descargando pantallas para uso sin internet…') : 'Ingrese con internet para preparar este equipo');
     if (!warning && !syncing && key && shellReady && navigator.onLine !== false && pending === 0) label.textContent += ' · 0 pendientes';
     box.appendChild(label);
     if (pending) {
