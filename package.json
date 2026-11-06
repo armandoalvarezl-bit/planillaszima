@@ -1,0 +1,46 @@
+{
+  "name": "zima-360-desktop",
+  "version": "1.0.2",
+  "author": "Transportadora ZIMA",
+  "description": "Aplicación de escritorio ZIMA 360 conectada a la base central.",
+  "private": true,
+  "main": "desktop/main.cjs",
+  "scripts": {
+    "desktop": "electron .",
+    "dist:win": "electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "co.transportadorazima.zima360",
+    "productName": "ZIMA 360",
+    "electronDist": "node_modules/electron/dist",
+    "directories": {
+      "output": "installer-update-1.0.2"
+    },
+    "artifactName": "ZIMA-360-Setup-${version}.${ext}",
+    "files": [
+      "desktop/**",
+      "*.html",
+      "*.js",
+      "*.css",
+      "*.webmanifest",
+      "img/**",
+      "assets/**",
+      "package.json"
+    ],
+    "win": {
+      "target": ["nsis"],
+      "icon": "desktop/zima.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ZIMA 360"
+    }
+  }
+}

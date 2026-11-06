@@ -1,4 +1,39 @@
 (function () {
+  let installPrompt = null;
+
+  function installDesktopApp() {
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      navigator.serviceWorker.register('./service-worker.js').catch(function (error) {
+        console.warn('No se pudo preparar la instalación de ZIMA 360:', error);
+      });
+    }
+    if (document.querySelector('.desktop-download-button')) return;
+    if (document.getElementById('zimaInstallApp')) return;
+    const button = document.createElement('button');
+    button.id = 'zimaInstallApp';
+    button.type = 'button';
+    button.textContent = 'Instalar ZIMA 360';
+    button.setAttribute('aria-label', 'Instalar ZIMA 360 en este equipo');
+    button.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:9998;padding:11px 16px;border:0;border-radius:10px;background:#123b78;color:#fff;font:700 13px Arial,sans-serif;box-shadow:0 4px 16px #123b7840;cursor:pointer;display:none';
+    button.addEventListener('click', async function () {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      installPrompt = null;
+      button.style.display = 'none';
+    });
+    document.body.appendChild(button);
+    window.addEventListener('beforeinstallprompt', function (event) {
+      event.preventDefault();
+      installPrompt = event;
+      button.style.display = 'block';
+    });
+    window.addEventListener('appinstalled', function () {
+      installPrompt = null;
+      button.style.display = 'none';
+    });
+  }
+
   function byId(target) {
     return typeof target === 'string' ? document.getElementById(target) : target;
   }
@@ -333,27 +368,7 @@
     'ZIMA_API_URL'
   ];
 
-  let toastTimer;
-  function toast(message) {
-    let box = document.getElementById('zimaQuickNotice');
-    if (!box) {
-      box = document.createElement('div'); box.id = 'zimaQuickNotice';
-      box.setAttribute('role', 'status'); box.setAttribute('aria-live', 'polite');
-      box.style.cssText = 'position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:12000;max-width:calc(100vw - 32px);width:max-content;padding:13px 20px;border:1px solid #b6ddcf;border-radius:14px;background:#effaf5;color:#155d43;box-shadow:0 8px 28px #153d3020;font:600 14px/1.5 Segoe UI,Arial,sans-serif;pointer-events:none';
-      document.body.appendChild(box);
-    }
-    if (!document.getElementById('zimaQuickNoticeStyle')) {
-      const style = document.createElement('style'); style.id = 'zimaQuickNoticeStyle';
-      style.textContent = '@media print{#zimaQuickNotice{display:none!important}}'; document.head.appendChild(style);
-    }
-    box.textContent = '✓ ' + message;
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { box.remove(); }, 1800);
-  }
-
   function clearSession(extraKeys) {
-    if (window.ZimaOffline) window.ZimaOffline.lock();
-    localStorage.removeItem('ZIMA_LAST_ACTIVITY');
     const keys = SESSION_KEYS.concat(extraKeys || []);
     [localStorage, sessionStorage].forEach(function (storage) {
       keys.forEach(function (key) {
@@ -378,13 +393,14 @@
     }).then(function (ok) {
       if (!ok) return false;
 
-      clearSession(options.extraKeys);
-      // El cierre local no depende de que el servidor responda.
-      try {
-        if (options.beforeClear) Promise.resolve(options.beforeClear()).catch(function () {});
-      } catch (_) {}
-      window.location.href = options.redirect || 'login.html';
-      return true;
+      return Promise
+        .resolve(options.beforeClear ? options.beforeClear() : null)
+        .catch(function () {})
+        .then(function () {
+          clearSession(options.extraKeys);
+          window.location.href = options.redirect || 'login.html';
+          return true;
+        });
     });
   }
 
@@ -684,7 +700,7 @@
   function installAdminTicketNotifications(launcher, openSupport) {
     const session = getSupportSession();
     if (!session.token || !/^(ADMIN|ADMINISTRADOR|SOPORTE)$/.test(String(session.rol).trim().toUpperCase()) || /\/login(?:-soporte)?\.html$/i.test(location.pathname)) return;
-    const endpoint = 'https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
+    const endpoint = 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
     const key = 'ZIMA_ADMIN_TICKETS_REVIEWED:' + String(session.usuario).trim().toLowerCase();
     let seen = new Set();
     try {
@@ -1045,8 +1061,7 @@
   }
 
   window.ZimaUI = {
-    toast: toast,
-    apiUrl: 'https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec',
+    apiUrl: 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec',
     busy: busy,
     clearSession: clearSession,
     closeModal: closeModal,
@@ -1066,6 +1081,7 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       installSupportWorkspace();
+      installDesktopApp();
       installDesktopNotifications();
       installResponsiveNavigation();
       installSupportLauncher();
@@ -1075,6 +1091,7 @@
     });
   } else {
     installSupportWorkspace();
+    installDesktopApp();
     installDesktopNotifications();
     installResponsiveNavigation();
     installSupportLauncher();

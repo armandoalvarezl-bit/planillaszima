@@ -3,13 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css">
 
   <title>ZIMA 360 &middot; Iniciar sesi&oacute;n</title>
   <script id="fondo-especial-del-mes">
-    // El fondo institucional permanece visible durante todo el a?o.
-    document.documentElement.classList.add('mes-equipo-zima');
+    (function () {
+      const mes = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Bogota', year: 'numeric', month: '2-digit'
+      }).formatToParts(new Date());
+      const valor = tipo => mes.find(parte => parte.type === tipo).value;
+      if (valor('year') === '2026' && valor('month') === '10') {
+        document.documentElement.classList.add('mes-equipo-zima');
+      }
+    })();
   </script>
 
   <style>
@@ -376,6 +384,28 @@
     .login-wrapper .connection { display: flex; gap: 7px; justify-content: center; align-items: center; }
     .connection .bi { color: #17835f; font-size: 14px; }
     .login-wrapper .footer { display: grid; justify-items: center; gap: 13px; line-height: 1.5; }
+    .desktop-download-card {
+      display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px 14px;
+      align-items: center; margin-top: 14px; padding: 16px;
+      border: 1px solid #d8e5f0; border-radius: 18px;
+      background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(239,246,253,.97));
+      box-shadow: 0 12px 30px rgba(27,58,93,.09);
+    }
+    .desktop-download-icon { width: 54px; height: 54px; border-radius: 14px; box-shadow: 0 4px 12px rgba(11,47,104,.18); }
+    .desktop-download-copy { min-width: 0; }
+    .desktop-download-label { display: block; margin-bottom: 4px; color: #a36c00; font-size: 9px; font-weight: 800; letter-spacing: .12em; }
+    .desktop-download-title { color: #0b2f68; font-size: 15px; line-height: 1.25; font-weight: 800; }
+    .desktop-download-description { margin-top: 4px; color: #5b6d80; font-size: 11px; line-height: 1.45; }
+    .desktop-download-button {
+      grid-column: 1 / -1; display: flex; min-height: 43px; align-items: center; justify-content: center; gap: 9px;
+      padding: 0 16px; border: 0; border-radius: 11px;
+      background: linear-gradient(110deg, #0b2f68, #14569b); color: #fff;
+      box-shadow: 0 7px 16px rgba(11,47,104,.2); font-size: 12px; font-weight: 800;
+      text-decoration: none; transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .desktop-download-button:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(11,47,104,.27); }
+    .desktop-download-button:focus-visible { outline: 3px solid #f6b91b; outline-offset: 3px; }
+    .desktop-download-note { grid-column: 1 / -1; margin-top: -5px; color: #748294; text-align: center; font-size: 10px; }
     .made-in-colombia {
       display: inline-flex; align-items: center; gap: 9px; padding: 8px 14px;
       border: 1px solid #d8e1eb; border-radius: 999px;
@@ -394,7 +424,7 @@
   </style>
   <style id="fondo-especial-equipo-zima">
     html.mes-equipo-zima body {
-      background: #edf4fa url('img/navidad.png') center / cover no-repeat fixed !important;
+      background: #edf4fa url('img/fondo-celebracion-zima-octubre-2026.png') center / contain no-repeat fixed !important;
       justify-content: center;
       align-items: center !important;
       padding: 24px 20px;
@@ -422,8 +452,8 @@
       <!-- LOGO -->
       <div class="logo-container">
         <img
-          src="img/logo-zima-navidad.png"
-          alt="ZIMA 360 · Navidad"
+          src="img/logo.png"
+          alt="ZIMA 360"
           class="logo"
           onerror="this.style.display='none';"
         >
@@ -544,7 +574,22 @@
 
     </div>
 
+    <aside class="desktop-download-card" aria-labelledby="desktopDownloadTitle">
+      <img class="desktop-download-icon" src="img/icons/zima-192.png" alt="Ícono de ZIMA 360">
+      <div class="desktop-download-copy">
+        <span class="desktop-download-label">NOVEDAD PARA WINDOWS</span>
+        <h2 class="desktop-download-title" id="desktopDownloadTitle">ZIMA 360 en tu escritorio</h2>
+        <p class="desktop-download-description">Abre el sistema desde tu computador con la misma cuenta y los datos centrales.</p>
+      </div>
+      <a class="desktop-download-button" href="https://github.com/armandoalvarezl-bit/planillaszima/releases/download/v.1.0.2/ZIMA-360-Setup-1.0.2.exe">
+        <i class="bi bi-download" aria-hidden="true"></i>
+        <span>Descargar para Windows</span>
+      </a>
+      <p class="desktop-download-note"><i class="bi bi-wifi" aria-hidden="true"></i> Windows 10/11 · Versión 1.0.2 · Requiere internet</p>
+    </aside>
+
     <div class="footer">
+      <span>ZIMA 360 &middot; Sistema de Gesti&oacute;n</span>
       <a href="login-soporte.html" style="color:#006077;font-size:12px;text-decoration:none"><i class="bi bi-headset" aria-hidden="true"></i> Acceso de Soporte</a>
       <span class="made-in-colombia"><span class="colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span>
     </div>
@@ -568,7 +613,6 @@
     </div>
   </div>
 
-<script src="zima-offline.js"></script>
 <script src="zima-ui.js"></script>
 <script>
 
@@ -577,7 +621,7 @@
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec";
+  "https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);
@@ -1092,9 +1136,6 @@ function loginJsonp(usuario, password) {
 
 
 async function autenticarRemoto(usuario, password) {
-  return window.ZimaOffline ? ZimaOffline.login(usuario,password,()=>autenticarSoloRemoto(usuario,password)) : autenticarSoloRemoto(usuario,password);
-}
-async function autenticarSoloRemoto(usuario, password) {
 
   try {
 
