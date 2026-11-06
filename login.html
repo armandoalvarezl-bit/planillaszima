@@ -405,6 +405,7 @@
     }
     .desktop-download-button:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(11,47,104,.27); }
     .desktop-download-button:focus-visible { outline: 3px solid #f6b91b; outline-offset: 3px; }
+    .desktop-download-button[hidden] { display: none; }
     .desktop-download-note { grid-column: 1 / -1; margin-top: -5px; color: #748294; text-align: center; font-size: 10px; }
     .made-in-colombia {
       display: inline-flex; align-items: center; gap: 9px; padding: 8px 14px;
@@ -614,6 +615,28 @@
   </div>
 
 <script src="zima-ui.js"></script>
+<script>
+(function () {
+  const key = 'ZIMA360_DESKTOP_DOWNLOAD_STARTED_1_0_2';
+  const button = document.querySelector('.desktop-download-button');
+  const note = document.querySelector('.desktop-download-note');
+  if (!button || !note) return;
+
+  function markDownloadStarted() {
+    button.hidden = true;
+    note.textContent = 'Descarga iniciada. Puedes cerrar esta ventana cuando termine.';
+  }
+
+  try {
+    if (localStorage.getItem(key) === '1') markDownloadStarted();
+  } catch (_) {}
+
+  button.addEventListener('click', function () {
+    try { localStorage.setItem(key, '1'); } catch (_) {}
+    markDownloadStarted();
+  });
+})();
+</script>
 <script>
 
 /* ============================================================
