@@ -1,0 +1,135 @@
+/* Capa visual compartida: acabado azul, superficies claras y detalle festivo contenido. */
+body:not(:has(.login-wrapper)) {
+  --season-navy: #082653;
+  --season-blue: #14599a;
+  --season-gold: #e3b42c;
+  --season-line: #dfe8f3;
+  --season-shadow: 0 8px 24px rgba(18, 48, 83, .08);
+}
+
+body:not(:has(.login-wrapper)) .topbar,
+body:not(:has(.login-wrapper)) .top {
+  background: linear-gradient(105deg, #061d43 0%, #0b356e 72%, #0d467f 100%) !important;
+  color: #f5f8fc !important;
+  border-bottom: 1px solid rgba(255,255,255,.13) !important;
+  box-shadow: 0 5px 18px rgba(4,24,55,.12) !important;
+}
+
+body:not(:has(.login-wrapper)) .topbar .breadcrumb,
+body:not(:has(.login-wrapper)) .topbar .connection,
+body:not(:has(.login-wrapper)) .top .brand,
+body:not(:has(.login-wrapper)) .top nav a,
+body:not(:has(.login-wrapper)) .top #sessionName {
+  color: #e3edf9 !important;
+}
+
+body:not(:has(.login-wrapper)) .topbar .profile-text strong { color: #fff !important; }
+body:not(:has(.login-wrapper)) .topbar .profile-text span { color: #c4d5e9 !important; }
+
+@media (min-width: 951px) {
+  body:not(:has(.login-wrapper)) .sidebar {
+    background-color: #061f49 !important;
+    background-image: linear-gradient(180deg, rgba(4,25,58,.94) 0%, rgba(4,31,70,.87) 58%, rgba(4,28,64,.72) 100%), url('img/fondo-navidad-login.png') !important;
+    background-position: center, left center !important;
+    background-size: 100% 100%, auto 100% !important;
+    background-repeat: no-repeat !important;
+    color: #f5f8fc !important;
+    border-right: 1px solid rgba(255,255,255,.13) !important;
+    box-shadow: none !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .brand-block,
+  body:not(:has(.login-wrapper)) .sidebar .brand {
+    background: transparent !important;
+    border-bottom-color: rgba(255,255,255,.16) !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .brand-name,
+  body:not(:has(.login-wrapper)) .sidebar .brand-caption,
+  body:not(:has(.login-wrapper)) .sidebar .branch-name,
+  body:not(:has(.login-wrapper)) .sidebar .branch-status,
+  body:not(:has(.login-wrapper)) .sidebar .branch-label,
+  body:not(:has(.login-wrapper)) .sidebar .nav-title,
+  body:not(:has(.login-wrapper)) .sidebar .sidebar-bottom {
+    color: #e0eaf7 !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .brand-symbol {
+    background: #f7c600 !important;
+    border-radius: 15px !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .branch-card,
+  body:not(:has(.login-wrapper)) .sidebar .branch {
+    background: rgba(255,255,255,.08) !important;
+    border: 1px solid rgba(255,255,255,.13) !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .nav-title {
+    background: transparent !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .nav-item,
+  body:not(:has(.login-wrapper)) .sidebar .nav a {
+    color: #d5e2f3 !important;
+    background: transparent !important;
+    border-color: transparent !important;
+    border-radius: 10px !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .nav-item:hover,
+  body:not(:has(.login-wrapper)) .sidebar .nav a:hover {
+    color: #fff !important;
+    background: rgba(255,255,255,.11) !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .nav-item.active,
+  body:not(:has(.login-wrapper)) .sidebar .nav a.active {
+    color: #fff !important;
+    background: linear-gradient(100deg, #1767b8, #0e4d91) !important;
+    border: 1px solid rgba(255,255,255,.16) !important;
+    box-shadow: 0 8px 22px rgba(0,9,30,.28) !important;
+  }
+
+  body:not(:has(.login-wrapper)) .sidebar .nav-icon,
+  body:not(:has(.login-wrapper)) .sidebar .nav a i { color: inherit !important; }
+}
+
+body:not(:has(.login-wrapper)) .card,
+body:not(:has(.login-wrapper)) .panel,
+body:not(:has(.login-wrapper)) .control-card,
+body:not(:has(.login-wrapper)) .scope-card,
+body:not(:has(.login-wrapper)) .metric-card,
+body:not(:has(.login-wrapper)) .main-panel,
+body:not(:has(.login-wrapper)) .side-panel,
+body:not(:has(.login-wrapper)) .welcome-card {
+  border-color: var(--season-line) !important;
+  border-radius: 15px !important;
+  box-shadow: var(--season-shadow) !important;
+}
+
+body:not(:has(.login-wrapper)) button:focus-visible,
+body:not(:has(.login-wrapper)) a:focus-visible,
+body:not(:has(.login-wrapper)) input:focus-visible,
+body:not(:has(.login-wrapper)) select:focus-visible,
+body:not(:has(.login-wrapper)) textarea:focus-visible {
+  outline: 3px solid rgba(227,180,44,.72);
+  outline-offset: 2px;
+}
+
+@media (max-width: 950px) {
+  body:not(:has(.login-wrapper)) .sidebar {
+    background-image: linear-gradient(180deg, #071f47, #0b3973) !important;
+    background-size: 100% 100% !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:not(:has(.login-wrapper)) *,
+  body:not(:has(.login-wrapper)) *::before,
+  body:not(:has(.login-wrapper)) *::after { scroll-behavior: auto !important; }
+}

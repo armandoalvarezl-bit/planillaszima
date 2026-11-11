@@ -1,6 +1,6 @@
 (function(){
   'use strict';
-  const API_URL='https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
+  const API_URL='https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
   const $=id=>document.getElementById(id);
   const esc=ZimaUI.escapeHtml;
   const session=ZimaUI.getSupportSession();
@@ -37,10 +37,6 @@
     });
   }
   async function api(action,data={},write=false){
-    if(window.ZimaOffline)return ZimaOffline.request(action,data,write,()=>onlineApi(action,data,write));
-    return onlineApi(action,data,write);
-  }
-  async function onlineApi(action,data={},write=false){
     const payload={...data,action,token:session.token};
     if(window.google && google.script && google.script.run){
       return new Promise((resolve,reject)=>google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[write?'apiPost':'apiGet'](payload));

@@ -2686,24 +2686,7 @@ function doGet(e) {
    WEB APP POST
    ============================================================ */
 
-// El formulario de respaldo confirma la respuesta; enviar no equivale a guardar.
 function doPost(e) {
-  const raw = e && e.parameter && e.parameter.zimaOfflinePayload;
-  let payload;
-  try {
-    payload = raw ? JSON.parse(raw) : parsePost_(e);
-    if (!payload.offlineFrame) return onlineDoPost_(e);
-    if (!/^https?:\/\/[^/]+$/.test(payload.replyOrigin || '') || !/^[a-f0-9-]{36}$/i.test(payload.offlineFrame || '')) throw Error('Confirmación inválida.');
-    if (['offlinegrant','offlineresume','offlinemutate','crearticket'].indexOf(payload.action) < 0) throw Error('Acción no permitida.');
-    let result;
-    try { result = apiPost(payload); } catch (error) { result = {ok:false,error:errorMessage_(error)}; }
-    const message = JSON.stringify({source:'zima-offline-reply',nonce:payload.offlineFrame,result:result}).replace(/</g,'\\u003c');
-    const origin = JSON.stringify(payload.replyOrigin).replace(/</g,'\\u003c');
-    return HtmlService.createHtmlOutput('<script>window.top.postMessage('+message+','+origin+');</script>').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-  } catch (error) { return jsonOutput_({ok:false,error:errorMessage_(error)}); }
-}
-
-function onlineDoPost_(e) {
 
   try {
 
@@ -2940,10 +2923,6 @@ function obtenerSesionRespuesta_(params) {
    ============================================================ */
 
 function apiPost(data) {
-
-  if (data && ['offlinegrant','offlineresume','offlinemutate'].indexOf(String(data.action).toLowerCase()) >= 0) {
-    return accionOffline_(String(data.action).toLowerCase(), data);
-  }
 
   data =
     data || {};
@@ -6789,99 +6768,3 @@ function pruebaUsuario_(
 
   return resultado;
 }
-
-// Permisos locales y diario durable de sincronización. No requiere reinicializar datos.
-function hashOffline_(value) {
-  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(value), Utilities.Charset.UTF_8).map(function(b){return ('0'+((b+256)%256).toString(16)).slice(-2);}).join('');
-}
-function identidadOffline_(u) {
-  return hashOffline_(JSON.stringify([u.USUARIO,u.CONTRASENA,u.ROL,u.PEAJE,u.FECHA_CAMBIO_CONTRASENA]));
-}
-function accionOffline_(action, data) {
-  try {
-    if (action === 'offlinemutate') return mutarOffline_(data);
-    const props = PropertiesService.getScriptProperties();
-    if (action === 'offlinegrant') {
-      const ctx = obtenerContextoUsuario_(data);
-      if (!ctx.ok) return ctx;
-      if (!/^[a-f0-9-]{36}$/i.test(data.device || '')) return {ok:false,error:'Dispositivo inválido.'};
-      const u = buscarUsuario_(ctx.sesion.usuario);
-      const expiresAt = 8640000000000000; // Preparación permanente del dispositivo; permisos comprobados al reconectar.
-      const secret = Utilities.getUuid()+'-'+Utilities.getUuid();
-      const id = hashOffline_(ctx.sesion.usuario+'|'+data.device);
-      props.setProperty('ZIMA_OFFLINE_'+id,JSON.stringify({usuario:ctx.sesion.usuario,device:data.device,secret:hashOffline_(secret),identity:identidadOffline_(u),expiresAt:expiresAt}));
-      return {ok:true,id:id,secret:secret,expiresAt:expiresAt,device:data.device};
-    }
-    const saved = JSON.parse(props.getProperty('ZIMA_OFFLINE_'+String(data.id || '')) || 'null');
-    if (!saved || saved.secret !== hashOffline_(data.secret || '') || saved.device !== data.device) return {ok:false,error:'Ingrese con internet para validar la sincronización. Sus pendientes se conservan.'};
-    const user = buscarUsuario_(saved.usuario);
-    if (!user || String(user.ESTADO).toUpperCase() !== 'ACTIVO' || identidadOffline_(user) !== saved.identity || estadoContrasena_(user).requiereCambioContrasena) return {ok:false,error:'La cuenta o sus permisos cambiaron. Ingrese nuevamente con internet.'};
-    const profile = {usuario:saved.usuario,nombre:user.NOMBRE,rol:user.ROL,peaje:user.PEAJE,estado:user.ESTADO,loginAt:new Date().toISOString()};
-    return Object.assign({ok:true,token:crearSesion_(profile)},profile);
-  } catch(error) { return {ok:false,error:errorMessage_(error)}; }
-}
-function versionPlanillaOffline_(row) {
-  return row ? String(new Date(row.updatedAt || row.createdAt).getTime()) : '';
-}
-function huellaFilaOffline_(row) {
-  return hashOffline_(JSON.stringify(ZIMA.HEADERS.map(function(h){const v=row[h];return v instanceof Date?v.toISOString():v == null?'':v;})));
-}
-function mutarOffline_(data) {
-  const ctx = obtenerContextoUsuario_(data);
-  if (!ctx.ok) return Object.assign({code:'OFFLINE_AUTH_REQUIRED'},ctx);
-  const sesion = ctx.sesion;
-  if (['ADMIN','ADMINISTRADOR','PEAJE'].indexOf(String(sesion.rol).toUpperCase()) < 0) return {ok:false,error:'Su rol no permite modificar planillas.'};
-  const op = typeof data.operation === 'string' ? JSON.parse(data.operation) : data.operation;
-  if (!op || !/^[a-f0-9-]{36}$/i.test(op.operationId || '') || ['save','update','delete'].indexOf(op.action) < 0 || !op.data) return {ok:false,error:'Operación inválida.'};
-  const lock = LockService.getScriptLock(); lock.waitLock(15000);
-  try {
-    const ss=getSpreadsheet_(); let journal=ss.getSheetByName('OFFLINE_OPERACIONES');
-    if (!journal) { journal=ss.insertSheet('OFFLINE_OPERACIONES');journal.appendRow(['key','fingerprint','status','id','version','hash','result']); }
-    const key=sesion.usuario+'|'+op.operationId, fingerprint=hashOffline_(JSON.stringify(op));
-    const entries=journal.getDataRange().getValues();
-    let index=entries.findIndex(function(r){return r[0]===key;});
-    let entry=index >= 1 ? entries[index] : null;
-    const conflict=function(row){return {ok:false,code:'OFFLINE_CONFLICT',error:'La planilla cambió. Revise su copia antes de enviarla.',current:row?serializarRegistro_(row):null};};
-    if (entry && entry[1] !== fingerprint) return conflict(null);
-    const sh=getPlanillasSheet_(), id=String(op.data.id || '');
-    if (!id || (op.action==='save' && id !== 'OFF-'+op.operationId)) return {ok:false,error:'Identificación local inválida.'};
-    const found=findRowById_(sh,id), current=found?rowToObject_(sh,found.rowNumber):null;
-    if (current && !puedeAccederPlanilla_(sesion,current)) return {ok:false,error:'No tiene permiso para esta planilla.'};
-    if (entry && (entry[2]==='DONE' || (current && entry[5]===huellaFilaOffline_(current)))) {
-      if (entry[2] !== 'DONE') journal.getRange(index+1,3).setValue('DONE');
-      return Object.assign(JSON.parse(entry.slice(6).join('')),{replayed:true});
-    }
-    if ((op.action==='save' && current) || (op.action!=='save' && (!current || versionPlanillaOffline_(current)!==String(op.baseVersion)))) return conflict(current);
-    let target;
-    if (entry) target=JSON.parse(entry.slice(6).join('')).row;
-    else {
-      const incoming=normalizarDatos_(op.data);
-      target=Object.assign({},current || {},incoming,{id:id,usuario:sesion.usuario,createdAt:current?current.createdAt:new Date(),updatedAt:new Date()});
-      if (!esUsuarioGlobal_(sesion)) target.peaje=current?current.peaje:sesion.peaje;
-      if (op.action==='delete') target=Object.assign({},current,{estado:'ANULADA',usuario:sesion.usuario,updatedAt:new Date()});
-      else target.codigo=(op.autoCode? '':target.codigo) || (current && current.codigo) || generarCodigo_(target.fecha,sh);
-    }
-    if (op.action!=='delete') {
-      const valid=validarPlanilla_(target);if(!valid.ok)return valid;
-      const unique=validarCodigoUnico_(sh,target,sesion);if(!unique.ok)return unique;
-      const date=validarFechaPlanilla_(sh,target,sesion);if(!date.ok)return date;
-    }
-    const result={ok:true,row:serializarRegistro_(target)};
-    if (!entry) {
-      const json=JSON.stringify(result), chunks=json.match(/[\s\S]{1,40000}/g) || [''];
-      const record=[key,fingerprint,'PREPARED',id,versionPlanillaOffline_(target),huellaFilaOffline_(target)].concat(chunks);
-      // Aumentar columnas únicamente cuando las firmas requieren varios fragmentos.
-      if (journal.getMaxColumns && record.length>journal.getMaxColumns()) journal.insertColumnsAfter(journal.getMaxColumns(),record.length-journal.getMaxColumns());
-      journal.appendRow(record);index=journal.getLastRow()-1;
-      SpreadsheetApp.flush();
-    }
-    if (found) sh.getRange(found.rowNumber,1,1,ZIMA.HEADERS.length).setValues([objectToRow_(target)]);
-    else sh.appendRow(objectToRow_(target));
-    SpreadsheetApp.flush();
-    journal.getRange(index+1,3).setValue('DONE');
-    registrarAuditoria_('OFFLINE_'+op.action.toUpperCase(),target,'Sincronización '+op.operationId);
-    try { result.notificacion=notificarCambioPlanilla_(op.action==='save'?'CREACION':op.action==='delete'?'ANULACION':'ACTUALIZACION',target,sesion,'Sincronización sin internet'); } catch (_) {}
-    return result;
-  } finally { lock.releaseLock(); }
-}
-

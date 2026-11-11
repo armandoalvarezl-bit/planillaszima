@@ -1,38 +1,12 @@
 (function () {
-  let installPrompt = null;
-
-  function installDesktopApp() {
+  function registerAppServiceWorker() {
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
       navigator.serviceWorker.register('./service-worker.js').catch(function (error) {
-        console.warn('No se pudo preparar la instalación de ZIMA 360:', error);
+        console.warn('No se pudo preparar la instalaci\u00f3n de ZIMA 360:', error);
       });
     }
-    if (document.querySelector('.desktop-download-button')) return;
-    if (document.getElementById('zimaInstallApp')) return;
-    const button = document.createElement('button');
-    button.id = 'zimaInstallApp';
-    button.type = 'button';
-    button.textContent = 'Instalar ZIMA 360';
-    button.setAttribute('aria-label', 'Instalar ZIMA 360 en este equipo');
-    button.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:9998;padding:11px 16px;border:0;border-radius:10px;background:#123b78;color:#fff;font:700 13px Arial,sans-serif;box-shadow:0 4px 16px #123b7840;cursor:pointer;display:none';
-    button.addEventListener('click', async function () {
-      if (!installPrompt) return;
-      installPrompt.prompt();
-      await installPrompt.userChoice;
-      installPrompt = null;
-      button.style.display = 'none';
-    });
-    document.body.appendChild(button);
-    window.addEventListener('beforeinstallprompt', function (event) {
-      event.preventDefault();
-      installPrompt = event;
-      button.style.display = 'block';
-    });
-    window.addEventListener('appinstalled', function () {
-      installPrompt = null;
-      button.style.display = 'none';
-    });
   }
+
 
   function byId(target) {
     return typeof target === 'string' ? document.getElementById(target) : target;
@@ -1081,7 +1055,7 @@
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       installSupportWorkspace();
-      installDesktopApp();
+      registerAppServiceWorker();
       installDesktopNotifications();
       installResponsiveNavigation();
       installSupportLauncher();
@@ -1091,7 +1065,7 @@
     });
   } else {
     installSupportWorkspace();
-    installDesktopApp();
+    registerAppServiceWorker();
     installDesktopNotifications();
     installResponsiveNavigation();
     installSupportLauncher();

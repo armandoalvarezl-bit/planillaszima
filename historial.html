@@ -1,9 +1,10 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="es">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" href="img/logo.png">
   <title>ZIMA 360 &middot; Historial</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -688,6 +689,7 @@
 
   <link rel="stylesheet" href="zima-ui-modern.css">
 <link rel="stylesheet" href="zima-brand.css">
+  <link rel="stylesheet" href="zima-seasonal.css">
 </head>
 
 <body>
@@ -793,10 +795,7 @@
           <div class="pdf-dialog-title" id="pdfTitle">Vista previa de la planilla</div>
           <div class="pdf-dialog-subtitle">Desde aquí puede imprimirla o guardarla como PDF.</div>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end">
-          <button class="pdf-close" style="width:auto;padding:8px 12px;font-size:13px" type="button" onclick="imprimirVistaPrevia()"><i class="bi bi-printer" aria-hidden="true"></i> Imprimir / Guardar PDF</button>
-          <button class="pdf-close" type="button" title="Cerrar vista previa" aria-label="Cerrar vista previa" onclick="cerrarPdf()"><i class="bi bi-x-lg"></i></button>
-        </div>
+        <button class="pdf-close" type="button" title="Cerrar vista previa" aria-label="Cerrar vista previa" onclick="cerrarPdf()"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="pdf-loading" id="pdfLoading" hidden>
         <span class="zima-spinner" aria-hidden="true"></span>
@@ -836,21 +835,16 @@
       <div class="session-actions"><button class="session-btn" type="button" onclick="cerrarModalSesion()">Cancelar</button><button class="session-btn logout" type="button" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i> Cerrar sesi&oacute;n</button></div>
     </div>
   </div>
-  <script src="zima-offline.js"></script>
-<script src="zima-ui.js"></script>
+  <script src="zima-ui.js"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
     try { localStorage.setItem('ZIMA_API_URL', API_URL); } catch(e) {}
     function onlineRun(fn, arg) { return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](arg)); }
     function leerSesionLocal(){ const keys=['ZIMA360_SESION','ZIMA_SESION','ZIMA_SESSION','ZIMA_USUARIO','usuarioSesion','usuario','ZIMA_USER']; for(const storage of [localStorage,sessionStorage]){ for(const k of keys){ try{ const raw=storage.getItem(k); if(!raw || raw==='ACTIVA') continue; if(raw.trim().startsWith('{')) return JSON.parse(raw); return {usuario:raw}; }catch(e){} } } return {}; }
     function zimaSessionParams(){ const s=leerSesionLocal(); const token=s.token||s.sessionToken||localStorage.getItem('ZIMA_SESSION_TOKEN')||localStorage.getItem('ZIMA360_SESSION_TOKEN')||localStorage.getItem('ZIMA_TOKEN')||sessionStorage.getItem('ZIMA_SESSION_TOKEN')||''; return {usuario:s.usuario||s.username||s.user||'',rol:s.rol||s.role||'',peaje:s.peaje||s.office||'',token:token,sessionToken:token}; }
     function zimaJsonp(params={}){ return new Promise((resolve,reject)=>{ const cb='__zima_historial_'+Date.now()+'_'+Math.random().toString(36).slice(2); const script=document.createElement('script'); const q=new URLSearchParams({...params,callback:cb}); const timer=setTimeout(()=>{cleanup();reject(new Error('Tiempo agotado al conectar con el Web App.'));},20000); function cleanup(){clearTimeout(timer);try{delete window[cb];}catch(e){window[cb]=undefined;}script.remove();} window[cb]=data=>{cleanup();resolve(data);}; script.onerror=()=>{cleanup();reject(new Error('No fue posible acceder al Web App.'));}; script.src=API_URL+'?'+q.toString(); document.head.appendChild(script); }); }
     async function zimaFetchGet(params={}){ const r=await fetch(API_URL+'?'+new URLSearchParams(params),{method:'GET',redirect:'follow',cache:'no-store',headers:{'Accept':'application/json'}}); if(!r.ok)throw Error('HTTP '+r.status); const text=await r.text(); return JSON.parse(text); }
-    async function apiGet(action, params = {}){
-  if(window.ZimaOffline)return ZimaOffline.request(action,params,false,()=>onlineApiGet(action, params));
-  return onlineApiGet(action, params);
-}
-async function onlineApiGet(action, params = {}){ const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiGet', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); try { return await zimaFetchGet(payload); } catch(fetchError) { return zimaJsonp(payload); } }
+    async function apiGet(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiGet', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); try { return await zimaFetchGet(payload); } catch(fetchError) { return zimaJsonp(payload); } }
     const SESSION = (() => { let data = null; try { data = JSON.parse(localStorage.getItem('ZIMA360_SESION') || localStorage.getItem('ZIMA_SESION') || sessionStorage.getItem('ZIMA360_SESION') || sessionStorage.getItem('ZIMA_SESION') || 'null'); } catch(e) {} return { user:data?.usuario || data?.user || 'Usuario ZIMA', name:data?.nombre || data?.name || data?.usuario || 'Usuario ZIMA', role:data?.rol || data?.role || 'USUARIO', peaje:data?.peaje || data?.office || 'Administraci\u00f3n central', foto:data?.foto || data?.FOTO || data?.photo || '' }; })();
     function iniciales(name){ return String(name||'ZU').trim().split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'ZU'; }
     function pintarAvatar(el,foto,nombre){ if(!el)return; const src=String(foto||'').trim(); const esFuenteImagen=/^(data:image\/|https?:\/\/|blob:)/i.test(src); if(src&&esFuenteImagen){ el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'">'; const image=el.querySelector('img'); if(image)image.addEventListener('error',function(){ el.textContent=iniciales(nombre); },{once:true}); }else{ el.textContent=iniciales(nombre); } }
@@ -870,11 +864,7 @@ async function onlineApiGet(action, params = {}){ const ses=zimaSessionParams();
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarEdicion();cerrarMenu();}});
     function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function normalizarEstado(v) { const e = String(v || '').trim().toUpperCase(); return e === 'ENTREGADO' ? 'ENTREGADA' : e } function statusClass(v) { const e = normalizarEstado(v); return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA', 'ANULADA'].includes(e) ? e : 'BORRADOR' }
     function textoNotificacion(r){ if(!r||!r.notificacion)return ''; if(r.notificacion.enviado)return ' Correo enviado a: '+esc(r.notificacion.destinatarios||'')+'.'; return ' No se envió correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.'; }
-    async function apiPost(action, params = {}){
-  if(window.ZimaOffline)return ZimaOffline.request(action,params,true,()=>onlineApiPost(action, params));
-  return onlineApiPost(action, params);
-}
-async function onlineApiPost(action, params = {}){ const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
+    async function apiPost(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
     let currentEditId = '';
     function editar(id) {
       if (!id) return;
@@ -1081,10 +1071,6 @@ async function onlineApiPost(action, params = {}){ const ses=zimaSessionParams()
     }
     let currentPreviewId = '';
     function ver(id) { if (!id) return; const decodedId=decodeURIComponent(id); const row = allRows.find(x => String(x.id) === decodedId); const modal = $('pdfModal'); const frame = $('pdfFrame'); const loading=$('pdfLoading'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); if(loading)loading.hidden=false; frame.onload=function(){ if(loading)loading.hidden=true; }; if(currentPreviewId!==decodedId){ frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; currentPreviewId=decodedId; } ZimaUI.openModal(modal); }
-    function imprimirVistaPrevia() {
-      const content = $('pdfFrame')?.contentWindow;
-      if (content && typeof content.imprimir === 'function') content.imprimir();
-    }
     function cerrarPdf() { const frame = $('pdfFrame'); ZimaUI.closeModal('pdfModal'); if (frame) frame.src = 'about:blank'; currentPreviewId=''; const loading=$('pdfLoading'); if(loading)loading.hidden=true; }
     function cerrarPdfDesdeFondo(e) { if (e.target && e.target.id === 'pdfModal') cerrarPdf(); }
     async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando...'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }

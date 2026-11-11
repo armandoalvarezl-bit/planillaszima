@@ -1,15 +1,23 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" href="img/logo.png">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.2/font/bootstrap-icons.min.css">
 
   <title>ZIMA 360 &middot; Acceso de Soporte</title>
   <script id="fondo-especial-del-mes">
-    // El fondo institucional permanece visible durante todo el a?o.
-    document.documentElement.classList.add('mes-equipo-zima');
+    (function () {
+      const mes = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'America/Bogota', year: 'numeric', month: '2-digit'
+      }).formatToParts(new Date());
+      const valor = tipo => mes.find(parte => parte.type === tipo).value;
+      if (valor('year') === '2026' && valor('month') === '10') {
+        document.documentElement.classList.add('mes-equipo-zima');
+      }
+    })();
   </script>
 
   <style>
@@ -394,7 +402,7 @@
   </style>
   <style id="fondo-especial-equipo-zima">
     html.mes-equipo-zima body {
-      background: #edf4fa url('img/navidad.png') center / cover no-repeat fixed !important;
+      background: #edf4fa url('img/fondo-celebracion-zima-octubre-2026.png') center / contain no-repeat fixed !important;
       justify-content: center;
       align-items: center !important;
       padding: 24px 20px;
@@ -411,6 +419,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="zima-seasonal.css">
 </head>
 
 <body>
@@ -422,8 +431,8 @@
       <!-- LOGO -->
       <div class="logo-container">
         <img
-          src="img/logo-zima-navidad.png"
-          alt="ZIMA 360 · Navidad"
+          src="img/logo.png"
+          alt="ZIMA 360"
           class="logo"
           onerror="this.style.display='none';"
         >
@@ -578,7 +587,7 @@
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec";
+  "https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);

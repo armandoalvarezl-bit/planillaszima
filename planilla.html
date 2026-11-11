@@ -1,8 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
  <head>
   <meta charset="utf-8"/>
   <meta content="width=device-width,initial-scale=1" name="viewport"/>
+  <link rel="manifest" href="manifest.webmanifest">
     <link href="img/logo.png" rel="icon" type="image/png"/>
   <title>
    ZIMA &middot; Planilla
@@ -10,7 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-<script src="assets/vendor/lucide.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <style>
@@ -503,7 +504,7 @@ textarea {
   display:flex; justify-content:center; align-items:flex-start;
 }
 .preview-page .planilla{
-  width:203.9mm; max-width:203.9mm; margin:0;
+  width:203mm; max-width:203mm; margin:0;
   box-shadow:0 10px 30px rgba(16,35,59,.18);
 }
 .preview-close{
@@ -515,7 +516,6 @@ textarea {
 .embedded-preview .print-preview-backdrop{position:fixed;padding:0;background:#dfe4e9}
 .embedded-preview .print-preview{width:100%;height:100%;max-width:none;border-radius:0;box-shadow:none}
 .embedded-preview .preview-page{padding:28px}
-.embedded-preview .preview-bar{display:none!important}
 .embedded-edit{background:#f5f7fa!important}
 .embedded-edit body{background:#f5f7fa!important}
 .embedded-edit .sidebar,.embedded-edit .top{display:none!important}
@@ -532,11 +532,10 @@ textarea {
   .main{margin:0!important;width:100%!important}
   .content{padding:0!important;max-width:none!important}
   .planilla{
-    display:flex!important;flex-direction:column;min-height:266.8mm;box-sizing:border-box;width:203.9mm!important;max-width:203.9mm!important;
+    display:block!important;width:203mm!important;max-width:203mm!important;
     margin:0 auto!important;border:1px solid #26374a!important;
     box-shadow:none!important;font-size:10.2px!important;
   }
-  .planilla > .row{flex:1 0 auto;align-items:stretch;break-inside:avoid}
   .cell{padding:6px 8px!important;min-height:40px!important}
   label{font-size:8.5px!important;margin-bottom:3px!important}
   input,select,textarea{padding:5px 6px!important;font-size:10px!important}
@@ -922,6 +921,7 @@ body.planilla-page .print-preview-backdrop{
     }
   </style>
 <link rel="stylesheet" href="zima-brand.css">
+  <link rel="stylesheet" href="zima-seasonal.css">
 </head>
  <body class="planilla-page">
   <div class="shell">
@@ -1232,10 +1232,9 @@ body.planilla-page .print-preview-backdrop{
     @media print{.planilla-progress{display:none!important}}
   </style>
   <dialog id="saveProgressModal" class="save-progress-modal" aria-label="Guardado de planilla" aria-busy="true"><div id="saveProgressContent" role="status" aria-live="polite"></div></dialog>
-  <script src="zima-offline.js"></script>
-<script src="zima-ui.js"></script>
+  <script src="zima-ui.js"></script>
   <script>
-   const API_URL='https://script.google.com/macros/s/AKfycby1eq3SWQMySafqfYj_ReGLUYbFj87tFUR8Ccn1DcVfQE-YTHz6AET9uZCUO9s2hlb2IA/exec';
+   const API_URL='https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec';
 try{localStorage.setItem('ZIMA_API_URL',API_URL);}catch(_){}
 
 function zimaSession(){
@@ -1334,10 +1333,6 @@ async function zimaFetchPost(payload={}){
   return JSON.parse(text);
 }
 async function apiGet(action,params={}){
-  if(window.ZimaOffline)return ZimaOffline.request(action,params,false,()=>onlineApiGet(action, params));
-  return onlineApiGet(action, params);
-}
-async function onlineApiGet(action,params={}){
   const ses=zimaSessionParams();
   if(window.google&&google.script&&google.script.run)return onlineRun('apiGet',{action,...ses,...params});
   if(API_URL.includes('PEGA_AQUI'))throw Error('Configura API_URL o abre el sistema desde la Web App de Apps Script.');
@@ -1345,10 +1340,6 @@ async function onlineApiGet(action,params={}){
   try{return await zimaFetchGet(payload);}catch(fetchError){return zimaJsonp(payload);}
 }
 async function apiPost(data){
-  if(window.ZimaOffline)return ZimaOffline.request(data.action || 'save',data,true,()=>onlineApiPost(data));
-  return onlineApiPost(data);
-}
-async function onlineApiPost(data){
   const ses=zimaSessionParams();
   const payload={...data,...ses};
   if(window.google&&google.script&&google.script.run)return onlineRun('apiPost',payload);
@@ -1724,7 +1715,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         mostrarProgresoPlanilla('guardando');
         {
           const codigoBuscado=String(d.codigo).trim().toUpperCase();
-          const existentes=window.ZimaOffline && ZimaOffline.status().unlocked ? (await ZimaOffline.localList()).rows : await syncRows();
+          const existentes=await syncRows();
           const duplicada=existentes.find(fila=>
             codigoBuscado && String(fila.codigo ?? '').trim().toUpperCase()===codigoBuscado &&
             (!id || String(fila.id)!==String(id)));
@@ -1769,17 +1760,23 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         });
         estadoActual=normalizarEstado(r.row.estado)||estadoActual||'APROBADO';
         actualizar();
-
-        msg.innerHTML='';
-        cerrarProgresoGuardado();
-        if(!embeddedEdit){
-          ZimaUI.toast((r.pending?'Guardada en este equipo · envío pendiente':editando?'Cambios guardados':'Planilla creada')+' · '+String(r.row.codigo || ''));
-        }
         if(!editando){
           mostrarProgresoPlanilla('imprimiendo');
           ZimaUI.busy('saveBtn',true,'Preparando impresión...');
           cerrarProgresoGuardado();
           await imprimirDesdeVistaPrevia();
+        }
+        msg.innerHTML='';
+        cerrarProgresoGuardado();
+        if(!embeddedEdit){
+          const irAlHistorial=await ZimaUI.confirm({
+            tone:'success',danger:false,
+            title:editando?'Cambios guardados':'Planilla guardada',
+            message:'Puede consultar su planilla en el historial. Para registrar otra, cierre este aviso y use «Limpiar y crear nueva». Si necesita corregir esta planilla, edite sus datos; no necesita crear una nueva.',
+            detail:'Código de planilla: '+String(r.row.codigo || ''),
+            confirmText:'Ir al historial',cancelText:'Continuar aquí'
+          });
+          if(irAlHistorial)go('historial.html');
         }
         if(embeddedEdit && window.parent && window.parent !== window){
           window.parent.postMessage({
@@ -1888,12 +1885,6 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       clone.removeAttribute('id');
       clone.removeAttribute('inert');
       copiarValoresAlClon(clone);
-      if(window.ZimaOffline && ZimaOffline.status().pending){
-        const notice=document.createElement('div');
-        notice.textContent='COPIA LOCAL · PENDIENTE DE SINCRONIZACIÓN';
-        notice.style.cssText='padding:8px;text-align:center;font:bold 12px Arial;border:1px solid #555;margin-bottom:8px';
-        clone.prepend(notice);
-      }
       return clone;
     }
 
@@ -1972,12 +1963,11 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         printStyle.textContent=[
           'html,body{background:#fff!important;margin:0!important;padding:0!important;}',
           'body{font-family:Arial,Helvetica,sans-serif;}',
-          '.planilla{display:flex!important;flex-direction:column;min-height:266.8mm;box-sizing:border-box;width:203.9mm!important;max-width:203.9mm!important;margin:0 auto!important;box-shadow:none!important;font-size:10.2px!important;transform:none!important;zoom:1!important;}',
+          '.planilla{display:block!important;width:203mm!important;max-width:203mm!important;margin:0 auto!important;box-shadow:none!important;font-size:10.2px!important;transform:none!important;zoom:1!important;}',
           '.no-print,.sidebar,.top,.toolbar,.notice,.print-preview-backdrop{display:none!important;}',
           '.cell{padding:6px 8px!important;min-height:40px!important;} label{font-size:8.5px!important;margin-bottom:3px!important;} input,select,textarea{padding:5px 6px!important;font-size:10px!important;} textarea{min-height:38px!important;} .section{padding:6px 8px!important;font-size:9.5px!important;} .sig{min-height:82px!important;} .money{font-size:16px!important;} .amount-words input{font-size:10px!important;}',
-          '.planilla > .row{flex:1 0 auto;align-items:stretch;break-inside:avoid;}',
           '@page{size:letter portrait;margin:6mm;}',
-          '@media print{html,body{width:auto!important;height:auto!important;} body{margin:0!important;} .planilla{width:203.9mm!important;max-width:203.9mm!important;zoom:1!important;transform:none!important;} .doc-brand-cell{min-height:54px!important;height:54px!important;overflow:hidden!important;} .doc-brand-logo.zima{width:58px!important;height:46px!important;} .doc-brand-logo.zima img{width:56px!important;height:44px!important;} .doc-brand-logo.ani{width:46px!important;height:46px!important;} .doc-brand-logo.ani img{width:38px!important;height:44px!important;}}'
+          '@media print{html,body{width:auto!important;height:auto!important;} body{margin:0!important;} .planilla{width:203mm!important;max-width:203mm!important;zoom:1!important;transform:none!important;} .doc-brand-cell{min-height:54px!important;height:54px!important;overflow:hidden!important;} .doc-brand-logo.zima{width:58px!important;height:46px!important;} .doc-brand-logo.zima img{width:56px!important;height:44px!important;} .doc-brand-logo.ani{width:46px!important;height:46px!important;} .doc-brand-logo.ani img{width:38px!important;height:44px!important;}}'
         ].join('');
         printDocument.head.appendChild(printStyle);
 

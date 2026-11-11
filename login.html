@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -309,37 +309,140 @@
   </style>
   <link rel="stylesheet" href="zima-ui-modern.css">
   <style id="login-success-polish">
+    body:has(.login-wrapper) {
+      background: #082454 url('img/fondo-navidad-login.png') center / cover fixed no-repeat !important;
+    }
+    .login-wrapper .login-card {
+      padding: 30px 34px 28px !important;
+      border: 1px solid rgba(255,255,255,.82) !important;
+      border-radius: 24px !important;
+      background: rgba(255,255,255,.97) !important;
+      box-shadow: 0 24px 64px rgba(3,18,48,.28), 0 2px 8px rgba(3,18,48,.08) !important;
+      overflow: hidden;
+    }
+    .login-wrapper .login-card::before {
+      height: 5px !important;
+      background: linear-gradient(90deg, #0b3975 0%, #0e6e8b 58%, #f2b620 100%) !important;
+    }
+    .login-wrapper .logo-container { margin-bottom: 7px; }
+    .login-wrapper .system-subtitle {
+      color: #718096 !important;
+      font-size: 11px !important;
+      letter-spacing: .16em !important;
+      margin-bottom: 24px !important;
+    }
+    .login-wrapper .field { margin-bottom: 17px; }
+    .login-wrapper .field label {
+      margin-bottom: 7px !important;
+      color: #263a54 !important;
+      font-size: 12px !important;
+      font-weight: 700 !important;
+    }
+    .login-wrapper .input-box input {
+      height: 52px !important;
+      border: 1px solid #d8e1eb !important;
+      border-radius: 12px !important;
+      background: #f8fafc !important;
+      color: #172b46 !important;
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .login-wrapper .input-box input:focus {
+      border-color: #3975b7 !important;
+      background: #fff !important;
+      box-shadow: 0 0 0 4px rgba(27,91,151,.12) !important;
+    }
+    .login-wrapper .field-icon { color: #8292a5; }
+    .login-wrapper .login-button {
+      min-height: 56px;
+      border: 1px solid rgba(255,255,255,.18) !important;
+      border-radius: 14px !important;
+      background: linear-gradient(115deg, #082f67 0%, #10559a 58%, #14749a 100%) !important;
+      box-shadow: 0 10px 22px rgba(8,47,103,.24), inset 0 1px 0 rgba(255,255,255,.18) !important;
+      color: #fff !important;
+      font-size: 13px !important;
+      font-weight: 800 !important;
+      letter-spacing: .09em !important;
+      transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+    .login-wrapper .login-button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.06);
+      box-shadow: 0 14px 26px rgba(8,47,103,.3), inset 0 1px 0 rgba(255,255,255,.2) !important;
+    }
+    .login-wrapper .login-button:active:not(:disabled) {
+      transform: translateY(0);
+      filter: brightness(.97);
+      box-shadow: 0 5px 12px rgba(8,47,103,.22) !important;
+    }
+    .login-wrapper .login-button:focus-visible {
+      outline: 3px solid #f2b620 !important;
+      outline-offset: 3px;
+    }
+    .login-wrapper .connection { margin-top: 20px; color: #718096 !important; }
+    @media (max-width: 480px) {
+      .login-wrapper .login-card { padding: 27px 23px 24px !important; border-radius: 21px !important; }
+    }
     .login-success-modal {
       z-index: 1200 !important;
-      background: #fcfcf8 !important;
-      padding: 24px;
+      background: linear-gradient(115deg, rgba(2,17,46,.22), rgba(2,25,66,.36)), url('img/fondo-navidad-login.png') center / cover no-repeat !important;
+      padding: 28px;
     }
     .login-success-box {
-      width: min(400px, 100%) !important;
-      padding: 32px 12px !important;
+      width: min(660px, 100%) !important;
+      padding: 24px !important;
       border: 0 !important;
       border-radius: 0 !important;
       background: transparent !important;
       box-shadow: none !important;
+      color: #fff !important;
       text-align: center !important;
     }
-    .login-loader-mark { display: flex; align-items: center; justify-content: center; gap: 7px; height: 124px; margin: 22px auto; }
-    .login-loader-mark span {
-      display: block; width: 19px; height: 55px; border-radius: 12px;
-      background: #f7c600; transform: rotate(25deg);
-      animation: zima-loader-wave 1.25s cubic-bezier(.45,0,.55,1) infinite;
+    .login-loading-content { animation: login-loading-appear .55s ease-out both; }
+    .login-loading-logo {
+      display: block;
+      width: min(430px, 68vw);
+      max-height: 43vh;
+      object-fit: contain;
+      margin: 0 auto 18px;
+      filter: drop-shadow(0 12px 22px rgba(0,10,35,.34));
     }
-    .login-loader-mark span:nth-child(2) { background: #00566b; animation-delay: .14s; }
-    .login-loader-mark span:nth-child(3) { background: #003747; animation-delay: .28s; }
-    .login-success-title { color: #003747 !important; font-size: 23px !important; font-weight: 700; letter-spacing: -.5px !important; }
-    .login-success-text { color: #637078 !important; font-size: 14px !important; line-height: 1.65; margin: 12px auto 0 !important; max-width: 310px; }
-    .login-loader-caption { margin-top: 40px; font-size: 11px; color: #748087; letter-spacing: .03em; }
-    @keyframes zima-loader-wave {
-      0%, 100% { transform: translateY(9px) rotate(25deg) scaleY(.72); }
-      50% { transform: translateY(-9px) rotate(25deg) scaleY(1.12); }
+    .login-loading-progress {
+      width: min(600px, 100%);
+      height: 20px;
+      margin: 0 auto;
+      padding: 3px;
+      overflow: hidden;
+      border: 1px solid rgba(102,205,255,.95);
+      border-radius: 999px;
+      background: rgba(2,20,58,.8);
+      box-shadow: 0 0 14px rgba(28,168,255,.7), inset 0 0 7px rgba(0,0,0,.55);
     }
+    .login-loading-progress span {
+      display: block;
+      width: 42%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #f6ad00, #fff06a 72%, #fff);
+      box-shadow: 0 0 14px rgba(255,203,32,.95);
+      animation: login-progress-sweep 2.2s ease-in-out infinite alternate;
+    }
+    .login-loading-status { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 23px; color: #fff; font-size: clamp(16px, 2vw, 22px); font-weight: 700; text-shadow: 0 2px 8px rgba(0,0,0,.55); }
+    .login-loading-spinner { width: 26px; height: 26px; flex: 0 0 auto; border: 4px dotted rgba(255,255,255,.95); border-radius: 50%; animation: login-loading-spin 1.3s linear infinite; }
+    .login-loading-greeting { margin: 30px 0 0; color: #fff; font: italic 700 clamp(30px, 4.5vw, 48px)/1.15 Georgia, 'Times New Roman', serif; text-shadow: 0 3px 12px rgba(0,0,0,.55); }
+    .login-loading-sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
+    @keyframes login-progress-sweep { from { width: 32%; } to { width: 84%; } }
+    @keyframes login-loading-spin { to { transform: rotate(360deg); } }
+    @keyframes login-loading-appear { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
     @media (prefers-reduced-motion: reduce) {
-      .login-loader-mark span { animation: none; }
+      .login-loading-content, .login-loading-progress span, .login-loading-spinner { animation: none !important; }
+      .login-loading-progress span { width: 62%; }
+    }
+    @media (max-width: 600px) {
+      .login-success-modal { padding: 16px; background-position: 36% center !important; }
+      .login-success-box { padding: 12px !important; }
+      .login-loading-logo { width: min(330px, 82vw); max-height: 34vh; }
+      .login-loading-progress { height: 16px; }
+      .login-loading-greeting { margin-top: 22px; }
     }
   </style>
   <style id="login-details">
@@ -384,29 +487,6 @@
     .login-wrapper .connection { display: flex; gap: 7px; justify-content: center; align-items: center; }
     .connection .bi { color: #17835f; font-size: 14px; }
     .login-wrapper .footer { display: grid; justify-items: center; gap: 13px; line-height: 1.5; }
-    .desktop-download-card {
-      display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px 14px;
-      align-items: center; margin-top: 14px; padding: 16px;
-      border: 1px solid #d8e5f0; border-radius: 18px;
-      background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(239,246,253,.97));
-      box-shadow: 0 12px 30px rgba(27,58,93,.09);
-    }
-    .desktop-download-icon { width: 54px; height: 54px; border-radius: 14px; box-shadow: 0 4px 12px rgba(11,47,104,.18); }
-    .desktop-download-copy { min-width: 0; }
-    .desktop-download-label { display: block; margin-bottom: 4px; color: #a36c00; font-size: 9px; font-weight: 800; letter-spacing: .12em; }
-    .desktop-download-title { color: #0b2f68; font-size: 15px; line-height: 1.25; font-weight: 800; }
-    .desktop-download-description { margin-top: 4px; color: #5b6d80; font-size: 11px; line-height: 1.45; }
-    .desktop-download-button {
-      grid-column: 1 / -1; display: flex; min-height: 43px; align-items: center; justify-content: center; gap: 9px;
-      padding: 0 16px; border: 0; border-radius: 11px;
-      background: linear-gradient(110deg, #0b2f68, #14569b); color: #fff;
-      box-shadow: 0 7px 16px rgba(11,47,104,.2); font-size: 12px; font-weight: 800;
-      text-decoration: none; transition: transform .18s ease, box-shadow .18s ease;
-    }
-    .desktop-download-button:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(11,47,104,.27); }
-    .desktop-download-button:focus-visible { outline: 3px solid #f6b91b; outline-offset: 3px; }
-    .desktop-download-button[hidden] { display: none; }
-    .desktop-download-note { grid-column: 1 / -1; margin-top: -5px; color: #748294; text-align: center; font-size: 10px; }
     .made-in-colombia {
       display: inline-flex; align-items: center; gap: 9px; padding: 8px 14px;
       border: 1px solid #d8e1eb; border-radius: 999px;
@@ -442,6 +522,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="zima-seasonal.css">
 </head>
 
 <body>
@@ -453,8 +534,8 @@
       <!-- LOGO -->
       <div class="logo-container">
         <img
-          src="img/logo.png"
-          alt="ZIMA 360"
+          src="img/logo-navidad.png"
+          alt="ZIMA 360 con logo navideño"
           class="logo"
           onerror="this.style.display='none';"
         >
@@ -575,19 +656,6 @@
 
     </div>
 
-    <aside class="desktop-download-card" aria-labelledby="desktopDownloadTitle">
-      <img class="desktop-download-icon" src="img/icons/zima-192.png" alt="Ícono de ZIMA 360">
-      <div class="desktop-download-copy">
-        <span class="desktop-download-label">NOVEDAD PARA WINDOWS</span>
-        <h2 class="desktop-download-title" id="desktopDownloadTitle">ZIMA 360 en tu escritorio</h2>
-        <p class="desktop-download-description">Abre el sistema desde tu computador con la misma cuenta y los datos centrales.</p>
-      </div>
-      <a class="desktop-download-button" href="https://github.com/armandoalvarezl-bit/planillaszima/releases/download/v.1.0.2/ZIMA-360-Setup-1.0.2.exe">
-        <i class="bi bi-download" aria-hidden="true"></i>
-        <span>Descargar para Windows</span>
-      </a>
-      <p class="desktop-download-note"><i class="bi bi-wifi" aria-hidden="true"></i> Windows 10/11 · Versión 1.0.2 · Requiere internet</p>
-    </aside>
 
     <div class="footer">
       <span>ZIMA 360 &middot; Sistema de Gesti&oacute;n</span>
@@ -600,10 +668,13 @@
 
   <div class="login-success-modal" id="loginSuccessModal" aria-hidden="true">
     <div class="login-success-box" role="status" aria-live="polite" aria-atomic="true">
-      <div class="login-loader-mark" aria-hidden="true"><span></span><span></span><span></span></div>
-      <div class="login-success-title" id="loginLoadingTitle">Estamos preparando tu ingreso</div>
-      <div class="login-success-text" id="loginSuccessText">Verificando tus datos. Un momento, por favor.</div>
-      <div class="login-loader-caption">Tu equipo. Tu espacio. ZIMA.</div>
+      <div class="login-loading-content" aria-hidden="true">
+        <img class="login-loading-logo" src="img/logo-navidad.png" alt="">
+        <div class="login-loading-progress"><span></span></div>
+        <div class="login-loading-status"><span class="login-loading-spinner"></span><span>Cargando sistema...</span></div>
+        <p class="login-loading-greeting">¡Feliz Navidad!</p>
+      </div>
+      <span class="login-loading-sr-only"><span id="loginLoadingTitle">Estamos preparando tu ingreso</span>. <span id="loginSuccessText">Verificando tus datos. Un momento, por favor.</span></span>
     </div>
   </div>
 
@@ -615,28 +686,6 @@
   </div>
 
 <script src="zima-ui.js"></script>
-<script>
-(function () {
-  const key = 'ZIMA360_DESKTOP_DOWNLOAD_STARTED_1_0_2';
-  const button = document.querySelector('.desktop-download-button');
-  const note = document.querySelector('.desktop-download-note');
-  if (!button || !note) return;
-
-  function markDownloadStarted() {
-    button.hidden = true;
-    note.textContent = 'Descarga iniciada. Puedes cerrar esta ventana cuando termine.';
-  }
-
-  try {
-    if (localStorage.getItem(key) === '1') markDownloadStarted();
-  } catch (_) {}
-
-  button.addEventListener('click', function () {
-    try { localStorage.setItem(key, '1'); } catch (_) {}
-    markDownloadStarted();
-  });
-})();
-</script>
 <script>
 
 /* ============================================================
