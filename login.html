@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -481,6 +481,20 @@
       margin: 14px auto 0; padding: 10px; border: 0; background: transparent;
       color: #526573; font-size: 12px; cursor: pointer;
     }
+    .password-required-notice {
+      display: grid; grid-template-columns: 42px 1fr; gap: 12px; align-items: start;
+      padding: 14px; margin: 0 0 18px; border: 1px solid #f0d58a;
+      border-radius: 14px; background: linear-gradient(135deg,#fff9e8,#fffdf7);
+      box-shadow: 0 8px 20px rgba(124,91,10,.08); color: #17365d;
+    }
+    .password-required-notice .notice-symbol {
+      width: 42px; height: 42px; display: grid; place-items: center;
+      border-radius: 13px; background: #ffedb4; color: #8a6500; font-size: 19px;
+    }
+    .password-required-notice strong { display:block; margin: 1px 0 4px; font-size: 13px; }
+    .password-required-notice span { display:block; color:#5e6d7d; font-size:11px; line-height:1.5; }
+    .password-change-title { margin: 0 0 8px; color:#102b52; font-size:20px; }
+    .password-change-intro { margin: 0 0 18px; color:#657487; font-size:12px; line-height:1.55; }
     .back-to-login:disabled { opacity: .5; cursor: wait; }
     .password-toggle:focus-visible, .back-to-login:focus-visible,
     .login-button:focus-visible { outline: 3px solid #f7c600; outline-offset: 3px; }
@@ -535,7 +549,7 @@
       <div class="logo-container">
         <img
           src="img/logo-navidad.png"
-          alt="ZIMA 360 con logo navideño"
+          alt="ZIMA 360 con logo navideÃ±o"
           class="logo"
           onerror="this.style.display='none';"
         >
@@ -612,8 +626,12 @@
       </form>
 
       <form id="passwordChangeForm" hidden>
-        <h2 style="font-size:20px;margin-bottom:12px">Cambio obligatorio de contrase&ntilde;a</h2>
-        <p style="font-size:14px;line-height:1.5;margin-bottom:20px">
+        <div class="password-required-notice" role="alert" aria-live="assertive">
+          <span class="notice-symbol"><i class="bi bi-shield-lock-fill" aria-hidden="true"></i></span>
+          <span><strong>Acceso pendiente de actualizaci&oacute;n</strong>Tu contrase&ntilde;a requiere renovaci&oacute;n. C&aacute;mbiala ahora para ingresar; hasta completar este paso no podr&aacute;s abrir el sistema.</span>
+        </div>
+        <h2 class="password-change-title">Crea una nueva contraseÃ±a</h2>
+        <p class="password-change-intro">
           Su contrase&ntilde;a cumpli&oacute; tres meses de vigencia o no tiene fecha registrada.
           Guarde una nueva para continuar. Debe tener al menos 6 caracteres y ser diferente de la actual.
         </p>
@@ -634,7 +652,6 @@
           <div class="input-box"><i class="bi bi-shield-check field-icon" aria-hidden="true"></i><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required></div>
         </div>
         <button type="submit" class="login-button" id="savePasswordButton"><i class="bi bi-check2-circle button-icon" aria-hidden="true"></i><span id="savePasswordText">GUARDAR NUEVA CONTRASE&Ntilde;A</span></button>
-        <button type="button" id="backToLogin" class="back-to-login"><i class="bi bi-arrow-left" aria-hidden="true"></i>Volver al inicio de sesi&oacute;n</button>
       </form>
 
       <div class="request-feedback" id="requestFeedback" role="status" aria-live="polite" hidden>
@@ -672,7 +689,7 @@
         <img class="login-loading-logo" src="img/logo-navidad.png" alt="">
         <div class="login-loading-progress"><span></span></div>
         <div class="login-loading-status"><span class="login-loading-spinner"></span><span>Cargando sistema...</span></div>
-        <p class="login-loading-greeting">¡Feliz Navidad!</p>
+        <p class="login-loading-greeting">Â¡Feliz Navidad!</p>
       </div>
       <span class="login-loading-sr-only"><span id="loginLoadingTitle">Estamos preparando tu ingreso</span>. <span id="loginSuccessText">Verificando tus datos. Un momento, por favor.</span></span>
     </div>
@@ -689,11 +706,11 @@
 <script>
 
 /* ============================================================
-   CONFIGURACIÓN DEL BACKEND
+   CONFIGURACIÃ“N DEL BACKEND
    ============================================================ */
 
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbxtUVnS29d-Oo976b6poyXAIxahCLK5tIgXkKBfa_g_zrEP_dCYWVac8XCy22w3_1xsJQ/exec";
+  "https://script.google.com/macros/s/AKfycbwpnj0oxVgMlJ11jJ2GEn7x8mK5Zmk6SBOKxOGcGQOdTD7xnozdutzMUi2PhZgvB5sZWA/exec";
 
 try {
   localStorage.setItem("ZIMA_API_URL", API_URL);
@@ -713,7 +730,6 @@ const passwordActual = document.getElementById("passwordActual");
 const newPassword = document.getElementById("newPassword");
 const confirmPassword = document.getElementById("confirmPassword");
 const savePasswordButton = document.getElementById("savePasswordButton");
-const backToLogin = document.getElementById("backToLogin");
 const loginButtonText = document.getElementById('loginButtonText');
 const savePasswordText = document.getElementById('savePasswordText');
 
@@ -745,37 +761,28 @@ function pedirCambioContrasena(usuario) {
   newPassword.focus();
 }
 
-backToLogin.addEventListener('click', function () {
-  passwordChangeForm.reset();
-  passwordChangeForm.hidden = true;
-  loginForm.hidden = false;
-  limpiarMensaje();
-  passwordInput.focus();
-});
-
 passwordChangeForm.addEventListener('submit', async function (event) {
   event.preventDefault();
   if (savePasswordButton.disabled) return;
   limpiarMensaje();
   if (newPassword.value.trim().length < 6) {
-    mostrarMensaje('La nueva contraseña debe tener al menos 6 caracteres.', 'error');
+    mostrarMensaje('La nueva contraseÃ±a debe tener al menos 6 caracteres.', 'error');
     newPassword.focus();
     return;
   }
   if (newPassword.value !== confirmPassword.value) {
-    mostrarMensaje('Las contraseñas no coinciden.', 'error');
+    mostrarMensaje('Las contraseÃ±as no coinciden.', 'error');
     confirmPassword.focus();
     return;
   }
   if (newPassword.value === passwordActual.value) {
-    mostrarMensaje('La nueva contraseña debe ser diferente de la actual.', 'error');
+    mostrarMensaje('La nueva contraseÃ±a debe ser diferente de la actual.', 'error');
     newPassword.focus();
     return;
   }
   savePasswordButton.disabled = true;
-  backToLogin.disabled = true;
   savePasswordText.textContent = 'GUARDANDO...';
-  mostrarCarga(savePasswordButton, passwordChangeForm, true, 'Guardando su nueva contraseña. Espere un momento…');
+  mostrarCarga(savePasswordButton, passwordChangeForm, true, 'Guardando su nueva contraseÃ±a. Espere un momentoâ€¦');
   try {
     const respuesta = await fetch(API_URL, {
       method: 'POST',
@@ -793,21 +800,20 @@ passwordChangeForm.addEventListener('submit', async function (event) {
     if (!respuesta.ok) throw new Error('El servidor no pudo confirmar el guardado.');
     const resultado = await respuesta.json();
     if (!resultado || resultado.ok !== true) {
-      mostrarMensaje((resultado && (resultado.error || resultado.mensaje)) || 'No se pudo guardar la contraseña.', 'error');
+      mostrarMensaje((resultado && (resultado.error || resultado.mensaje)) || 'No se pudo guardar la contraseÃ±a.', 'error');
       return;
     }
     passwordChangeForm.reset();
     passwordChangeForm.hidden = true;
     loginForm.hidden = false;
     passwordInput.value = '';
-    mostrarMensaje('Contraseña guardada correctamente. Ingrese con su nueva contraseña.', 'success');
+    mostrarMensaje('ContraseÃ±a guardada correctamente. Ingrese con su nueva contraseÃ±a.', 'success');
     passwordInput.focus();
   } catch (error) {
-    mostrarMensaje('No se pudo confirmar el guardado. Verifique su conexión; si ya se guardó, vuelva e ingrese con la nueva contraseña.', 'error');
+    mostrarMensaje('No se pudo confirmar el guardado. Verifique su conexiÃ³n; si ya se guardÃ³, vuelva e ingrese con la nueva contraseÃ±a.', 'error');
   } finally {
     savePasswordButton.disabled = false;
-    backToLogin.disabled = false;
-    savePasswordText.textContent = 'GUARDAR NUEVA CONTRASEÑA';
+    savePasswordText.textContent = 'GUARDAR NUEVA CONTRASEÃ‘A';
     mostrarCarga(savePasswordButton, passwordChangeForm, false);
   }
 });
@@ -844,7 +850,7 @@ let anuncioCallback =
 
 
 /* ============================================================
-   MOSTRAR / OCULTAR CONTRASEÑA
+   MOSTRAR / OCULTAR CONTRASEÃ‘A
    ============================================================ */
 
 togglePassword.addEventListener("click", function () {
@@ -853,16 +859,16 @@ togglePassword.addEventListener("click", function () {
 
     passwordInput.type = "text";
     togglePassword.innerHTML = '<i class="bi bi-eye-slash" aria-hidden="true"></i>';
-    togglePassword.setAttribute('aria-label', 'Ocultar contraseña');
-    togglePassword.setAttribute('title', 'Ocultar contraseña');
+    togglePassword.setAttribute('aria-label', 'Ocultar contraseÃ±a');
+    togglePassword.setAttribute('title', 'Ocultar contraseÃ±a');
     togglePassword.setAttribute('aria-pressed', 'true');
 
   } else {
 
     passwordInput.type = "password";
     togglePassword.innerHTML = '<i class="bi bi-eye" aria-hidden="true"></i>';
-    togglePassword.setAttribute('aria-label', 'Mostrar contraseña');
-    togglePassword.setAttribute('title', 'Mostrar contraseña');
+    togglePassword.setAttribute('aria-label', 'Mostrar contraseÃ±a');
+    togglePassword.setAttribute('title', 'Mostrar contraseÃ±a');
     togglePassword.setAttribute('aria-pressed', 'false');
 
   }
@@ -922,26 +928,6 @@ function mostrarAccesoCorrecto(datos) {
 
 }
 
-function esAdminLogin(datos) {
-
-  const rol =
-    String(
-      datos &&
-      (
-        datos.rol ||
-        datos.ROL ||
-        datos.role ||
-        ""
-      )
-    )
-      .trim()
-      .toUpperCase();
-
-  return rol === "ADMIN" || rol === "ADMINISTRADOR";
-
-}
-
-
 function irDashboard() {
 
   const sesion = window.ZimaUI ? ZimaUI.getSupportSession() : {};
@@ -954,12 +940,6 @@ function programarAnuncioSistema(datos) {
 
   try {
     sessionStorage.setItem("ZIMA_SHOW_WELCOME", "1");
-
-    if (!esAdminLogin(datos)) {
-      sessionStorage.setItem("ZIMA_SHOW_ANNOUNCEMENT", "1");
-    } else {
-      sessionStorage.removeItem("ZIMA_SHOW_ANNOUNCEMENT");
-    }
   } catch (e) {}
 
 }
@@ -1040,7 +1020,7 @@ document.addEventListener(
 
 
 /* ============================================================
-   GUARDAR SESIÓN
+   GUARDAR SESIÃ“N
    ============================================================ */
 
 function guardarSesion(datos) {
@@ -1300,7 +1280,7 @@ loginForm.addEventListener(
 
     loginButtonText.textContent =
       "VALIDANDO...";
-    mostrarCarga(loginButton, loginForm, true, 'Verificando sus credenciales. Espere un momento…');
+    mostrarCarga(loginButton, loginForm, true, 'Verificando sus credenciales. Espere un momentoâ€¦');
 
 
     try {
@@ -1357,7 +1337,7 @@ loginForm.addEventListener(
         );
 
         throw new Error(
-          "El servidor no devolvió una respuesta válida."
+          "El servidor no devolviÃ³ una respuesta vÃ¡lida."
         );
 
       }
@@ -1413,14 +1393,14 @@ loginForm.addEventListener(
     } catch (error) {
 
       console.error(
-        "Error de conexión:",
+        "Error de conexiÃ³n:",
         error
       );
 
 
       mostrarMensaje(
         "No fue posible conectar con ZIMA 360. " +
-        "Verifique que este login esté siendo abierto desde el sistema.",
+        "Verifique que este login estÃ© siendo abierto desde el sistema.",
         "error"
       );
 
@@ -1459,7 +1439,7 @@ window.addEventListener(
 
 
 /* ============================================================
-   SI YA EXISTE SESIÓN
+   SI YA EXISTE SESIÃ“N
    ============================================================ */
 
 (function comprobarSesion() {
@@ -1473,7 +1453,7 @@ window.addEventListener(
 
     if (usuario) {
 
-      // No redirigimos automáticamente
+      // No redirigimos automÃ¡ticamente
       // para evitar bloquear el login.
 
     }

@@ -950,6 +950,16 @@ function autenticarUsuario(
           'ACTIVO'
         ) {
 
+          notificarSeguimientoAcceso_({
+            usuario: usuarioBD,
+            nombre: nombre,
+            rol: rol,
+            peaje: peaje,
+            estado: estado,
+            evento: 'ACCESO_INACTIVO',
+            detalle: 'Se intentó iniciar sesión con una cuenta inactiva.'
+          });
+
           return {
             ok: false,
             mensaje:
@@ -969,11 +979,23 @@ function autenticarUsuario(
           FECHA_CAMBIO_CONTRASENA: fila[columnaCambio - 1]
         });
         if (politica.requiereCambioContrasena) {
+          notificarSeguimientoAcceso_({
+            usuario: usuarioBD,
+            nombre: nombre,
+            rol: rol,
+            peaje: peaje,
+            estado: estado,
+            evento: 'CAMBIO_PENDIENTE',
+            venceContrasena: politica.venceContrasena,
+            detalle: 'El inicio de sesión requiere renovar la contraseña.'
+          });
           return Object.assign({
             ok: false,
             codigo: 'CAMBIO_CONTRASENA_REQUERIDO',
             usuario: usuarioBD,
-            mensaje: 'Debe cambiar su contraseña: su vigencia es de tres meses.'
+            mensaje: politica.cambioGlobalObligatorio
+              ? 'Debe cambiar su contrase\u00f1a. El cambio es obligatorio desde el 20 de noviembre de 2026.'
+              : 'Debe cambiar su contrase\u00f1a: su vigencia es de tres meses.'
           }, politica);
         }
 
@@ -2109,11 +2131,23 @@ function obtenerColumnaCambioContrasena_(sh) {
   return indice + 1;
 }
 
-// Tres meses calendario desde el último cambio, sin reiniciar al iniciar sesión.
+// Vence cada tres meses y fuerza una renovación global desde el 20-11-2026.
 function estadoContrasena_(usuario, ahora) {
   const valor = usuario.FECHA_CAMBIO_CONTRASENA || usuario.FECHA_CREACION;
   const fecha = valor ? new Date(valor) : new Date(NaN);
   const hoy = ahora || new Date();
+  // Medianoche del 20 de noviembre en America/Bogota (UTC-5).
+  const fechaCambioGlobal = new Date(Date.UTC(2026, 10, 20, 5, 0, 0));
+  // El cambio global se exige una sola vez. Una renovación hecha desde esa fecha
+  // habilita el acceso hasta que vuelva a vencer la vigencia trimestral.
+  if (hoy >= fechaCambioGlobal &&
+      (isNaN(fecha.getTime()) || fecha < fechaCambioGlobal)) {
+    return {
+      requiereCambioContrasena: true,
+      venceContrasena: fechaCambioGlobal.toISOString(),
+      cambioGlobalObligatorio: true
+    };
+  }
   if (isNaN(fecha.getTime()) || fecha > hoy) {
     return { requiereCambioContrasena: true, venceContrasena: '' };
   }
@@ -4235,6 +4269,29 @@ function gestionarAccesos_(action, data) {
     });
     if (password) cambios.push('contraseña renovada');
     registrarAuditoria_(evento,{id:actual.ID,usuario:ctx.sesion.usuario},'Usuario: '+usuario+' · Cambios: '+(cambios.join(', ') || 'perfil'));
+    if (data.estado && String(actual.ESTADO).trim().toUpperCase() === 'INACTIVO' &&
+        String(anterior && anterior.ESTADO || '').trim().toUpperCase() !== 'INACTIVO') {
+      notificarSeguimientoAcceso_({
+        usuario: actual.USUARIO,
+        nombre: actual.NOMBRE,
+        rol: actual.ROL,
+        peaje: actual.PEAJE,
+        estado: actual.ESTADO,
+        evento: 'USUARIO_INACTIVADO',
+        detalle: 'La cuenta fue marcada como inactiva por ' + ctx.sesion.usuario + '.'
+      });
+    }
+    if (password && action !== 'crearusuario') {
+      notificarSeguimientoAcceso_({
+        usuario: actual.USUARIO,
+        nombre: actual.NOMBRE,
+        rol: actual.ROL,
+        peaje: actual.PEAJE,
+        estado: actual.ESTADO,
+        evento: 'CONTRASENA_RENOVADA',
+        detalle: 'Un administrador renovó la contraseña de la cuenta.'
+      });
+    }
     return Object.assign({}, result, {ok:true,verificado:true});
   } finally {lock.releaseLock();}
 }
@@ -5834,6 +5891,124 @@ function obtenerEmailNotificacion_(
   return obtenerEmailsUsuariosNotificacion_(
     sesion
   ).join(',');
+}
+
+
+// Informa el estado de una cuenta a administración. Nunca incluye contraseñas.
+function notificarSeguimientoAcceso_(datos) {
+  datos = datos || {};
+  try {
+    const usuario = String(datos.usuario || '').trim();
+    const evento = String(datos.evento || 'SEGUIMIENTO').trim().toUpperCase();
+    if (!usuario) return {ok:false, enviado:false, error:'Falta el usuario.'};
+
+    // Evita correos repetidos por intentos sucesivos de inicio de sesión.
+    const cache = CacheService.getScriptCache();
+    const clave = 'ZIMA_ACCESS_MAIL_' + (usuario + '_' + evento).toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+    if (cache.get(clave)) return {ok:true, enviado:false, omitido:true};
+
+    const destinatarios = obtenerEmailsUsuariosNotificacion_(null);
+    if (!destinatarios.length) return {ok:false, enviado:false, error:'No hay destinatarios configurados.'};
+    const fecha = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd HH:mm:ss');
+    const estado = String(datos.estado || 'SIN ESTADO').trim().toUpperCase();
+    const vencimiento = datos.venceContrasena
+      ? Utilities.formatDate(new Date(datos.venceContrasena), 'America/Bogota', 'yyyy-MM-dd')
+      : 'No aplica';
+    const asunto = 'ZIMA 360 - Seguimiento de acceso - ' + usuario + ' - ' + evento;
+    const lineas = [
+      'Seguimiento de cuenta ZIMA 360', '',
+      'Evento: ' + evento,
+      'Usuario: ' + usuario,
+      'Nombre: ' + String(datos.nombre || usuario),
+      'Rol: ' + String(datos.rol || ''),
+      'Peaje: ' + String(datos.peaje || ''),
+      'Estado de la cuenta: ' + estado,
+      'Cambio de contraseña pendiente: ' + (evento === 'CAMBIO_PENDIENTE' ? 'Sí' : 'No'),
+      'Fecha límite / vencimiento: ' + vencimiento,
+      'Detalle: ' + String(datos.detalle || ''),
+      'Fecha del evento (Bogotá): ' + fecha,
+      '',
+      'Por seguridad, este correo no contiene la contraseña ni su hash.'
+    ];
+    const filas = [
+      ['Evento', evento], ['Usuario', usuario], ['Nombre', datos.nombre || usuario],
+      ['Rol', datos.rol || ''], ['Peaje', datos.peaje || ''], ['Estado de la cuenta', estado],
+      ['Cambio de contraseña pendiente', evento === 'CAMBIO_PENDIENTE' ? 'Sí' : 'No'],
+      ['Fecha límite / vencimiento', vencimiento], ['Detalle', datos.detalle || ''],
+      ['Fecha del evento (Bogotá)', fecha]
+    ].map(function(fila) { return filaHtmlPlanillaPdf_(fila[0], fila[1]); }).join('');
+    const html = '<div style="font-family:Arial,sans-serif;color:#172033;line-height:1.5;max-width:680px">' +
+      '<h2 style="color:#103b70">Seguimiento de cuenta ZIMA 360</h2>' +
+      '<table style="border-collapse:collapse;width:100%">' + filas + '</table>' +
+      '<p style="padding:12px;background:#fff7df;border-radius:8px">Por seguridad, este correo no contiene la contraseña ni su hash.</p></div>';
+    MailApp.sendEmail({to:destinatarios.join(','),subject:asunto,body:lineas.join('\n'),htmlBody:html});
+    cache.put(clave, '1', 43200);
+    return {ok:true,enviado:true,destinatarios:destinatarios.join(',')};
+  } catch (e) {
+    console.error('No fue posible enviar seguimiento de acceso: ' + errorMessage_(e));
+    return {ok:false,enviado:false,error:errorMessage_(e)};
+  }
+}
+
+
+// Resumen diario para administración: cuentas inactivas y cambios pendientes.
+function enviarResumenSeguimientoAccesos() {
+  try {
+    const usuarios = obtenerUsuariosDesdeHoja_(prepararHojaUsuarios_(getSpreadsheet_()));
+    const resumen = usuarios.map(function(usuario) {
+      const politica = estadoContrasena_(usuario);
+      return {
+        usuario: String(usuario.USUARIO || ''),
+        nombre: String(usuario.NOMBRE || usuario.USUARIO || ''),
+        rol: String(usuario.ROL || ''),
+        peaje: String(usuario.PEAJE || ''),
+        estado: String(usuario.ESTADO || 'SIN ESTADO').trim().toUpperCase(),
+        pendiente: politica.requiereCambioContrasena,
+        vence: politica.venceContrasena
+      };
+    }).filter(function(usuario) {
+      return usuario.estado !== 'ACTIVO' || usuario.pendiente;
+    });
+
+    if (!resumen.length) return {ok:true,enviado:false,mensaje:'No hay cuentas inactivas ni cambios pendientes.'};
+    const destinatarios = obtenerEmailsUsuariosNotificacion_(null);
+    if (!destinatarios.length) return {ok:false,enviado:false,error:'No hay destinatarios configurados.'};
+    const fecha = Utilities.formatDate(new Date(), 'America/Bogota', 'yyyy-MM-dd HH:mm:ss');
+    const encabezado = ['Usuario','Nombre','Rol','Peaje','Estado','Cambio pendiente','Vencimiento'];
+    const lineas = ['Seguimiento diario de accesos ZIMA 360', 'Generado (Bogotá): ' + fecha, '', encabezado.join(' | ')];
+    resumen.forEach(function(usuario) {
+      const vence = usuario.vence ? Utilities.formatDate(new Date(usuario.vence), 'America/Bogota', 'yyyy-MM-dd') : 'No aplica';
+      lineas.push([usuario.usuario,usuario.nombre,usuario.rol,usuario.peaje,usuario.estado,usuario.pendiente ? 'Sí' : 'No',vence].join(' | '));
+    });
+    lineas.push('', 'Por seguridad, el reporte no incluye contraseñas ni hashes.');
+    const filas = resumen.map(function(usuario) {
+      const vence = usuario.vence ? Utilities.formatDate(new Date(usuario.vence), 'America/Bogota', 'yyyy-MM-dd') : 'No aplica';
+      return '<tr>' + [usuario.usuario,usuario.nombre,usuario.rol,usuario.peaje,usuario.estado,usuario.pendiente ? 'Sí' : 'No',vence].map(function(valor) {
+        return '<td style="border:1px solid #d8dee8;padding:8px">' + htmlEscape_(valor) + '</td>';
+      }).join('') + '</tr>';
+    }).join('');
+    const html = '<div style="font-family:Arial,sans-serif;color:#172033;line-height:1.5"><h2 style="color:#103b70">Seguimiento diario de accesos ZIMA 360</h2>' +
+      '<p>Generado (Bogotá): ' + htmlEscape_(fecha) + '</p><table style="border-collapse:collapse;width:100%"><thead><tr>' +
+      encabezado.map(function(titulo) { return '<th style="background:#edf3fa;border:1px solid #d8dee8;padding:8px;text-align:left">' + htmlEscape_(titulo) + '</th>'; }).join('') +
+      '</tr></thead><tbody>' + filas + '</tbody></table><p>Por seguridad, el reporte no incluye contraseñas ni hashes.</p></div>';
+    MailApp.sendEmail({to:destinatarios.join(','),subject:'ZIMA 360 - Resumen diario de accesos (' + resumen.length + ')',body:lineas.join('\n'),htmlBody:html});
+    return {ok:true,enviado:true,total:resumen.length,destinatarios:destinatarios.join(',')};
+  } catch (e) {
+    console.error('No fue posible enviar el resumen de accesos: ' + errorMessage_(e));
+    return {ok:false,enviado:false,error:errorMessage_(e)};
+  }
+}
+
+
+// Ejecutar una sola vez desde Apps Script y autorizar el envío de correos.
+function configurarSeguimientoDiarioAccesos() {
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'enviarResumenSeguimientoAccesos') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+  ScriptApp.newTrigger('enviarResumenSeguimientoAccesos').timeBased().everyDays(1).atHour(8).create();
+  return {ok:true,mensaje:'Seguimiento diario configurado. La hora usa la zona horaria del proyecto de Apps Script.'};
 }
 
 
