@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
  <head>
   <meta charset="utf-8"/>
@@ -472,7 +472,7 @@ textarea {
   .doc-brand-logo.ani img{width:40px;height:46px}
 }
 
-/* ===== ZIMA 360 · edición estable de planilla ===== */
+/* ===== ZIMA 360 Â· ediciÃ³n estable de planilla ===== */
 .money-input{
   text-align:right;
   font-variant-numeric:tabular-nums;
@@ -549,7 +549,7 @@ textarea {
 
 
 
-/* ===== ZIMA 360 · MENÚ CON EL MISMO LENGUAJE VISUAL DEL DASHBOARD ===== */
+/* ===== ZIMA 360 Â· MENÃš CON EL MISMO LENGUAJE VISUAL DEL DASHBOARD ===== */
 .sidebar{
   width:264px;
   background:linear-gradient(180deg,#101827 0%,#0f1724 100%);
@@ -650,7 +650,7 @@ textarea {
 }
 
 
-/* ===== LOGOS DEL MENÚ · ZIMA + ANI ===== */
+/* ===== LOGOS DEL MENÃš Â· ZIMA + ANI ===== */
 .sidebar-brand-logos{
   display:flex;
   align-items:center;
@@ -684,7 +684,7 @@ textarea {
 </style>
  
 <style id="dashboard-sidebar-style">
-/* ===== SIDEBAR EXACTO DEL DASHBOARD · PLANILLA ===== */
+/* ===== SIDEBAR EXACTO DEL DASHBOARD Â· PLANILLA ===== */
 :root{
   --sidebar-w:308px;
   --yellow:#f7c600;
@@ -922,6 +922,7 @@ body.planilla-page .print-preview-backdrop{
   </style>
 <link rel="stylesheet" href="zima-brand.css">
   <link rel="stylesheet" href="zima-seasonal.css">
+  <script src="maintenance-redirect.js"></script>
 </head>
  <body class="planilla-page">
   <div class="shell">
@@ -944,7 +945,7 @@ body.planilla-page .print-preview-backdrop{
       <div class="branch-card">
         <div class="branch-label">OFICINA</div>
         <div class="branch-name">Administraci&oacute;n central</div>
-        <div class="branch-status"><span></span> Operación normal</div>
+        <div class="branch-status"><span></span> OperaciÃ³n normal</div>
       </div>
 
       <nav class="main-nav" aria-label="Navegaci&oacute;n principal">
@@ -959,7 +960,7 @@ body.planilla-page .print-preview-backdrop{
       </nav>
 
       <div class="sidebar-bottom">
-        <div class="secure-line"><span class="secure-dot"></span> Conexión segura</div>
+        <div class="secure-line"><span class="secure-dot"></span> ConexiÃ³n segura</div>
         <div class="menu-edition"><span class="menu-country"><span class="menu-colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span><span class="menu-version">v2.0.0</span></div>
       </div>
     </aside>
@@ -1190,7 +1191,7 @@ body.planilla-page .print-preview-backdrop{
    </main>
   </div>
 
-  <!-- VISTA PREVIA DE IMPRESIÓN / PDF -->
+  <!-- VISTA PREVIA DE IMPRESIÃ“N / PDF -->
   <div class="print-preview-backdrop" id="printPreview" aria-hidden="true">
     <div class="print-preview" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
       <div class="preview-bar">
@@ -1269,7 +1270,7 @@ function esGranAdministradorSesion(){
   const ses=zimaSessionParams();
   const rol=String(ses.rol||'').trim().toUpperCase();
   const peaje=String(ses.peaje||'').trim().toUpperCase();
-  const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
+  const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÃ“N CENTRAL';
   return (rol==='ADMIN'||rol==='ADMINISTRADOR') && peajeGlobal;
 }
 function puedeGestionarPlanillas(){
@@ -1348,7 +1349,7 @@ async function apiPost(data){
    * Los HTML se ejecutan externamente (127.0.0.1:5500).
    * No usamos fetch POST porque Apps Script redirige el Web App y
    * el navegador puede bloquearlo por CORS/404.
-   * El Code.gs actual acepta save/update/delete también por GET
+   * El Code.gs actual acepta save/update/delete tambiÃ©n por GET
    * y devuelve JSONP mediante ?callback=...
    */
   try{return await zimaFetchPost(payload);}catch(fetchError){return zimaJsonp(payload);}
@@ -1359,7 +1360,7 @@ function go(p){location.href=p}
 function textoNotificacion(r){
   if(!r||!r.notificacion)return '';
   if(r.notificacion.enviado)return ' Correo enviado a: <b>'+esc(r.notificacion.destinatarios||'')+'</b>.';
-  return ' No se envió correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.';
+  return ' No se enviÃ³ correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.';
 }
 async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.error||'No se pudieron consultar las planillas');return r.rows||[]}
   </script>
@@ -1383,7 +1384,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       fragua:{
         ciudad:'Fragua',
         lugarRecibo:'PEAJE FRAGUA',
-        entregadoNombre:'Marliza Tiziana Herazo Londoño'
+        entregadoNombre:'Marliza Tiziana Herazo LondoÃ±o'
       },
       zaragoza:{
         ciudad:'Zaragoza',
@@ -1460,10 +1461,10 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     }
 
     /*
-     * PLANILLA NUEVA: tomar el peaje directamente de la sesión activa.
-     * Esto evita que el formulario quede con un peaje fijo o vacío.
+     * PLANILLA NUEVA: tomar el peaje directamente de la sesiÃ³n activa.
+     * Esto evita que el formulario quede con un peaje fijo o vacÃ­o.
      * Al editar una planilla existente NO se toca este valor: cargar()
-     * seguirá tomando el peaje guardado en r.row.
+     * seguirÃ¡ tomando el peaje guardado en r.row.
      */
     function inicializarPeajeSesion(){
       if(id)return;
@@ -1476,7 +1477,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
 
         aplicarDatosFijosPlanilla();
       }catch(_){
-        // Si no hay sesión disponible, se mantiene el comportamiento actual.
+        // Si no hay sesiÃ³n disponible, se mantiene el comportamiento actual.
       }
     }
 
@@ -1497,7 +1498,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
 
     // Actualiza el total visible y el valor en letras sin interferir con la escritura.
     // El campo de entrada se formatea solo al perder el foco; mientras se escribe
-    // conserva el cursor y permite introducir cualquier cantidad de dígitos.
+    // conserva el cursor y permite introducir cualquier cantidad de dÃ­gitos.
     function actualizarMarcaAgua(){
       const codigo=String($('codigo').value || '').trim();
       const peaje=String($('peaje').value || '').trim();
@@ -1529,7 +1530,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
 
       el.addEventListener('input',()=>{
         // NO formatear el input mientras el usuario escribe.
-        // Solo quitamos caracteres que no sean números.
+        // Solo quitamos caracteres que no sean nÃºmeros.
         const clean=String(el.value||'').replace(/\D/g,'');
         if(el.value!==clean) el.value=clean;
 
@@ -1557,7 +1558,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     function numeroALetras(n){
       n=Math.floor(Number(n)||0);
       if(n===0)return 'CERO';
-      const unidades=['','UNO','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE','VEINTE','VEINTIUNO','VEINTIDÓS','VEINTITRÉS','VEINTICUATRO','VEINTICINCO','VEINTISÉIS','VEINTISIETE','VEINTIOCHO','VEINTINUEVE'];
+      const unidades=['','UNO','DOS','TRES','CUATRO','CINCO','SEIS','SIETE','OCHO','NUEVE','DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÃ‰IS','DIECISIETE','DIECIOCHO','DIECINUEVE','VEINTE','VEINTIUNO','VEINTIDÃ“S','VEINTITRÃ‰S','VEINTICUATRO','VEINTICINCO','VEINTISÃ‰IS','VEINTISIETE','VEINTIOCHO','VEINTINUEVE'];
       const decenas=['','','','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
       const centenas=['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
       function hasta999(x){
@@ -1571,7 +1572,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       const miles=Math.floor((n%1000000)/1000);
       const resto=n%1000;
       const partes=[];
-      if(millones)partes.push(millones===1?'UN MILLÓN':hasta999(millones)+' MILLONES');
+      if(millones)partes.push(millones===1?'UN MILLÃ“N':hasta999(millones)+' MILLONES');
       if(miles)partes.push(miles===1?'MIL':hasta999(miles)+' MIL');
       if(resto)partes.push(hasta999(resto));
       return partes.join(' ');
@@ -1638,11 +1639,11 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     function mostrarProgresoPlanilla(etapa){
       const cargando=etapa==='cargando';
       const imprimiendo=etapa==='imprimiendo';
-      const titulo=cargando?'Cargando planilla…':imprimiendo?'Planilla guardada. Preparando impresión…':'Guardando planilla…';
-      const detalle=cargando?'Consultando los datos guardados.':imprimiendo?'Se abrirá el diálogo de impresión del navegador.':'Espere la confirmación del servidor antes de salir.';
+      const titulo=cargando?'Cargando planillaâ€¦':imprimiendo?'Planilla guardada. Preparando impresiÃ³nâ€¦':'Guardando planillaâ€¦';
+      const detalle=cargando?'Consultando los datos guardados.':imprimiendo?'Se abrirÃ¡ el diÃ¡logo de impresiÃ³n del navegador.':'Espere la confirmaciÃ³n del servidor antes de salir.';
       const pasos=!cargando && (!id || imprimiendo);
       msg.setAttribute('aria-busy','true');
-      const contenido='<div class="planilla-progress"><span class="planilla-progress-spinner" aria-hidden="true"></span><div><strong>'+titulo+'</strong><small>'+detalle+'</small>'+(pasos?'<div class="planilla-progress-steps" aria-hidden="true"><span class="'+(imprimiendo?'done':'active')+'">'+(imprimiendo?'✓ ':'1. ')+'Guardar</span><span class="'+(imprimiendo?'active':'')+'">2. Imprimir</span></div>':'')+'</div></div>';
+      const contenido='<div class="planilla-progress"><span class="planilla-progress-spinner" aria-hidden="true"></span><div><strong>'+titulo+'</strong><small>'+detalle+'</small>'+(pasos?'<div class="planilla-progress-steps" aria-hidden="true"><span class="'+(imprimiendo?'done':'active')+'">'+(imprimiendo?'âœ“ ':'1. ')+'Guardar</span><span class="'+(imprimiendo?'active':'')+'">2. Imprimir</span></div>':'')+'</div></div>';
       if(cargando){msg.innerHTML=contenido;return;}
       msg.innerHTML='';
       $('saveProgressContent').innerHTML=contenido;
@@ -1670,14 +1671,14 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       msg.innerHTML='';
       msg.setAttribute('aria-busy','false');
       if(embeddedEdit && window.parent && window.parent!==window){
-        window.parent.postMessage({source:'zima-planilla',type:'duplicate',message:resultado.error || 'Código duplicado. Edite la planilla existente.'}, '*');
+        window.parent.postMessage({source:'zima-planilla',type:'duplicate',message:resultado.error || 'CÃ³digo duplicado. Edite la planilla existente.'}, '*');
       }
       const abrir=await ZimaUI.confirm({
         tone:'warning',sound:'warning',danger:false,
         title:resultado.code==='FECHA_DUPLICADA'?'Advertencia: fecha ya registrada':'Advertencia: planilla duplicada',
-        message:resultado.code==='FECHA_DUPLICADA'?'Ya hay una planilla del mismo tipo y fecha para este peaje. Cambiar el código no permite crear otra. Abra la existente para revisar sus datos.':'Ya existe una planilla con este código. No se guardó una nueva planilla. Abra la existente para corregir o actualizar sus datos.',
-        detail:resultado.error || 'Revise el código antes de continuar.',
-        confirmText:resultado.existingId?'Abrir planilla existente':'Revisar código',
+        message:resultado.code==='FECHA_DUPLICADA'?'Ya hay una planilla del mismo tipo y fecha para este peaje. Cambiar el cÃ³digo no permite crear otra. Abra la existente para revisar sus datos.':'Ya existe una planilla con este cÃ³digo. No se guardÃ³ una nueva planilla. Abra la existente para corregir o actualizar sus datos.',
+        detail:resultado.error || 'Revise el cÃ³digo antes de continuar.',
+        confirmText:resultado.existingId?'Abrir planilla existente':'Revisar cÃ³digo',
         cancelText:'Cerrar aviso'
       });
       if(abrir && resultado.existingId)go('planilla.html?id='+encodeURIComponent(resultado.existingId));
@@ -1696,7 +1697,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       d.tipoPlanilla=tipoRegistroPlanilla(d);
       const fechaValidada=new Date(d.fecha+'T12:00:00Z');
       if(!/^\d{4}-\d{2}-\d{2}$/.test(d.fecha)||isNaN(fechaValidada.getTime())||fechaValidada.toISOString().slice(0,10)!==d.fecha||d.fecha>fechaHoyPlanilla()){
-        ZimaUI.notice(msg,'Verifique la fecha: debe ser válida y no puede ser futura. Use la fecha del recaudo o de la visita de TransBank para el recambio.','error');
+        ZimaUI.notice(msg,'Verifique la fecha: debe ser vÃ¡lida y no puede ser futura. Use la fecha del recaudo o de la visita de TransBank para el recambio.','error');
         return;
       }
       if(!d.peaje||!d.fecha||d.total<=0){
@@ -1721,7 +1722,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
             (!id || String(fila.id)!==String(id)));
           if(duplicada){
             await mostrarAvisoDuplicado({
-              error:'Ya existe una planilla con este código. Abra la planilla existente para editarla y ajustar sus datos.',
+              error:'Ya existe una planilla con este cÃ³digo. Abra la planilla existente para editarla y ajustar sus datos.',
               existingId:duplicada.id
             });
             return;
@@ -1750,7 +1751,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           return;
         }
         if(!r || !r.ok)throw Error(r && r.error || 'No se pudo confirmar el guardado.');
-        if(!r.row || !r.row.id)throw Error('El servidor no devolvió la identificación de la planilla guardada.');
+        if(!r.row || !r.row.id)throw Error('El servidor no devolviÃ³ la identificaciÃ³n de la planilla guardada.');
         guardada=true;
         void ZimaUI.playSaveSound();
         id=r.row.id;
@@ -1762,7 +1763,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         actualizar();
         if(!editando){
           mostrarProgresoPlanilla('imprimiendo');
-          ZimaUI.busy('saveBtn',true,'Preparando impresión...');
+          ZimaUI.busy('saveBtn',true,'Preparando impresiÃ³n...');
           cerrarProgresoGuardado();
           await imprimirDesdeVistaPrevia();
         }
@@ -1772,9 +1773,9 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           const irAlHistorial=await ZimaUI.confirm({
             tone:'success',danger:false,
             title:editando?'Cambios guardados':'Planilla guardada',
-            message:'Puede consultar su planilla en el historial. Para registrar otra, cierre este aviso y use «Limpiar y crear nueva». Si necesita corregir esta planilla, edite sus datos; no necesita crear una nueva.',
-            detail:'Código de planilla: '+String(r.row.codigo || ''),
-            confirmText:'Ir al historial',cancelText:'Continuar aquí'
+            message:'Puede consultar su planilla en el historial. Para registrar otra, cierre este aviso y use Â«Limpiar y crear nuevaÂ». Si necesita corregir esta planilla, edite sus datos; no necesita crear una nueva.',
+            detail:'CÃ³digo de planilla: '+String(r.row.codigo || ''),
+            confirmText:'Ir al historial',cancelText:'Continuar aquÃ­'
           });
           if(irAlHistorial)go('historial.html');
         }
@@ -1796,7 +1797,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
             message:e.message || 'No fue posible actualizar la planilla.'
           }, '*');
         }
-        ZimaUI.notice(msg,guardada?'La planilla quedó guardada. No se pudo abrir la impresión: '+e.message+' Use «Volver a imprimir»; no necesita guardarla otra vez. Puede consultarla en el historial y editarla para ajustar sus datos si se equivocó; no necesita crear una nueva.':e.message,'error');
+        ZimaUI.notice(msg,guardada?'La planilla quedÃ³ guardada. No se pudo abrir la impresiÃ³n: '+e.message+' Use Â«Volver a imprimirÂ»; no necesita guardarla otra vez. Puede consultarla en el historial y editarla para ajustar sus datos si se equivocÃ³; no necesita crear una nueva.':e.message,'error');
       }finally{
         cerrarProgresoGuardado();
         window.__zimaSavingPlanilla=false;
@@ -1813,7 +1814,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       const codigo=($('codigo')&&$('codigo').value)||'esta planilla';
       const confirmar=await ZimaUI.confirm({
         title:'Anular planilla',
-        message:'Esta planilla pasará a estado ANULADA. El cambio quedará registrado en auditoría y se enviará correo de seguimiento si el usuario tiene email configurado.',
+        message:'Esta planilla pasarÃ¡ a estado ANULADA. El cambio quedarÃ¡ registrado en auditorÃ­a y se enviarÃ¡ correo de seguimiento si el usuario tiene email configurado.',
         detail:'C\u00f3digo: '+codigo,
         confirmText:'Anular planilla',
         cancelText:'Conservar planilla',
@@ -1837,8 +1838,8 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       if(!id || !esGranAdministradorSesion() || estadoActual!=='ANULADA')return;
       const confirmar=await ZimaUI.confirm({
         title:'Restaurar planilla',
-        message:'La planilla volverá al estado APROBADO y dejará de estar anulada.',
-        detail:'Código: '+(($('codigo')&&$('codigo').value)||'esta planilla'),
+        message:'La planilla volverÃ¡ al estado APROBADO y dejarÃ¡ de estar anulada.',
+        detail:'CÃ³digo: '+(($('codigo')&&$('codigo').value)||'esta planilla'),
         confirmText:'Restaurar planilla',
         cancelText:'Cancelar'
       });
@@ -1892,7 +1893,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
       try{
         const page=$('previewPage');
         if(!page || !$('printPreview')){
-          throw new Error('No se pudo cargar el módulo de vista previa.');
+          throw new Error('No se pudo cargar el mÃ³dulo de vista previa.');
         }
         const clone=construirDocumentoImpresion();
         page.replaceChildren(clone);
@@ -1912,11 +1913,11 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     }
 
     async function imprimirDesdeVistaPrevia(){
-      if(window.__zimaPrintingPlanilla)throw new Error('Ya se está preparando una impresión.');
+      if(window.__zimaPrintingPlanilla)throw new Error('Ya se estÃ¡ preparando una impresiÃ³n.');
       let frame;
       try{
         window.__zimaPrintingPlanilla=true;
-        ZimaUI.busy('previewPrintBtn',true,'Preparando impresión...');
+        ZimaUI.busy('previewPrintBtn',true,'Preparando impresiÃ³n...');
         const clone=construirDocumentoImpresion();
         frame=document.createElement('iframe');
         frame.setAttribute('aria-hidden','true');
@@ -1930,7 +1931,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         document.body.appendChild(frame);
 
         const printDocument=frame.contentDocument;
-        if(!printDocument) throw new Error('No se pudo preparar el documento de impresión.');
+        if(!printDocument) throw new Error('No se pudo preparar el documento de impresiÃ³n.');
 
         printDocument.open();
         printDocument.close();
@@ -1945,13 +1946,13 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         printDocument.head.appendChild(viewport);
 
         const title=printDocument.createElement('title');
-        title.textContent='Planilla ZIMA 360 - Impresión';
+        title.textContent='Planilla ZIMA 360 - ImpresiÃ³n';
         printDocument.head.appendChild(title);
 
         const estilos=Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(link=>new Promise((resolve,reject)=>{
           const copia=link.cloneNode(true);
           copia.onload=resolve;
-          copia.onerror=()=>reject(new Error('No se pudieron cargar los estilos de impresión.'));
+          copia.onerror=()=>reject(new Error('No se pudieron cargar los estilos de impresiÃ³n.'));
           printDocument.head.appendChild(copia);
         }));
 
@@ -1979,7 +1980,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
           },1000);
         };
 
-        // Esperar estilos, fuentes y logos antes de abrir el diálogo.
+        // Esperar estilos, fuentes y logos antes de abrir el diÃ¡logo.
         const imagenes=Array.from(printDocument.images).map(imagen=>{
           if(imagen.decode)return imagen.decode();
           return new Promise((resolve,reject)=>{
@@ -1992,7 +1993,7 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
         try{
           await Promise.race([
             Promise.all([...estilos,...imagenes]).then(()=>printDocument.fonts?printDocument.fonts.ready:undefined),
-            new Promise((_,reject)=>{temporizador=setTimeout(()=>reject(new Error('Se agotó el tiempo al preparar el documento.')),15000);})
+            new Promise((_,reject)=>{temporizador=setTimeout(()=>reject(new Error('Se agotÃ³ el tiempo al preparar el documento.')),15000);})
           ]);
         }finally{clearTimeout(temporizador);}
         await new Promise(resolve=>setTimeout(resolve,100));
@@ -2013,10 +2014,10 @@ async function syncRows(){const r=await apiGet('list');if(!r.ok)throw Error(r.er
     async function imprimir(){
       if(!id || window.__zimaSavingPlanilla || window.__zimaPrintingPlanilla)return;
       try{
-        ZimaUI.busy('printBtn',true,'Preparando impresión...');
+        ZimaUI.busy('printBtn',true,'Preparando impresiÃ³n...');
         await imprimirDesdeVistaPrevia();
       }catch(e){
-        ZimaUI.notice(msg,'No se pudo abrir la impresión: '+e.message,'error');
+        ZimaUI.notice(msg,'No se pudo abrir la impresiÃ³n: '+e.message,'error');
       }finally{ZimaUI.busy('printBtn',false);}
     }
 

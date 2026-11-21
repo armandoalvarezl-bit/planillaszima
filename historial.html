@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="es">
 
 <head>
@@ -526,7 +526,7 @@
 </style>
 
 <style id="zima-dashboard-sidebar-exact">
-/* Menú lateral: réplica visual del Dashboard de ZIMA 360 */
+/* MenÃº lateral: rÃ©plica visual del Dashboard de ZIMA 360 */
 :root{--sidebar-w:293px}
 .sidebar{
   position:fixed!important;left:0!important;top:0!important;bottom:0!important;
@@ -690,6 +690,7 @@
   <link rel="stylesheet" href="zima-ui-modern.css">
 <link rel="stylesheet" href="zima-brand.css">
   <link rel="stylesheet" href="zima-seasonal.css">
+  <script src="maintenance-redirect.js"></script>
 </head>
 
 <body>
@@ -709,7 +710,7 @@
   <div class="branch-card">
     <div class="branch-label">OFICINA</div>
     <div class="branch-name" id="sidebarPeaje">Administraci&oacute;n central</div>
-    <div class="branch-status"><span></span> Operación normal</div>
+    <div class="branch-status"><span></span> OperaciÃ³n normal</div>
   </div>
 
   <nav class="main-nav" aria-label="Navegaci&oacute;n principal">
@@ -722,13 +723,13 @@
   </nav>
 
   <div class="sidebar-bottom">
-    <div class="secure-line"><span class="secure-dot"></span> Conexión segura</div>
+    <div class="secure-line"><span class="secure-dot"></span> ConexiÃ³n segura</div>
         <div class="menu-edition"><span class="menu-country"><span class="menu-colombia-flag" role="img" aria-label="Bandera de Colombia"></span>Hecho en Colombia</span><span class="menu-version">v2.0.0</span></div>
   </div>
 </aside>
     <main class="main">
       <header class="top">
-        <button class="menu-toggle" id="menuToggle" type="button" title="Abrir menú" aria-label="Abrir menú" aria-expanded="false" onclick="alternarMenu()"><i class="bi bi-list"></i></button>
+        <button class="menu-toggle" id="menuToggle" type="button" title="Abrir menÃº" aria-label="Abrir menÃº" aria-expanded="false" onclick="alternarMenu()"><i class="bi bi-list"></i></button>
         <div class="breadcrumb"><b>Historial</b> / Planillas registradas</div>
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:4px"><div class="status"><i class="bi bi-circle-fill"></i> <span id="syncLabel">Conectado</span></div><div class="session-user"><div class="avatar" id="headerAvatar">ZU</div><div class="user-meta"><strong id="headerUser">Usuario ZIMA</strong><span id="headerPeaje">Administraci&oacute;n central</span></div><button class="logout-btn zima-logout-button" type="button" title="Cerrar sesi&oacute;n" aria-label="Cerrar sesi&oacute;n" onclick="cerrarSesion()"><i class="bi bi-box-arrow-right"></i></button></div></div>
       </header>
@@ -747,7 +748,7 @@
         <div id="duplicateNotice" role="status" aria-live="polite"></div>
         <div class="toolbar">
           <div class="filters"><label>Mes <input id="mes" class="field" type="month" required aria-label="Mes del historial"></label><input id="buscar" class="field" type="search"
-              placeholder="Buscar código, peaje, responsable..." autocomplete="off"><select id="estado" class="field">
+              placeholder="Buscar cÃ³digo, peaje, responsable..." autocomplete="off"><select id="estado" class="field">
               <option value="">Todos los estados</option>
               <option value="BORRADOR">Borrador</option>
               <option value="APROBADO">Aprobado</option>
@@ -764,7 +765,7 @@
             <table>
               <thead>
                 <tr>
-                  <th>CÓDIGO</th>
+                  <th>CÃ“DIGO</th>
                   <th>FECHA</th>
                   <th>PEAJE</th>
                   <th>RESPONSABLE</th>
@@ -793,7 +794,7 @@
       <div class="pdf-dialog-head">
         <div>
           <div class="pdf-dialog-title" id="pdfTitle">Vista previa de la planilla</div>
-          <div class="pdf-dialog-subtitle">Desde aquí puede imprimirla o guardarla como PDF.</div>
+          <div class="pdf-dialog-subtitle">Desde aquÃ­ puede imprimirla o guardarla como PDF.</div>
         </div>
         <button class="pdf-close" type="button" title="Cerrar vista previa" aria-label="Cerrar vista previa" onclick="cerrarPdf()"><i class="bi bi-x-lg"></i></button>
       </div>
@@ -810,9 +811,9 @@
       <div class="edit-dialog-head">
         <div>
           <div class="edit-dialog-title" id="editTitle">Editar planilla</div>
-          <div class="edit-dialog-subtitle">Realice los ajustes y guarde la actualización sin salir del historial.</div>
+          <div class="edit-dialog-subtitle">Realice los ajustes y guarde la actualizaciÃ³n sin salir del historial.</div>
         </div>
-        <button class="edit-close" type="button" title="Cerrar edición" aria-label="Cerrar edición" onclick="cerrarEdicion()"><i class="bi bi-x-lg"></i></button>
+        <button class="edit-close" type="button" title="Cerrar ediciÃ³n" aria-label="Cerrar ediciÃ³n" onclick="cerrarEdicion()"><i class="bi bi-x-lg"></i></button>
       </div>
       <div class="edit-frame-wrap">
         <div class="edit-loading" id="editLoading">
@@ -823,7 +824,7 @@
           <span class="zima-spinner" aria-hidden="true"></span>
           Actualizando historial...
         </div>
-        <iframe class="edit-frame" id="editFrame" title="Edición de planilla"></iframe>
+        <iframe class="edit-frame" id="editFrame" title="EdiciÃ³n de planilla"></iframe>
       </div>
     </div>
   </div>
@@ -850,20 +851,20 @@
     function pintarAvatar(el,foto,nombre){ if(!el)return; const src=String(foto||'').trim(); const esFuenteImagen=/^(data:image\/|https?:\/\/|blob:)/i.test(src); if(src&&esFuenteImagen){ el.innerHTML='<img src="'+esc(src)+'" alt="'+esc(nombre||'Usuario')+'">'; const image=el.querySelector('img'); if(image)image.addEventListener('error',function(){ el.textContent=iniciales(nombre); },{once:true}); }else{ el.textContent=iniciales(nombre); } }
     function guardarPerfilSesion(perfil){ perfil=perfil||{}; const foto=String(perfil.foto||perfil.FOTO||perfil.photo||'').trim(); if(perfil.nombre)SESSION.name=perfil.nombre; if(perfil.rol)SESSION.role=perfil.rol; if(perfil.peaje)SESSION.peaje=perfil.peaje; SESSION.foto=foto; setupSession(); }
     async function refrescarPerfil(){ try{ const data=await apiGet('perfil'); if(data&&data.ok!==false)guardarPerfilSesion(data); }catch(e){} }
-    function esGranAdministradorSesion(){ const rol=String(SESSION.role||'').trim().toUpperCase(); const peaje=String(SESSION.peaje||'').trim().toUpperCase(); const peajeGlobal=peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL'; return (rol==='ADMIN'||rol==='ADMINISTRADOR')&&peajeGlobal; }
+    function esGranAdministradorSesion(){ const rol=String(SESSION.role||'').trim().toUpperCase(); const peaje=String(SESSION.peaje||'').trim().toUpperCase(); const peajeGlobal=peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÃ“N CENTRAL'; return (rol==='ADMIN'||rol==='ADMINISTRADOR')&&peajeGlobal; }
     function puedeGestionarPlanillas(){ return esGranAdministradorSesion() || String(SESSION.role||'').trim().toUpperCase()==='PEAJE'; }
     function mostrarMenuAdmin(){ document.querySelectorAll('.admin-only').forEach(item=>{ item.style.display=esGranAdministradorSesion()?'flex':'none'; }); }
     function setupSession(){ const name=SESSION.name || SESSION.user; const peaje=SESSION.peaje || 'Administraci\u00f3n central'; const h=document.getElementById('headerUser'), p=document.getElementById('headerPeaje'), a=document.getElementById('headerAvatar'), sp=document.getElementById('sidebarPeaje'); if(h) h.textContent=name; if(p) p.textContent=peaje; if(sp) sp.textContent=peaje; pintarAvatar(a,SESSION.foto,name); if(a){a.style.cursor='pointer';a.setAttribute('role','button');a.setAttribute('tabindex','0');a.setAttribute('title','Ver perfil');a.onclick=abrirModalSesion;a.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();abrirModalSesion();}};} }
     function abrirModalSesion(){ const m=document.getElementById('sessionModal'); if(!m)return; const name=SESSION.name||SESSION.user||'Usuario ZIMA'; const peaje=SESSION.peaje||'Administracion central'; const av=document.getElementById('sessionAvatar'); pintarAvatar(av,SESSION.foto,name); document.getElementById('modalSessionUser').textContent=name; document.getElementById('modalSessionRole').textContent=SESSION.role||'USUARIO'; document.getElementById('modalSessionPeaje').textContent=peaje; m.classList.add('open'); }
     function cerrarModalSesion(){ const m=document.getElementById('sessionModal'); if(m)m.classList.remove('open'); }
     function cerrarModalSesionDesdeFondo(e){ if(e.target && e.target.id==='sessionModal') cerrarModalSesion(); }
-    function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'<i class="bi bi-x-lg"></i>':'<i class="bi bi-list"></i>';toggle.setAttribute('aria-label',open?'Cerrar menú':'Abrir menú');} }
-    function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<i class="bi bi-list"></i>';toggle.setAttribute('aria-label','Abrir menú');} }
+    function alternarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); const open=sidebar && !sidebar.classList.contains('mobile-open'); if(sidebar) sidebar.classList.toggle('mobile-open',open); if(backdrop) backdrop.classList.toggle('open',open); if(toggle){toggle.setAttribute('aria-expanded',String(open));toggle.innerHTML=open?'<i class="bi bi-x-lg"></i>':'<i class="bi bi-list"></i>';toggle.setAttribute('aria-label',open?'Cerrar menÃº':'Abrir menÃº');} }
+    function cerrarMenu(){ const sidebar=document.querySelector('.sidebar'); const backdrop=$('menuBackdrop'); const toggle=$('menuToggle'); if(sidebar) sidebar.classList.remove('mobile-open'); if(backdrop) backdrop.classList.remove('open'); if(toggle){toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<i class="bi bi-list"></i>';toggle.setAttribute('aria-label','Abrir menÃº');} }
     function cerrarSesion(){ return ZimaUI.confirmLogout({detail:(SESSION.name||SESSION.user||'Usuario ZIMA') + (SESSION.peaje ? ' - ' + SESSION.peaje : '')}); }
     document.addEventListener('click',e=>{if(e.target.closest('.nav-item'))cerrarMenu();});
     document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModalSesion();cerrarPdf();cerrarEdicion();cerrarMenu();}});
     function $(id) { return document.getElementById(id) } function money(n) { return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(Number(n || 0)) } function esc(s) { return String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[m])) } function normalizarEstado(v) { const e = String(v || '').trim().toUpperCase(); return e === 'ENTREGADO' ? 'ENTREGADA' : e } function statusClass(v) { const e = normalizarEstado(v); return ['BORRADOR', 'APROBADO', 'ENTREGADA', 'CERRADA', 'ANULADA'].includes(e) ? e : 'BORRADOR' }
-    function textoNotificacion(r){ if(!r||!r.notificacion)return ''; if(r.notificacion.enviado)return ' Correo enviado a: '+esc(r.notificacion.destinatarios||'')+'.'; return ' No se envió correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.'; }
+    function textoNotificacion(r){ if(!r||!r.notificacion)return ''; if(r.notificacion.enviado)return ' Correo enviado a: '+esc(r.notificacion.destinatarios||'')+'.'; return ' No se enviÃ³ correo: '+esc(r.notificacion.error||'sin destinatario configurado')+'.'; }
     async function apiPost(action, params = {}) { const ses=zimaSessionParams(); const payload={ action, ...ses, ...params }; if (window.google && google.script && google.script.run) return onlineRun('apiPost', payload); if (API_URL.includes('PEGA_AQUI')) throw Error('Configura la URL de Apps Script o abre el sistema desde la Web App.'); return zimaJsonp(payload); }
     let currentEditId = '';
     function editar(id) {
@@ -919,10 +920,10 @@
       try {
         await cargar();
         cerrarEdicion();
-        ZimaUI.notice('msg', 'Planilla actualizada correctamente. Código: ' + esc(data.codigo || 'sin código') + '.', 'success');
+        ZimaUI.notice('msg', 'Planilla actualizada correctamente. CÃ³digo: ' + esc(data.codigo || 'sin cÃ³digo') + '.', 'success');
       } catch (e) {
         if (saving) saving.hidden = true;
-        ZimaUI.notice('msg', 'La planilla se actualizó, pero no se pudo refrescar el historial: ' + e.message, 'error');
+        ZimaUI.notice('msg', 'La planilla se actualizÃ³, pero no se pudo refrescar el historial: ' + e.message, 'error');
       }
     });
     async function anular(id) {
@@ -961,8 +962,8 @@
       try {
         const confirmar = await ZimaUI.confirm({
           title: 'Eliminar planilla definitivamente',
-          message: 'Se borrarán todos los datos de esta planilla de la base de datos. Desaparecerá del historial y de los informes. Esta acción no se puede deshacer; solo se conservará el registro de auditoría.',
-          detail: 'Código: ' + (row.codigo || 'Sin código') + ' · Peaje: ' + (row.peaje || ''),
+          message: 'Se borrarÃ¡n todos los datos de esta planilla de la base de datos. DesaparecerÃ¡ del historial y de los informes. Esta acciÃ³n no se puede deshacer; solo se conservarÃ¡ el registro de auditorÃ­a.',
+          detail: 'CÃ³digo: ' + (row.codigo || 'Sin cÃ³digo') + ' Â· Peaje: ' + (row.peaje || ''),
           confirmText: 'Eliminar definitivamente',
           cancelText: 'Conservar planilla',
           danger: true
@@ -977,8 +978,8 @@
         await ZimaUI.confirm({
           tone: 'success', animatedCheck: true, hideCancel: true, danger: false,
           title: 'Planilla eliminada',
-          message: 'La planilla se eliminó correctamente del historial y de los informes.',
-          detail: 'Código: ' + (row.codigo || 'Sin código'),
+          message: 'La planilla se eliminÃ³ correctamente del historial y de los informes.',
+          detail: 'CÃ³digo: ' + (row.codigo || 'Sin cÃ³digo'),
           confirmText: 'Entendido'
         });
       } catch (e) {
@@ -994,8 +995,8 @@
       const codigo = row?.codigo || 'esta planilla';
       const confirmar = await ZimaUI.confirm({
         title: 'Restaurar planilla',
-        message: 'La planilla volverá al estado APROBADO y dejará de estar anulada.',
-        detail: 'Código: ' + codigo,
+        message: 'La planilla volverÃ¡ al estado APROBADO y dejarÃ¡ de estar anulada.',
+        detail: 'CÃ³digo: ' + codigo,
         confirmText: 'Restaurar planilla',
         cancelText: 'Cancelar'
       });
@@ -1024,7 +1025,7 @@
         (admin ? '<button class="action" title="Eliminar definitivamente" aria-label="Eliminar planilla definitivamente" onclick="eliminarDefinitivamente(\'' + id + '\')"><i class="bi bi-trash-fill"></i></button>' : '') +
       '</div>';
     }
-    let allRows = []; function render() { const duplicados=mostrarDuplicadosHistorial(); const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = filasMesHistorial().filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la búsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin código')}</strong>${duplicados.has(String(x.codigo ?? '').trim().toUpperCase())?'<br><span class="duplicate-code-badge">Código duplicado</span>':''}</td><td>${esc(x.fecha || '')}<br><small>${/\bre\s*cambio\b/i.test([x.observaciones||'',x.obsValor||''].join(' '))?'Recambio':'Recaudo'}</small></td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
+    let allRows = []; function render() { const duplicados=mostrarDuplicadosHistorial(); const q = $('buscar').value.trim().toLowerCase(), f = normalizarEstado($('estado').value), d = $('fecha').value; const rows = filasMesHistorial().filter(x => { const text = [x.codigo, x.peaje, x.entregadoNombre, x.recibe, x.ciudad].join(' ').toLowerCase(); return (!q || text.includes(q)) && (!f || normalizarEstado(x.estado) === f) && (!d || String(x.fecha || '').slice(0, 10) === d) }); $('count').textContent = rows.length + ' ' + (rows.length === 1 ? 'registro' : 'registros'); if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="7" class="empty"><i class="bi bi-inbox"></i>No hay planillas que coincidan con la bÃºsqueda.</td></tr>'; return } $('rows').innerHTML = rows.map(x => `<tr><td><strong>${esc(x.codigo || 'Sin cÃ³digo')}</strong>${duplicados.has(String(x.codigo ?? '').trim().toUpperCase())?'<br><span class="duplicate-code-badge">CÃ³digo duplicado</span>':''}</td><td>${esc(x.fecha || '')}<br><small>${/\bre\s*cambio\b/i.test([x.observaciones||'',x.obsValor||''].join(' '))?'Recambio':'Recaudo'}</small></td><td>${esc(x.peaje || '')}</td><td>${esc(x.entregadoNombre || x.recibe || '')}</td><td class="money">${money(x.total)}</td><td><span class="status-pill ${statusClass(x.estado)}">${esc(normalizarEstado(x.estado) || 'BORRADOR')}</span></td><td>${accionesFila(x)}</td></tr>`).join('') }
     function codigosDuplicados(){
       const cantidades=new Map();
       allRows.forEach(fila=>{
@@ -1059,8 +1060,8 @@
         ZimaUI.confirm({
           tone:'warning',sound:'warning',
           title:'Advertencia: planillas duplicadas',
-          message:'Hay códigos duplicados entre las planillas de este mes. Debe revisar y ajustar las planillas duplicadas o comunicarse con el administrador para corregirlas.',
-          detail:'Mes: '+$('mes').value+' · Códigos: '+[...duplicados].join(', '),
+          message:'Hay cÃ³digos duplicados entre las planillas de este mes. Debe revisar y ajustar las planillas duplicadas o comunicarse con el administrador para corregirlas.',
+          detail:'Mes: '+$('mes').value+' Â· CÃ³digos: '+[...duplicados].join(', '),
           confirmText:'Revisar planillas',cancelText:'Entendido',danger:false
         }).then(function(revisar){
           modalDuplicadosAbierto=false;
@@ -1073,7 +1074,7 @@
     function ver(id) { if (!id) return; const decodedId=decodeURIComponent(id); const row = allRows.find(x => String(x.id) === decodedId); const modal = $('pdfModal'); const frame = $('pdfFrame'); const loading=$('pdfLoading'); if (!modal || !frame) return; $('pdfTitle').textContent = 'Vista previa - ' + (row?.codigo || 'Planilla'); if(loading)loading.hidden=false; frame.onload=function(){ if(loading)loading.hidden=true; }; if(currentPreviewId!==decodedId){ frame.src = 'planilla.html?id=' + id + '&preview=1&embed=1'; currentPreviewId=decodedId; } ZimaUI.openModal(modal); }
     function cerrarPdf() { const frame = $('pdfFrame'); ZimaUI.closeModal('pdfModal'); if (frame) frame.src = 'about:blank'; currentPreviewId=''; const loading=$('pdfLoading'); if(loading)loading.hidden=true; }
     function cerrarPdfDesdeFondo(e) { if (e.target && e.target.id === 'pdfModal') cerrarPdf(); }
-    async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando...'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexión'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }
+    async function cargar() { if(window.__zimaLoadingHistorial)return; try { window.__zimaLoadingHistorial=true; ZimaUI.busy('refreshBtn',true,'Actualizando...'); $('syncLabel').textContent = 'Sincronizando...'; ZimaUI.notice('msg','Consultando planillas registradas...'); const r = await apiGet('list'); if (!r.ok) throw Error(r.error || 'No se pudieron consultar las planillas.'); allRows = r.rows || []; render(); ZimaUI.notice('msg',''); $('syncLabel').textContent = 'Conectado' } catch (e) { $('syncLabel').textContent = 'Sin conexiÃ³n'; ZimaUI.notice('msg',e.message,'error'); render() } finally { window.__zimaLoadingHistorial=false; ZimaUI.busy('refreshBtn',false); } }
     $('mes').value=mesActualHistorial(); $('mes').addEventListener('change',function(){ $('fecha').value=''; render(); });
     setupSession(); mostrarMenuAdmin(); refrescarPerfil().then(function(){mostrarMenuAdmin();render();}); $('buscar').addEventListener('input', render); $('estado').addEventListener('change', render); $('fecha').addEventListener('change', render); cargar();
   </script>

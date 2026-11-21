@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -163,6 +163,7 @@
   </style>
 <link rel="stylesheet" href="zima-brand.css">
   <link rel="stylesheet" href="zima-seasonal.css">
+  <script src="maintenance-redirect.js"></script>
 </head>
 <body class="granadmin-page">
   <div class="shell" id="appShell">
@@ -197,7 +198,7 @@
       <div class="locked" id="locked">
         <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
         <h1>Acceso restringido</h1>
-        <p>Este panel está disponible para administración y soporte, según sus permisos.</p>
+        <p>Este panel estÃ¡ disponible para administraciÃ³n y soporte, segÃºn sus permisos.</p>
         <div class="actions" style="justify-content:center;margin-top:18px"><button class="btn primary" type="button" onclick="location.href='dashboard.html'">Volver al inicio</button></div>
       </div>
 
@@ -262,7 +263,7 @@
                       <input id="newPhotoFile" type="file" accept="image/*">
                       <input id="newPhoto" type="hidden">
                     </label>
-                    <label>Contraseña
+                    <label>ContraseÃ±a
                       <input id="newPassword" type="password" minlength="6" required>
                     </label>
                   </div>
@@ -319,7 +320,7 @@
                     <label>Email
                       <input id="editEmail" type="email">
                     </label>
-                    <label>Teléfono
+                    <label>TelÃ©fono
                       <input id="editPhone">
                     </label>
                   </div>
@@ -362,7 +363,7 @@
           </section>
         </section>
 
-        <section class="panel" style="margin-top:24px"><div class="panel-head"><h2>Auditoría de cambios</h2><p>Últimos 200 movimientos. Las contraseñas se mantienen reservadas; soporte no ve datos financieros.</p><button class="btn" type="button" onclick="cargarAuditoria()">Actualizar auditoría</button></div><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Acción</th><th>Responsable</th><th>Detalle</th></tr></thead><tbody id="auditBody"><tr><td colspan="4">Consultando auditoría...</td></tr></tbody></table></div></section>
+        <section class="panel" style="margin-top:24px"><div class="panel-head"><h2>AuditorÃ­a de cambios</h2><p>Ãšltimos 200 movimientos. Las contraseÃ±as se mantienen reservadas; soporte no ve datos financieros.</p><button class="btn" type="button" onclick="cargarAuditoria()">Actualizar auditorÃ­a</button></div><div class="table-wrap"><table><thead><tr><th>Fecha</th><th>AcciÃ³n</th><th>Responsable</th><th>Detalle</th></tr></thead><tbody id="auditBody"><tr><td colspan="4">Consultando auditorÃ­a...</td></tr></tbody></table></div></section>
       </section>
     </main>
   </div>
@@ -407,7 +408,7 @@
 
     function isGranAdmin(){
       const peaje=String(SESSION.office||'').trim().toUpperCase();
-      const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÓN CENTRAL';
+      const peajeGlobal=!peaje||peaje==='TODOS'||peaje==='ADMINISTRACION CENTRAL'||peaje==='ADMINISTRACIÃ“N CENTRAL';
       return ['ADMIN','ADMINISTRADOR'].includes(SESSION.role)&&peajeGlobal;
     }
     function isSupport(){return SESSION.role==='SOPORTE';}
@@ -606,7 +607,7 @@
       });
     }
     function confirmedResponse(data){
-      if(!data||data.ok!==true)throw Error(data&&(data.error||data.mensaje)||'El servidor no confirmó la operación.');
+      if(!data||data.ok!==true)throw Error(data&&(data.error||data.mensaje)||'El servidor no confirmÃ³ la operaciÃ³n.');
       return data;
     }
     async function apiPost(action,params={}){
@@ -618,7 +619,7 @@
         if(!response.ok)throw Error('HTTP '+response.status);
         data=await response.json();
       }catch(error){
-        if(new URLSearchParams(payload).toString().length>6000)throw Error('No se pudo confirmar el guardado. Actualice la lista para comprobar los datos antes de reintentar; si persiste, reduzca el tamaño de la foto.');
+        if(new URLSearchParams(payload).toString().length>6000)throw Error('No se pudo confirmar el guardado. Actualice la lista para comprobar los datos antes de reintentar; si persiste, reduzca el tamaÃ±o de la foto.');
         data=await accessJsonp(payload);
       }
       return confirmedResponse(data);
@@ -657,7 +658,7 @@
     }
     function esPeajeGlobal(value){
       const key=peajeKey(value);
-      return !key||key==='TODOS'||key==='ADMINISTRACION CENTRAL'||key==='ADMINISTRACIÓN CENTRAL';
+      return !key||key==='TODOS'||key==='ADMINISTRACION CENTRAL'||key==='ADMINISTRACIÃ“N CENTRAL';
     }
     function refrescarPeajesLocales(){
       const mapa={};
@@ -761,7 +762,7 @@
     async function cambiarEstado(usuario,estado){
       usuario=decodeURIComponent(usuario);
       const accion=estado==='ACTIVO'?'activar':'inactivar';
-      if(!confirm('¿Desea '+accion+' el usuario "'+usuario+'"?')){
+      if(!confirm('Â¿Desea '+accion+' el usuario "'+usuario+'"?')){
         notice('Cambio de estado cancelado.');
         return;
       }
@@ -926,8 +927,8 @@
       if(isSupport()){
         document.title='ZIMA 360 - Soporte y accesos';
         document.querySelector('#adminPage h1').textContent='Centro de soporte y accesos';
-        document.querySelector('#adminPage .hero p').textContent='Gestiona tickets y accesos de los peajes. Los valores de las planillas están reservados.';
-        document.querySelector('.breadcrumb').textContent='Soporte / Accesos y auditoría';
+        document.querySelector('#adminPage .hero p').textContent='Gestiona tickets y accesos de los peajes. Los valores de las planillas estÃ¡n reservados.';
+        document.querySelector('.breadcrumb').textContent='Soporte / Accesos y auditorÃ­a';
         ['newRole','editRole'].forEach(id=>{const select=document.getElementById(id);Array.from(select.options).forEach(option=>{if(option.value!=='PEAJE')option.remove();});select.value='PEAJE';select.disabled=true;});
       }
       cargarUsuarios();

@@ -6202,6 +6202,119 @@ function construirHtmlPlanillaPdf_(
 }
 
 
+/* ============================================================
+   AVISO UNICO DE MANTENIMIENTO ICLOUD
+   Ejecutar programarAvisoMantenimientoIcloudHoy una sola vez
+   desde el editor de Apps Script antes de las 20:10 (Bogota).
+   ============================================================ */
+
+function programarAvisoMantenimientoIcloudHoy() {
+  const envio = new Date('2026-11-21T01:10:00Z'); // 20 nov 2026, 8:10 p. m. en America/Bogota
+  if (new Date().getTime() >= envio.getTime()) {
+    throw new Error('La hora programada ya paso. No se creo el envio automatico.');
+  }
+
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'enviarAvisoMantenimientoIcloud') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  ScriptApp.newTrigger('enviarAvisoMantenimientoIcloud')
+    .timeBased()
+    .at(envio)
+    .create();
+
+  return 'Aviso programado para hoy, 20 de noviembre de 2026, a las 8:10 p. m. (Bogota).';
+}
+
+
+function enviarAvisoMantenimientoIcloud() {
+  const coordinadora = 'c.recaudo3@zimaseguridad.com.co';
+  const logoBase64 = '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';
+  const logoBlob = Utilities.newBlob(
+    Utilities.base64Decode(logoBase64),
+    'image/png',
+    'zima-logo.png'
+  );
+  const sheet = getSpreadsheet_().getSheetByName(ZIMA.SHEET_USUARIOS);
+  if (!sheet) throw new Error('No existe la hoja USUARIOS.');
+
+  const usuarios = obtenerUsuariosDesdeHoja_(sheet);
+  const correos = [];
+  const vistos = {};
+  function agregarCorreo(value) {
+    const correo = String(value || '').trim().toLowerCase();
+    if (emailValido_(correo) && !vistos[correo]) {
+      vistos[correo] = true;
+      correos.push(correo);
+    }
+  }
+
+  agregarCorreo(coordinadora);
+  usuarios.forEach(function(usuario) {
+    agregarCorreo(usuario.EMAIL);
+  });
+
+  if (!correos.length) throw new Error('No hay destinatarios con correo valido.');
+
+  const asunto = 'ZIMA 360 | Aviso de mantenimiento por incidente en iCloud';
+  const texto = [
+    'Apreciado equipo:',
+    '',
+    'ZIMA 360 presenta una interrupcion temporal debido a una caida en el servidor iCloud. Nuestro equipo esta trabajando para restablecer el servicio.',
+    '',
+    'La ventana de mantenimiento esta prevista hasta el lunes 23 de noviembre de 2026 a las 10:00 a. m. (hora de Bogota). Les recomendamos intentar ingresar nuevamente despues de esa hora.',
+    '',
+    'Gracias por su comprension.',
+    'Transportadora ZIMA | Sistema de Gestion'
+  ].join('\n');
+
+  const html = [
+    '<div style="margin:0;background:#eef3f8;padding:28px 12px;font-family:Arial,Helvetica,sans-serif;color:#183354">',
+    '<div style="max-width:620px;margin:0 auto;background:#ffffff;border-radius:18px;overflow:hidden;border:1px solid #dce5ef;box-shadow:0 12px 32px rgba(8,36,84,.12)">',
+    '<div style="padding:24px 28px;text-align:center;background:linear-gradient(120deg,#082454,#14599a);color:#ffffff">',
+    '<div style="font-size:29px;line-height:1;margin-bottom:11px">&#127876; <span style="color:#f4c84a">&#10022;</span> &#10052;</div>',
+    '<img src="cid:zimaLogo" alt="ZIMA" width="142" style="display:block;width:142px;max-width:60%;height:auto;margin:0 auto 8px;padding:8px 12px;border-radius:10px;background:#ffffff">',
+    '<div style="font-size:12px;letter-spacing:3px;color:#dbe9f8">SISTEMA DE GESTION</div>',
+    '<div style="margin-top:13px;font-size:12px;color:#f5d56b;letter-spacing:2px">AVISO DE SERVICIO</div>',
+    '</div>',
+    '<div style="padding:30px 34px 20px">',
+    '<h1 style="margin:0 0 15px;color:#102d55;font-size:26px;line-height:1.25">Ventana de mantenimiento</h1>',
+    '<p style="margin:0 0 18px;font-size:16px;line-height:1.7;color:#425873">Apreciado equipo: ZIMA 360 presenta una interrupcion temporal debido a una caida en el servidor iCloud. Nuestro equipo esta trabajando para restablecer el servicio.</p>',
+    '<div style="border-left:4px solid #e3b42c;background:#f5f8fc;padding:16px 18px;border-radius:8px;margin:22px 0">',
+    '<div style="font-size:14px;font-weight:700;color:#123b78;margin-bottom:6px">&#128197; Restablecimiento previsto</div>',
+    '<div style="font-size:15px;line-height:1.6;color:#425873">Lunes 23 de noviembre de 2026, a las <strong>10:00 a. m.</strong><br>Hora de Bogota</div>',
+    '</div>',
+    '<p style="margin:0;font-size:14px;line-height:1.65;color:#52677e">Les recomendamos intentar ingresar nuevamente despues de la hora indicada. Gracias por su comprension mientras atendemos esta incidencia.</p>',
+    '</div>',
+    '<div style="padding:17px 24px;text-align:center;border-top:1px solid #e5ebf2;color:#718096;font-size:12px">Transportadora ZIMA &middot; Sistema de Gestion<br><span style="color:#b78922">&#10022; Temporada navidena &#10022;</span></div>',
+    '</div></div>'
+  ].join('');
+
+  const maxPorMensaje = 50;
+  for (let inicio = 0; inicio < correos.length; inicio += maxPorMensaje) {
+    const lote = correos.slice(inicio, inicio + maxPorMensaje);
+    MailApp.sendEmail({
+      to: lote[0],
+      bcc: lote.slice(1).join(','),
+      subject: asunto,
+      body: texto,
+      htmlBody: html,
+      inlineImages: {zimaLogo: logoBlob},
+      name: 'ZIMA 360 | Transportadora ZIMA'
+    });
+  }
+
+  ScriptApp.getProjectTriggers().forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === 'enviarAvisoMantenimientoIcloud') {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+  return 'Aviso enviado a ' + correos.length + ' destinatarios.';
+}
+
+
 function crearPdfPlanilla_(
   row,
   accion,
